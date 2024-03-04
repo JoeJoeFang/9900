@@ -1,12 +1,15 @@
+//wenyima
 import React from 'react';
 // import { Container, Button, Typography, Box, Stack } from '@mui/material';
-import { Button, Typography, Box, Stack } from '@mui/material';
+import { Button, Typography, Box, Stack, useTheme } from '@mui/material';
 // import { useNavigate, Route, Routes } from 'react-router-dom';
 import { Route, Routes } from 'react-router-dom';
-import './App.css'; // 确保你的CSS文件中包含背景图片的样式
+import LoginHost from './pages/Login.jsx'
+import './App.css';
 
 const DefaultPage = () => {
     // const navigate = useNavigate();
+    const theme = useTheme();
 
     const signUpAsHost = () => {
         console.log("Signing up as a Host");
@@ -23,112 +26,128 @@ const DefaultPage = () => {
         // 实现跳转逻辑，例如：navigate('/visitor-access');
     };
 
+
 //     return (
-//         <Container maxWidth="sm" sx={{
+//         <Box sx={{
 //             minHeight: '100vh',
-//             minWidth: '100vh',
 //             display: 'flex',
 //             flexDirection: 'column',
-//             justifyContent: 'center',
+//             justifyContent: 'center', // 确保内容垂直居中
 //             alignItems: 'center',
-//             background: `url(/default_background.jpg), #e6a3a3`,
+//             background: `url(${process.env.PUBLIC_URL}/default_background.jpg), #e6a3a3`,
 //             backgroundSize: 'cover, cover',
-//             backgroundPosition: 'center, center'
+//             backgroundPosition: 'center, center',
+//             p: 2,
 //         }}>
+//             {/* 商标图片 */}
+//             <Typography variant="h2" color="white" sx={{ marginTop: 2, alignSelf: 'flex-start' }}>
+//                  <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 120, height: 'auto', marginTop: 2 }} />Our Amazing Ticket Platform
+//             </Typography>
 //
-//         <Box textAlign="center" color="white" paddingTop={5} paddingBottom={5}>
-//                 <Typography variant="h2" gutterBottom>
-//                     Our Amazing Ticket Platform
-//                 </Typography>
-//                 <Typography variant="subtitle1" gutterBottom>
-//                     The best way to book an event and know all about
-//                 </Typography>
-//                 <Typography variant="body1" gutterBottom>
-//                     Start your booking with us and join our community!
-//                 </Typography>
-//                 <Button variant="contained" color="primary" onClick={signUpAsHost} style={{margin: 8}}>
-//                     To be a Host!
-//                 </Button>
-//                 <Button variant="contained" color="secondary" onClick={signUpAsCustomer} style={{margin: 8}}>
-//                     To be a Customer!
-//                 </Button>
-//                 <Button variant="outlined" onClick={visitorAccess} style={{margin: 8}}>
-//                     Visitor Access Mode
-//                 </Button>
+//             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', width: '100%', mt: 2 }}>
+//                 {/* 标语 */}
+//                 <Box sx={{ color: 'white', maxWidth: '50%' }}>
+//                     {/* 标语 */}
+//                     <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, color: 'text.primary', fontWeight: 'medium' }}>
+//                         The best way to book an event and know all about
+//                     </Typography>
+//                     <Typography variant="body1" gutterBottom sx={{ color: 'text.primary', fontWeight: 'medium' }}>
+//                         Start your booking with us and join our community!
+//                     </Typography>
+//                 </Box>
+//             {/* 包裹按钮的容器 */}
+//
+//                 <Box sx={{
+//                     display: 'flex',
+//                     flexDirection: 'column', // 将方向改为垂直
+//                     alignItems: 'center', // 确保水平居中
+//                     width: '80%', // 调整宽度为视口宽度的80%
+//                     maxWidth: 600, // 最大宽度限制
+//                     mt: 2,
+//                     backgroundColor: 'rgba(255, 255, 255, 0.7)', // 调整背景色的透明度
+//                     borderRadius: '8px',
+//                     p: 4, // 增加内边距
+//                 }}>
+//                     {/* Sign Up 标语 */}
+//                     <Typography variant="h4" component="div" sx={{ mb: 3, fontWeight: 'bold' }}>
+//                         Sign Up & Start Your Free Trial
+//                     </Typography>
+//
+//                     {/* 按钮 */}
+//                     <Stack direction="column" spacing={2} sx={{ mt: 2 }}>
+//                         <Button variant="contained" color="primary" onClick={signUpAsHost} sx={{ py: 1.5, fontSize: '1rem' }}>
+//                             To be a Host!
+//                         </Button>
+//                         <Button variant="contained" color="secondary" onClick={signUpAsCustomer} sx={{ py: 1.5, fontSize: '1rem' }}>
+//                             To be a Customer!
+//                         </Button>
+//                         <Button variant="outlined" onClick={visitorAccess} sx={{ py: 1.5, fontSize: '1rem' }}>
+//                             Visitor Access Mode
+//                         </Button>
+//                     </Stack>
+//                 </Box>
 //             </Box>
-//         </Container>
-//     );
-// }
-//     return (
-//         <Container maxWidth="sm" sx={{
-//             minHeight: '100vh', // 使容器高度充满整个视口
-//             display: 'flex', // 使用Flexbox布局
-//             flexDirection: 'column', // 子项垂直排列
-//             justifyContent: 'center', // 垂直居中
-//             alignItems: 'center', // 水平居中
-//             background: `url(/default_background.jpg), #e6a3a3`,
-//             backgroundSize: 'cover, cover',
-//             backgroundPosition: 'center, center'
-//         }}>
-//             <Box textAlign="center" color="white" p={5} sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: '8px' }}>
-//                 <Typography variant="h2" gutterBottom>
-//                     Our Amazing Ticket Platform
-//                 </Typography>
-//                 <Typography variant="subtitle1" gutterBottom>
-//                     The best way to book an event and know all about
-//                 </Typography>
-//                 <Typography variant="body1" gutterBottom>
-//                     Start your booking with us and join our community!
-//                 </Typography>
-//                 <Stack direction="column" spacing={2}>
-//                     <Button variant="contained" color="primary" onClick={signUpAsHost}>
-//                         To be a Host!
-//                     </Button>
-//                     <Button variant="contained" color="secondary" onClick={signUpAsCustomer}>
-//                         To be a Customer!
-//                     </Button>
-//                     <Button variant="outlined" onClick={visitorAccess}>
-//                         Visitor Access Mode
-//                     </Button>
-//                 </Stack>
-//             </Box>
-//         </Container>
+//         </Box>
 //     );
 // };
     return (
         <Box sx={{
-            minHeight: '100vh', // 使容器高度充满整个视口
-            width: '100%', // 新增：确保宽度也充满整个屏幕
-            display: 'flex', // 使用Flexbox布局
-            flexDirection: 'column', // 子项垂直排列
-            justifyContent: 'center', // 垂直居中
-            alignItems: 'center', // 水平居中
-            background: `url(/default_background.jpg), #e6a3a3`,
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
             backgroundSize: 'cover, cover',
             backgroundPosition: 'center, center',
-            p: 2, // 新增：为整个Box添加一些内边距
+            p: theme.spacing(2),
         }}>
-            <Box textAlign="center" color="white" sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: '8px', width: '100%', maxWidth: '600px' }}> {/* 调整Box宽度以适应内容 */}
-                <Typography variant="h2" gutterBottom>
+            {/* 商标图片和平台标题 */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
+                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
+                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                     Our Amazing Ticket Platform
                 </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                    The best way to book an event and know all about
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    Start your booking with us and join our community!
-                </Typography>
-                <Stack direction="column" spacing={2}>
-                    <Button variant="contained" color="primary" onClick={signUpAsHost}>
-                        To be a Host!
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={signUpAsCustomer}>
-                        To be a Customer!
-                    </Button>
-                    <Button variant="outlined" onClick={visitorAccess}>
-                        Visitor Access Mode
-                    </Button>
-                </Stack>
+            </Box>
+
+            {/* 内容容器 */}
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
+                {/* 标语 */}
+                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'rgba(0, 0, 0, 0.5)', borderRadius: theme.shape.borderRadius }}>
+                    <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
+                        The best way to book an event and know all about
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'white', fontWeight: 'medium' }}>
+                        Start your booking with us and join our community!
+                    </Typography>
+                </Box>
+
+                {/* 按钮容器 */}
+                <Box sx={{
+                    width: '40%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: theme.shape.borderRadius,
+                    p: theme.spacing(4),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}>
+                    <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: theme.palette.primary.main }}>
+                        Sign Up & Start Your Free Trial
+                    </Typography>
+
+                    <Stack direction="column" spacing={2}>
+                        <Button variant="contained" color="primary" onClick={signUpAsHost} sx={{ py: theme.spacing(1.5), px: theme.spacing(3), fontSize: '1.1rem' }}>
+                            To be a Host!
+                        </Button>
+                        <Button variant="contained" color="secondary" onClick={signUpAsCustomer} sx={{ py: theme.spacing(1.5), px: theme.spacing(3), fontSize: '1.1rem' }}>
+                            To be a Customer!
+                        </Button>
+                        <Button variant="outlined" onClick={visitorAccess} sx={{ py: theme.spacing(1.5), px: theme.spacing(3), fontSize: '1.1rem', borderColor: theme.palette.primary.main, color: theme.palette.primary.main }}>
+                            Visitor Access Mode
+                        </Button>
+                    </Stack>
+                </Box>
             </Box>
         </Box>
     );
@@ -138,13 +157,13 @@ const DefaultPage = () => {
 // export default DefaultPage;
 
 const PageList = () => {
-    // const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     return (
         <>
             <Routes>
                 <Route path='/' element={<DefaultPage />} />
-                {/*<Route path='/login-host' element={<LoginHost token={token} />} />*/}
+                <Route path='/login-host' element={<LoginHost token={token} />} />
                 {/*<Route path='/landing-page' element={<LandingPage />} />*/}
                 {/*<Route path='/register' element={<RegisterPage />} />*/}
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
