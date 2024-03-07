@@ -38,7 +38,7 @@ const LoginHost = () => {
             if (response.status === 200) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginInfo.email);
-                navigate('/landing-page');
+                // navigate('/landing-page');
             }
         } catch (errorResponse) {
             alert(errorResponse.response.data.error);
