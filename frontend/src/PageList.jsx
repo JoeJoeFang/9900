@@ -5,6 +5,9 @@ import { Button, Typography, Box, Stack, useTheme } from '@mui/material';
 // import { useNavigate, Route, Routes } from 'react-router-dom';
 import { Route, Routes } from 'react-router-dom';
 import LoginHost from './pages/Login.jsx'
+import RegisterHost from './pages/RegisterHost.jsx';
+import RegisterCustomer from './pages/RegisterCustomer'; 
+
 import './App.css';
 
 const DefaultPage = () => {
@@ -164,8 +167,9 @@ const PageList = () => {
             <Routes>
                 <Route path='/' element={<DefaultPage />} />
                 <Route path='/login-host' element={<LoginHost token={token} />} />
-                {/*<Route path='/landing-page' element={<LandingPage />} />*/}
-                {/*<Route path='/register' element={<RegisterPage />} />*/}
+                {<Route path='/register-host' element={<RegisterHost />} />}
+                <Route path='/register-customer' element={<RegisterCustomer />} />
+                {/*<Route path='/landing-page' element={<LandingPage />} />}
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 {/*<Route path='/create-new-listing' element={<CreateListingPage />} />*/}
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
