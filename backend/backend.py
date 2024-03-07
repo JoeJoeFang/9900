@@ -7,13 +7,12 @@ from functools import wraps
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/user/*": {"origins": "http://127.0.0.1:3000"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SECRET_KEY'] = 'your_secret_key'  # 用于加密 JWT 的密钥
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-# 用户模型
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -29,7 +28,6 @@ def create_default_user():
         db.session.add(default_user)
         db.session.commit()
 
-# 注册路由
 @app.route('/user/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -39,41 +37,21 @@ def register():
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
 
-# 登录路由
 @app.route('/user/auth/login', methods=['POST'])
 def login():
-    #print(1)
     data = request.json
+    print(data)
+    email = data.get('email')
+    password = data.get('password')
 
-    if not data:
-        print("Invalid request: Request body is empty")
-        return jsonify({'message': 'Invalid request: Request body is empty'}), 400
+    user = User.query.filter_by(email=email).first()
 
-    if 'email' not in data:
-        print("Invalid request: Email is missing in request body")
-        return jsonify({'message': 'Invalid request: Email is missing in request body'}), 400
+    if not user or not bcrypt.check_password_hash(user.password, password):
+        return jsonify({'message': 'Invalid email or password'}), 401
 
-    if 'password' not in data:
-        return jsonify({'message': 'Invalid request: Password is missing in request body'}), 400
+    token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+    return jsonify({'token': token.decode('UTF-8')})
 
-    #print(User.email, '111111111111111111')
-    em = data['email']
-    pas = data['password']
-
-    user = User.query.filter_by(email=em).first()
-
-    #print(1)
-    if not user:
-        print('User not found')
-        return jsonify({'message': 'User not found'}), 401
-
-    if bcrypt.check_password_hash(user.password, pas):
-        token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
-        return jsonify({'token': token.decode('UTF-8')})
-
-    return jsonify({'message': 'Invalid credentials'}), 401
-
-# 保护路由，需要验证 JWT
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
