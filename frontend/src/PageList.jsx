@@ -4,7 +4,7 @@ import React from 'react';
 import { Button, Typography, Box, Stack, useTheme } from '@mui/material';
 import { useNavigate, Route, Routes } from 'react-router-dom';
 
-import LoginHost from './pages/Login.jsx'
+import { LoginHost, LoginCustomer } from './pages/Login.jsx'
 import RegisterHost from './pages/RegisterHost.jsx';
 import RegisterCustomer from './pages/RegisterCustomer'; 
 
@@ -21,7 +21,7 @@ const DefaultPage = () => {
 
     const signUpAsCustomer = () => {
         console.log("Signing up as a Customer");
-        // 实现跳转逻辑，例如：navigate('/customer-signup');
+        navigate('/login-customer');
     };
 
     const visitorAccess = () => {
@@ -103,6 +103,7 @@ const PageList = () => {
             <Routes>
                 <Route path='/' element={<DefaultPage />} />
                 <Route path='/login-host' element={<LoginHost token={token} />} />
+                <Route path='/login-customer' element={<LoginCustomer token={token} />} />
                 {<Route path='/register-host' element={<RegisterHost />} />}
                 <Route path='/register-customer' element={<RegisterCustomer />} />
                 {/*<Route path='/landing-page' element={<LandingPage />} />}
