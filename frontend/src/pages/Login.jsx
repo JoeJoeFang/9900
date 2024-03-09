@@ -57,7 +57,6 @@ export const LoginCustomer = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
-            {/* 商标图片和平台标题 */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                 <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
                 <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
@@ -65,10 +64,14 @@ export const LoginCustomer = () => {
                 </Typography>
             </Box>
 
-            {/* 内容容器 */}
-            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
-                {/* 标语 */}
-                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'rgba(0, 0, 0, 0.5)', borderRadius: theme.shape.borderRadius }}>
+            <Box sx={{ display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '100%',
+                maxWidth: 1200,
+                px: theme.spacing(5),
+                gap: theme.spacing(3) }}>
+                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'transparent', borderRadius: theme.shape.borderRadius }}>
                     <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
                         The best way to book an event and know all about
                     </Typography>
@@ -77,22 +80,22 @@ export const LoginCustomer = () => {
                     </Typography>
                 </Box>
 
-                {/* 按钮容器 */}
                 <Box sx={{
-                    width: '40%',
+                    width: '60%',
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: theme.shape.borderRadius,
                     p: theme.spacing(4),
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
                 }}>
                     <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: theme.palette.primary.main }}>
                         Sign Up & Start Your Free Trial
                     </Typography>
 
                     <Typography component="h1" variant="h5">Login for Customer</Typography>
-                    <Box component="form" onSubmit={loginUser} noValidate sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={loginUser} noValidate sx={{ mt: 1, width: '100%' }}>
                         <TextField
                             margin="normal"
                             required
@@ -104,6 +107,7 @@ export const LoginCustomer = () => {
                             autoFocus
                             value={loginData.email}
                             onChange={updateField}
+                            variant="outlined"
                         />
                         <TextField
                             margin="normal"
@@ -116,33 +120,31 @@ export const LoginCustomer = () => {
                             autoComplete="current-password"
                             value={loginData.password}
                             onChange={updateField}
+                            variant="outlined"
                         />
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
+                            color="primary"
+                            sx={{ mt: 3, mb: 2, '&:hover': { backgroundColor: 'darken', boxShadow: 'none' } }}
                         >
                             Login
                         </Button>
-                        {/* Add a button for navigating to the RegisterPage */}
                         <Button
                             fullWidth
                             variant="text"
                             sx={{ mt: 2 }}
                             onClick={() => navigate('/register-customer')}
                         >
-                            Don&apos;t have an account? Register
+                            Don't have an account? Register
                         </Button>
-
                     </Box>
                 </Box>
             </Box>
         </Box>
     );
-
 };
-
 
 export const LoginHost = () => {
     const theme = useTheme();
