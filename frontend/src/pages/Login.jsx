@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {TextField, Button, Typography, Box, useTheme } from '@mui/material';
+import {TextField, Button, Typography, Box, useTheme, IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export const LoginCustomer = () => {
     const theme = useTheme();
@@ -12,6 +13,10 @@ export const LoginCustomer = () => {
         email: '',
         password: '',
     });
+
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     const updateField = (e) => {
         setLoginData({
@@ -57,6 +62,24 @@ export const LoginCustomer = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
+            <IconButton
+                onClick={handleBack}
+                size="large"
+                sx={{
+                    position: 'absolute',
+                    left: theme.spacing(2),
+                    top: theme.spacing(2),
+                    backgroundColor: 'white',
+                    color: 'primary.main',
+                    '&:hover': {
+                        backgroundColor: 'primary.light',
+                        color: 'white',
+                    },
+                    boxShadow: 3,
+                }}
+            >
+                <ArrowBackIcon sx={{ fontSize: 28 }} />
+            </IconButton>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                 <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
                 <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
@@ -154,6 +177,9 @@ export const LoginHost = () => {
         email: '',
         password: '',
     });
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     const updateField = (e) => {
         setLoginData({
@@ -199,6 +225,24 @@ export const LoginHost = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
+            <IconButton
+                onClick={handleBack}
+                size="large"
+                sx={{
+                    position: 'absolute',
+                    left: theme.spacing(2),
+                    top: theme.spacing(2),
+                    backgroundColor: 'white',
+                    color: 'primary.main',
+                    '&:hover': {
+                        backgroundColor: 'primary.light',
+                        color: 'white',
+                    },
+                    boxShadow: 3,
+                }}
+            >
+                <ArrowBackIcon sx={{ fontSize: 28 }} />
+            </IconButton>
             {/* 商标图片和平台标题 */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                 <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
