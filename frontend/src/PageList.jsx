@@ -6,7 +6,8 @@ import { useNavigate, Route, Routes } from 'react-router-dom';
 
 import { LoginHost, LoginCustomer } from './pages/Login.jsx'
 import RegisterHost from './pages/RegisterHost.jsx';
-import RegisterCustomer from './pages/RegisterCustomer'; 
+import RegisterCustomer from './pages/RegisterCustomer.jsx';
+import CreateNewEvent from "./pages/CreateEvent_version2.jsx";
 
 import './App.css';
 
@@ -108,7 +109,7 @@ const PageList = () => {
                 <Route path='/register-customer' element={<RegisterCustomer />} />
                 {/*<Route path='/landing-page' element={<LandingPage />} />}
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
-                {/*<Route path='/create-new-listing' element={<CreateListingPage />} />*/}
+                <Route path='/create-new-event' element={<CreateNewEvent />} />
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
                 {/*<Route path='/my-hosted-list/publish/:listingId' element={<ListingPublishScreen />} />*/}
