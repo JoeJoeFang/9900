@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, Container, Box, FormControl, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import axios from 'axios';
 
 
 const theme = createTheme({
@@ -26,13 +27,11 @@ const CreateNewEvent = () => {
         eventType: '',
         duration: '',
         seatingCapacity: '',
-        amenities: '',
         youtubeUrl: '',
         startDate: '',
         endDate: '',
         organizerName: '',
         description: '',
-        registrationLink: '',
     });
     // const eventTypes = ["Conference", "Seminar", "Concert", "Workshop"];
 
@@ -40,50 +39,67 @@ const CreateNewEvent = () => {
     const validateField = (name, value) => {
         switch (name) {
             case 'title':
-                if (!value || value.length < 3) {
-                    return 'Title must be at least 3 characters.';
+                if (!value || value.length < 3 || value.length > 100) {
+                    return 'Title must be between 3 and 100 characters.';
                 }
                 break;
             case 'address':
-                if (!value) {
-                    return 'Address is required.';
+                if (!value || value.length < 10 || value.length > 200) {
+                    return 'Address must be between 10 and 200 characters.';
                 }
                 break;
             case 'price':
-                if (value <= 0) {
-                    return 'Price must be greater than 0.';
+                if (!value || isNaN(value) || value <= 0 || value > 1000000) {
+                    return 'Price must be a positive number less than 1,000,000.';
                 }
                 break;
             case 'eventType':
-                if (!value) {
-                    return 'Event type is required.';
+                // Assuming a predefined set of event types, validate accordingly
+                const eventTypes = ['concert', 'conference', 'meeting', 'webinar']; // Example event types
+                if (!value || !eventTypes.includes(value)) {
+                    return 'Invalid event type.';
                 }
                 break;
             case 'duration':
-                if (value <= 0) {
-                    return 'Duration must be a positive number.';
+                if (!value || isNaN(value) || value <= 0 || value > 168) {
+                    return 'Duration must be a positive number and no more than 168 hours (1 week).';
                 }
                 break;
             case 'seatingCapacity':
-                if (value <= 0) {
-                    return 'Seating capacity must be a positive number.';
+                if (!value || isNaN(value) || value <= 0 || value > 10000) {
+                    return 'Seating capacity must be a positive number and no more than 10,000.';
                 }
                 break;
             case 'youtubeUrl':
-                if (value && !/^https:\/\/www\.youtube\.com\/watch\?v=[\w-]+$/.test(value)) {
-                    return 'Invalid YouTube URL.';
+                if (value && !/^https:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/.test(value)) {
+                    return 'Invalid YouTube URL. URL should be in the format https://www.youtube.com/watch?v=VIDEO_ID';
                 }
                 break;
             case 'startDate':
             case 'endDate':
-                if (!value) {
-                    return 'This field is required.';
+                const date = new Date(value.replace(new RegExp('/', 'g'), '-'));
+                const now = new Date();
+                now.setHours(0, 0, 0, 0); // Remove time part
+                if (name === 'startDate' && date < now) {
+                    return 'Start date must be today or in the future.';
                 }
+                // if (name === 'endDate') {
+                //
+                //     // const startDateValue = date;
+                //     console.log(date);
+                //     // if (startDateValue) {
+                //     //     const startDate = new Date(startDateValue.replace(new RegExp('/', 'g'), '-'));
+                //     //     if (date <= startDate) {
+                //     //         return 'End date must be after the start date.';
+                //     //     }
+                //     // }
+                // }
                 break;
             default:
                 return '';
         }
     };
+
 
     const updateField = (e) => {
         const { name, value } = e.target;
@@ -107,7 +123,6 @@ const CreateNewEvent = () => {
                     console.log(e);
                     const jsonData = JSON.parse(e.target.result);
                     // Perform your validation here
-                    // Assuming jsonData has the same structure as listingData
                     setEventData({ ...eventData, ...jsonData });
                     setJsonUploaded(true); // Set the JSON upload status to true
                 } catch (error) {
@@ -141,12 +156,54 @@ const CreateNewEvent = () => {
         }
     };
 
-    // 用于处理表单提交的逻辑
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // 这里添加将eventData提交到后端的逻辑
-        console.log(eventData);
-        // 根据实际情况进行调整
+    const handleSubmit = async () => {
+        const errors = Object.keys(eventData).reduce((acc, key) => {
+            const error = validateField(key, eventData[key]);
+            if (error) {
+                acc[key] = error;
+            }
+            return acc;
+        }, {});
+
+        setFormErrors(errors);
+
+        const token = localStorage.getItem('token');
+        const requestBody = {
+            title: eventData.title,
+            address: eventData.address,
+            price: eventData.price,
+            thumbnail: eventData.thumbnail, // Thumbnail in base64 format
+            eventType: eventData.eventType,
+            duration: eventData.duration,
+            seatingCapacity: eventData.seatingCapacity,
+            startDate: eventData.startDate,
+            endDate: eventData.endDate,
+            youtubeUrl: eventData.youtubeUrl,
+            organizerName: eventData.organizerName,
+            description: eventData.description,
+
+        };
+        console.log('requestBody', requestBody);
+        try {
+            const response = await axios.post('http://localhost:5005/events/new', requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status === 200) {
+                console.log('Created event ID:', response.data.eventId);
+                navigate('/all-event');
+            }
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 400) {
+                    alert('Invalid input: ' + error.response.data.error);
+                } else if (error.response.status === 403) {
+                    alert('Invalid Token: ' + error.response.data.error);
+                }
+            }
+        }
     };
 
     return (
@@ -230,6 +287,19 @@ const CreateNewEvent = () => {
                                         helperText={formErrors.price}
                                     />
                                 </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        name="organizerName"
+                                        label="Organizer Name"
+                                        fullWidth
+                                        value={eventData.organizerName}
+                                        onChange={updateField}
+                                        required
+                                        type="number"
+                                        error={!!formErrors.organizerName}
+                                        helperText={formErrors.organizerName}
+                                    />
+                                </Grid>
                                 <Grid item xs={12}>
                                     <FormControl fullWidth>
                                         <InputLabel id="event-type-label">Event Type</InputLabel>
@@ -251,8 +321,21 @@ const CreateNewEvent = () => {
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField
+                                        name="seatingCapacity"
+                                        label="Seating Capacity"
+                                        fullWidth
+                                        value={eventData.seatingCapacity}
+                                        onChange={updateField}
+                                        required
+                                        type="number"
+                                        error={!!formErrors.seatingCapacity}
+                                        helperText={formErrors.seatingCapacity}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
                                         name="duration"
-                                        label="Duration (hours)"
+                                        label="Duration (days)"
                                         fullWidth
                                         value={eventData.duration}
                                         onChange={updateField}
@@ -290,19 +373,7 @@ const CreateNewEvent = () => {
                                         helperText={formErrors.endDate}
                                     />
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="seatingCapacity"
-                                        label="Seating Capacity"
-                                        fullWidth
-                                        value={eventData.seatingCapacity}
-                                        onChange={updateField}
-                                        required
-                                        type="number"
-                                        error={!!formErrors.seatingCapacity}
-                                        helperText={formErrors.seatingCapacity}
-                                    />
-                                </Grid>
+
                                 <Grid item xs={12}>
                                     <TextField
                                         name="description"
