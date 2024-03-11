@@ -31,8 +31,6 @@ class Host(db.Model):
     from_time = db.Column(db.String(10), nullable=True)
     to_time = db.Column(db.String(10), nullable=True)
     datentime = db.Column(db.String(30), nullable=True)
-    lon = db.Column(db.Float, nullable=True)
-    lat = db.Column(db.Float, nullable=True)
     street = db.Column(db.String(100), nullable=True)
     suburb = db.Column(db.String(100), nullable=True)
     state = db.Column(db.String(100), nullable=True)
@@ -50,8 +48,6 @@ class Customer(db.Model):
     from_time = db.Column(db.String(10), nullable=True)
     to_time = db.Column(db.String(10), nullable=True)
     datentime = db.Column(db.String(30), nullable=True)
-    lon = db.Column(db.Float, nullable=True)
-    lat = db.Column(db.Float, nullable=True)
     street = db.Column(db.String(100), nullable=True)
     suburb = db.Column(db.String(100), nullable=True)
     state = db.Column(db.String(100), nullable=True)
@@ -62,18 +58,26 @@ class Customer(db.Model):
 class Events(db.Model):
     __tablename__ = "events"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    eventName = db.Column(db.String(20), nullable=False)
+    title = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.String(100), nullable=True)
+    price = db.Column(db.Integer, nullable=True)
+    organizername = db.Column(db.String(100), nullable=True)
+    type = db.Column(db.String(100), nullable=True)
+    seats = db.Column(db.String(100), nullable=True)
+    duration = db.Column(db.Integer, nullable=True)
     from_time = db.Column(db.String(10), nullable=True)
     to_time = db.Column(db.String(10), nullable=True)
-    datentime = db.Column(db.String(30), nullable=True)
-    lon = db.Column(db.Float, nullable=True)
-    lat = db.Column(db.Float, nullable=True)
-    street = db.Column(db.String(100), nullable=True)
-    suburb = db.Column(db.String(100), nullable=True)
-    state = db.Column(db.String(100), nullable=True)
-    post_code = db.Column(db.String(10), nullable=True)
-    description = db.Column(db.String(1000), nullable=True)
+    description = db.Column(db.String(100), nullable=True)
+    URL = db.Column(db.String(100), nullable=True)
+    thumbnail = db.Column(db.String(100), nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
+
+class Myevents(db.Model):
+    __tablename__ = "myevents"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event = db.Column(db.String(50), nullable=False)
+    host = db.Column(db.String(50), nullable=False)
+
 @app.route("/user/list")
 def delete():
     want_del_id = request.args.get("delete", default=1, type=int)
@@ -103,14 +107,24 @@ def add_users():
 #    password = db.Column(db.String(60), nullable=False)
 
 # def create_default_user():
-#     # 检查是否已存在默认用户
 #     default_user = User.query.filter_by(email='default@example.com').first()
 #     if not default_user:
-#         # 创建默认用户
 #         hashed_password = bcrypt.generate_password_hash('default_password').decode('utf-8')
 #         default_user = User(email='default@example.com', password=hashed_password)
 #         db.session.add(default_user)
 #         db.session.commit()
+
+@app.route('/events/new', methods=['POST'])
+def register_event():
+    data = request.get_json()
+    print(data)
+    new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=data['thumbnail'],
+                       type=data['eventType'], duration=data['duration'], seats=data['seatingCapacity'],
+                       from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
+                       organizername=data['organizerName'], description=data['description'])
+    db.session.add(new_event)
+    db.session.commit()
+    return jsonify({'message': 'Event created successfully!'}), 201
 
 @app.route('/user/auth/register', methods=['POST'])
 def register():
@@ -134,11 +148,9 @@ def login():
     password = data.get('password')
 
     host = Host.query.filter_by(email=email).first()
-
     # hosts = Host.query.all()
     # for host in hosts:
     #     print(host)
-
     if not host:
         customer = Customer.query.filter_by(email=email).first()
         if not customer:
@@ -166,10 +178,8 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.args.get('token')
-
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
@@ -179,18 +189,26 @@ def token_required(f):
 
     return decorated
 
+@app.route('/user/auth/logout', methods=['POST'])
+def logout():
+    token = request.json.get('token')
+    if not token:
+        return jsonify({'message': 'Token is missing!'}), 401
+
+    try:
+        jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token!'}), 401
+    return jsonify({'message': 'Logout successful!'}), 200
+
 @app.route('/view_users')
 def view_users():
-    # 查询所有用户数据
     users = Host.query.all()
-
-    # 将用户信息格式化为字典列表
     user_list = [{'id': user.id, 'email': user.email, 'password': user.password} for user in users]
-
-    # 返回用户信息的 JSON 格式响应
     return jsonify(user_list)
 
-# 一个受保护的路由示例，需要验证 JWT
 @app.route('/protected')
 @token_required
 def protected():
