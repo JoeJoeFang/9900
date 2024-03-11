@@ -3,10 +3,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 const RegisterHost = () => {
     const theme = useTheme();
     const navigate = useNavigate();
+
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     const [registerData, setRegisterData] = useState({
         companyName:'',
@@ -46,7 +53,7 @@ const RegisterHost = () => {
 
             if (response.status === 200) {
                 alert('Registration successful');
-                navigate('/login'); // Redirect to login page after successful registration
+                navigate('/'); // Redirect to login page after successful registration
             }
         } catch (errorResponse) {
             alert(errorResponse.response.data.error);
@@ -74,7 +81,7 @@ const RegisterHost = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
-                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'rgba(0, 0, 0, 0.5)', borderRadius: theme.shape.borderRadius }}>
+                <Box sx={{ color: 'white', width: '40%', p: 3, borderRadius: theme.shape.borderRadius }}>
                     <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
                         Sign up to discover the best events near you
                     </Typography>
@@ -90,7 +97,7 @@ const RegisterHost = () => {
                     alignItems: 'center',
                 }}>
                     <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: theme.palette.primary.main }}>
-                        Create Your Account
+                        Create Your  Host Account
                     </Typography>
 
                     <Box component="form" onSubmit={registerUser} noValidate sx={{ mt: 1 }}>
@@ -141,6 +148,24 @@ const RegisterHost = () => {
                             value={registerData.confirmPassword}
                             onChange={updateField}
                         />
+                   <IconButton
+    onClick={handleBack}
+    size="large"
+    sx={{
+        position: 'absolute',
+        left: theme.spacing(2),
+        top: theme.spacing(2),
+        backgroundColor: 'white',
+        color: 'primary.main',
+        '&:hover': {
+            backgroundColor: 'primary.light',
+            color: 'white',
+        },
+        boxShadow: 3,
+    }}
+>
+    <ArrowBackIcon sx={{ fontSize: 28 }} />
+</IconButton>
                         <Button
                             type="submit"
                             fullWidth
@@ -153,7 +178,7 @@ const RegisterHost = () => {
                             fullWidth
                             variant="text"
                             sx={{ mt: 2 }}
-                            onClick={() => navigate('/login')}
+                            onClick={() => navigate('/login-host')}
                         >
                             Already have an account? Login
                         </Button>
