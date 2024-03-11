@@ -13,7 +13,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'mwy100621!'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -59,6 +59,21 @@ class Customer(db.Model):
     description = db.Column(db.String(1000), nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
+class Events(db.Model):
+    __tablename__ = "events"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    eventName = db.Column(db.String(20), nullable=False)
+    from_time = db.Column(db.String(10), nullable=True)
+    to_time = db.Column(db.String(10), nullable=True)
+    datentime = db.Column(db.String(30), nullable=True)
+    lon = db.Column(db.Float, nullable=True)
+    lat = db.Column(db.Float, nullable=True)
+    street = db.Column(db.String(100), nullable=True)
+    suburb = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(100), nullable=True)
+    post_code = db.Column(db.String(10), nullable=True)
+    description = db.Column(db.String(1000), nullable=True)
+    #last_update = db.Column(db.DateTime, default=datetime.now)
 @app.route("/user/list")
 def delete():
     want_del_id = request.args.get("delete", default=1, type=int)
@@ -125,15 +140,25 @@ def login():
     #     print(host)
 
     if not host:
-        print('message: User not found')
-        return jsonify({'message': 'User not found'}), 401
+        customer = Customer.query.filter_by(email=email).first()
+        if not customer:
+            print('message: User not found')
+            return jsonify({'message': 'User not found'}), 401
+
+        if not bcrypt.check_password_hash(customer.password, password):
+            print('message: Invalid email or password')
+            return jsonify({'message': 'Invalid email or password'}), 401
+
+        token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
+                           app.config['SECRET_KEY'])
+        return jsonify({'token': token})
 
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
         return jsonify({'message': 'Invalid email or password'}), 401
 
-    print("package token")
-    print(app.config['SECRET_KEY'])
+    #print("package token")
+    #print(app.config['SECRET_KEY'])
     token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)}, app.config['SECRET_KEY'])
     return jsonify({'token': token})
 
