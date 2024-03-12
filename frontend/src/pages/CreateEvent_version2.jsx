@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, Container, Box, FormControl, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
+// import { ThemeProvider, createTheme, Container, Box, FormControl, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ThemeProvider, createTheme, Container, Box, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton } from '@mui/material';
 import axios from 'axios';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+
 
 
 const theme = createTheme({
@@ -33,6 +36,8 @@ const CreateNewEvent = () => {
         organizerName: '',
         description: '',
     });
+    const [openDialog, setOpenDialog] = useState(false);
+
     // const eventTypes = ["Conference", "Seminar", "Concert", "Workshop"];
 
 
@@ -57,7 +62,7 @@ const CreateNewEvent = () => {
                 // Assuming a predefined set of event types, validate accordingly
                 const eventTypes = ['concert', 'conference', 'meeting', 'webinar']; // Example event types
                 if (!value || !eventTypes.includes(value)) {
-                    return 'Invalid event type.';
+                    return 'Invalid event type. You should choose one from concert, conference, meeting or webinar.';
                 }
                 break;
             case 'duration':
@@ -191,9 +196,9 @@ const CreateNewEvent = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            if (response.status === 200) {
+            if (response.status === 201) {
                 console.log('Created event ID:', response.data.eventId);
-                navigate('/all-event');
+                setOpenDialog(true);
             }
         } catch (error) {
             if (error.response) {
@@ -295,29 +300,41 @@ const CreateNewEvent = () => {
                                         value={eventData.organizerName}
                                         onChange={updateField}
                                         required
-                                        type="number"
                                         error={!!formErrors.organizerName}
                                         helperText={formErrors.organizerName}
                                     />
                                 </Grid>
-                                <Grid item xs={12}>
-                                    <FormControl fullWidth>
-                                        <InputLabel id="event-type-label">Event Type</InputLabel>
-                                        <Select
-                                            labelId="event-type-label"
-                                            id="eventType"
-                                            name="eventType"
-                                            value={eventData.eventType}
-                                            label="Event Type"
-                                            // onChange={updateField}
-                                            required
-                                            // error={!!formErrors.eventType}
-                                        >
-                                            <MenuItem value={"Conference"}>Conference</MenuItem>
-                                            <MenuItem value={"Seminar"}>Seminar</MenuItem>
-                                            <MenuItem value={"Workshop"}>Workshop</MenuItem>
-                                        </Select>
-                                    </FormControl>
+                                {/*<Grid item xs={12}>*/}
+                                {/*    <FormControl fullWidth>*/}
+                                {/*        <InputLabel id="event-type-label">Event Type</InputLabel>*/}
+                                {/*        <Select*/}
+                                {/*            labelId="event-type-label"*/}
+                                {/*            id="eventType"*/}
+                                {/*            name="eventType"*/}
+                                {/*            value="Conference" // 直接设置为一个选项的值进行测试*/}
+                                {/*            label="Event Type"*/}
+                                {/*            onChange={updateField}*/}
+                                {/*            required*/}
+                                {/*            error={!!formErrors.eventType}*/}
+                                {/*        >*/}
+                                {/*            <MenuItem value={"Conference"}>Conference</MenuItem>*/}
+                                {/*            <MenuItem value={"Seminar"}>Seminar</MenuItem>*/}
+                                {/*            <MenuItem value={"Workshop"}>Workshop</MenuItem>*/}
+                                {/*        </Select>*/}
+
+                                {/*    </FormControl>*/}
+                                {/*</Grid>*/}
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        name="eventType"
+                                        label="Event Type"
+                                        fullWidth
+                                        value={eventData.eventType}
+                                        onChange={updateField}
+                                        required
+                                        error={!!formErrors.eventType}
+                                        helperText={formErrors.eventType}
+                                    />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField
@@ -451,6 +468,26 @@ const CreateNewEvent = () => {
                             </Box>
                         </CardActions>
                     </Card>
+                    <Dialog
+                        open={openDialog}
+                        onClose={() => setOpenDialog(false)}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">{"Event Created Successfully"}</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                Your event has been created successfully.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => {
+                                navigate('/all-event'); // 替换为你希望跳转到的路径
+                                setOpenDialog(false);
+                            }}>Go to Events</Button>
+                        </DialogActions>
+                    </Dialog>
+
                 </Container>
             </Box>
         </ThemeProvider>
