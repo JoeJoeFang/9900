@@ -1,13 +1,22 @@
+//sijia han
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Snackbar } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
+
 
 const RegisterCustomer = () => {
     const theme = useTheme();
     const navigate = useNavigate();
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
     
     const handleBack = () => {
         navigate(-1);
@@ -45,6 +54,13 @@ const RegisterCustomer = () => {
             cardExpirationDate: formattedValue
         }));
     };
+    
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenSnackbar(false);
+    };
 
     const registerUser = async (e) => {
         e.preventDefault();
@@ -59,23 +75,28 @@ const RegisterCustomer = () => {
             });
 
             if (response.status === 200) {
-                alert('Registration successful');
-                navigate('/'); // Redirect to login page after successful registration
+                setSnackbarMessage('Registration successful');
+                setOpenSnackbar(true);
+                // 使用 setTimeout 来延迟跳转，给用户显示消息的时间
+                setTimeout(() => {
+                    navigate('/');
+                }, 3000); // 3秒后跳转
             }
         } catch (error) {
-            // Check if the error has a response object
+            let errorMessage = "An error occurred during registration.";
             if (error.response) {
-                // Handle HTTP errors (errors with response from the server)
-                alert(error.response.data.error || "An error occurred during registration.");
-            } else {
-                // Handle non-HTTP errors (e.g., network errors)
-                alert("A network error occurred, or the server did not respond.");
+                // Use server's response message if available
+                errorMessage = error.response.data.error || errorMessage;
             }
+    
+            // Set error message for Snackbar
+            setSnackbarMessage(errorMessage);
+            setOpenSnackbar(true);
         }
     };
 
     return (
-        <Box sx={{
+        <><Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -108,8 +129,18 @@ const RegisterCustomer = () => {
                     autoFocus
                     value={registerData.Name}
                     onChange={updateField}
-                />
+
+                    error={registerData.Name && (registerData.Name.length < 3 || registerData.Name.length > 100)}
+                    helperText={registerData.Name
+                        ? (registerData.Name.length < 3
+                            ? 'Name must be at least 3 characters long.'
+                            : registerData.Name.length > 100
+                                ? 'Name cannot be more than 100 characters long.'
+                                : '')
+                        : ' '} />
                 <TextField
+                    error={!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerData.email) && registerData.email !== ''}
+                    helperText={!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerData.email) && registerData.email !== '' ? 'Enter a valid email address.' : ' '}
                     margin="normal"
                     required
                     fullWidth
@@ -118,8 +149,7 @@ const RegisterCustomer = () => {
                     name="email"
                     autoComplete="email"
                     value={registerData.email}
-                    onChange={updateField}
-                />
+                    onChange={updateField} />
                 <TextField
                     margin="normal"
                     required
@@ -131,7 +161,13 @@ const RegisterCustomer = () => {
                     autoComplete="new-password"
                     value={registerData.password}
                     onChange={updateField}
-                />
+                    inputProps={{
+                        pattern: "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}",
+                        title: "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
+                    }}
+                    // Include the error and helperText properties using the same pattern and title
+                    error={registerData.password && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(registerData.password)}
+                    helperText={registerData.password && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(registerData.password) ? "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter." : ' '} />
                 <TextField
                     margin="normal"
                     required
@@ -143,7 +179,8 @@ const RegisterCustomer = () => {
                     autoComplete="new-password"
                     value={registerData.confirmPassword}
                     onChange={updateField}
-                />
+                    error={registerData.confirmPassword && registerData.password !== registerData.confirmPassword}
+                    helperText={registerData.confirmPassword && registerData.password !== registerData.confirmPassword ? 'Passwords do not match.' : ' '} />
                 {/* Assuming card details are needed for host registration */}
                 <TextField
                     margin="normal"
@@ -154,7 +191,8 @@ const RegisterCustomer = () => {
                     value={registerData.cardNumber}
                     onChange={updateField}
                     inputProps={{ maxLength: 16 }}
-                />
+                    error={registerData.cardNumber && !/^[\d]{16}$/.test(registerData.cardNumber)}
+                    helperText={registerData.cardNumber && !/^[\d]{16}$/.test(registerData.cardNumber) ? 'Card number must be 16 digits.' : ' '} />
                 <TextField
                     margin="normal"
                     required
@@ -163,8 +201,9 @@ const RegisterCustomer = () => {
                     label="CVC"
                     value={registerData.cardCVC}
                     onChange={updateField}
-                    inputProps={{ maxLength: 4 }}
-                />
+                    inputProps={{ maxLength: 3 }}
+                    error={registerData.cardCVC && !/^\d{3}$/.test(registerData.cardCVC)}
+                    helperText={registerData.cardCVC && !/^\d{3}$/.test(registerData.cardCVC) ? 'CVC must be 3 digits.' : ' '} />
                 <TextField
                     margin="normal"
                     required
@@ -174,25 +213,28 @@ const RegisterCustomer = () => {
                     value={registerData.cardExpirationDate}
                     onChange={handleExpirationDateChange}
                     inputProps={{ maxLength: 5 }}
-                />
+                    error={registerData.cardExpirationDate && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(registerData.cardExpirationDate)}
+                    helperText={registerData.cardExpirationDate && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(registerData.cardExpirationDate)
+                        ? 'Expiration date must be in the format MM/YY.'
+                        : ' '} />
                 <IconButton
-                       onClick={handleBack}
-                       size="large"
-                        sx={{
-                             position: 'absolute',
-                             left: theme.spacing(2),
-                             top: theme.spacing(2),
-                             backgroundColor: 'white',
-                             color: 'primary.main',
-                              '&:hover': {
-                                 backgroundColor: 'primary.light',
-                                 color: 'white',
-                                   },
-                              boxShadow: 3,
-                            }}
-                 >
-    <ArrowBackIcon sx={{ fontSize: 28 }} />
-</IconButton>
+                    onClick={handleBack}
+                    size="large"
+                    sx={{
+                        position: 'absolute',
+                        left: theme.spacing(2),
+                        top: theme.spacing(2),
+                        backgroundColor: 'white',
+                        color: 'primary.main',
+                        '&:hover': {
+                            backgroundColor: 'primary.light',
+                            color: 'white',
+                        },
+                        boxShadow: 3,
+                    }}
+                >
+                    <ArrowBackIcon sx={{ fontSize: 28 }} />
+                </IconButton>
 
                 <Button
                     type="submit"
@@ -211,7 +253,21 @@ const RegisterCustomer = () => {
                 </Button>
             </Box>
         </Box>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                message={snackbarMessage}
+                action={<IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={handleCloseSnackbar}
+                >
+                    <CloseIcon fontSize="small" />
+                </IconButton>} /></>
     );
+
 };
 
 export default RegisterCustomer;
