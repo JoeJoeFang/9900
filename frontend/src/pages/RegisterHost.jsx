@@ -2,66 +2,66 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { TextField, Button, Typography, Box, useTheme, Snackbar, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
+import CloseIcon from '@mui/icons-material/Close';
 
 const RegisterHost = () => {
     const theme = useTheme();
     const navigate = useNavigate();
 
-    const handleBack = () => {
-        navigate(-1);
-    };
-
     const [registerData, setRegisterData] = useState({
-        companyName:'',
+        companyName: '',
         email: '',
         password: '',
-        confirmPassword: '', // Add a field for confirming the password
+        confirmPassword: '',
     });
 
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const handleBack = () => navigate(-1);
+    
     const updateField = (e) => {
-        setRegisterData({
-            ...registerData,
+        setRegisterData(prevState => ({
+            ...prevState,
             [e.target.name]: e.target.value,
-        });
+        }));
     };
+
+    const handleCloseSnackbar = () => setOpenSnackbar(false);
 
     const registerUser = async (e) => {
         e.preventDefault();
 
-        // Ensure password and confirmPassword match
         if (registerData.password !== registerData.confirmPassword) {
-            alert("Passwords do not match.");
+            setSnackbarMessage("Passwords do not match.");
+            setOpenSnackbar(true);
             return;
         }
 
-        const userInfo = {
-            companyName: registerData.companyName,
-            email: registerData.email,
-            password: registerData.password,
-        };
-
         try {
-            const response = await axios.post('http://localhost:5005/user/auth/register', userInfo, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await axios.post('http://localhost:5005/user/auth/register', {
+                companyName: registerData.companyName,
+                email: registerData.email,
+                password: registerData.password,
+            }, {
+                headers: { 'Content-Type': 'application/json' },
             });
 
             if (response.status === 200) {
-                alert('Registration successful');
-                navigate('/'); // Redirect to login page after successful registration
+                setSnackbarMessage('Registration successful');
+                setOpenSnackbar(true);
+                setTimeout(() => navigate('/'), 3000);
             }
-        } catch (errorResponse) {
-            alert(errorResponse.response.data.error);
+        } catch (error) {
+            const errorMessage = error.response?.data?.error || "An error occurred during registration.";
+            setSnackbarMessage(errorMessage);
+            setOpenSnackbar(true);
         }
     };
-
     return (
-        <Box sx={{
+        <><Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -101,17 +101,24 @@ const RegisterHost = () => {
                     </Typography>
 
                     <Box component="form" onSubmit={registerUser} noValidate sx={{ mt: 1 }}>
-                       <TextField
-                          margin="normal"
-                          required
-                          fullWidth
-                          id="companyName"
-                          label="Company Name"
-                          name="companyName"
-                          autoComplete="company-name"
-                         value={registerData.companyName}
-                          onChange={updateField}
-                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="companyName"
+                            label="Company Name"
+                            name="companyName"
+                            autoComplete="company-name"
+                            value={registerData.companyName}
+                            onChange={updateField}
+                            error={registerData.companyName && (registerData.companyName.length < 3 || registerData.companyName.length > 100)}
+                            helperText={registerData.companyName
+                                ? (registerData.companyName.length < 3
+                                    ? 'CompanyName must be at least 3 characters long.'
+                                    : registerData.companyName.length > 100
+                                        ? 'CompanyName cannot be more than 100 characters long.'
+                                        : '')
+                                : ' '} />
                         <TextField
                             margin="normal"
                             required
@@ -123,7 +130,8 @@ const RegisterHost = () => {
                             autoFocus
                             value={registerData.email}
                             onChange={updateField}
-                        />
+                            error={!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerData.email) && registerData.email !== ''}
+                            helperText={!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerData.email) && registerData.email !== '' ? 'Enter a valid email address.' : ' '} />
                         <TextField
                             margin="normal"
                             required
@@ -135,7 +143,13 @@ const RegisterHost = () => {
                             autoComplete="new-password"
                             value={registerData.password}
                             onChange={updateField}
-                        />
+                            inputProps={{
+                                pattern: "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}",
+                                title: "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
+                            }}
+                            // Include the error and helperText properties using the same pattern and title
+                            error={registerData.password && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(registerData.password)}
+                            helperText={registerData.password && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(registerData.password) ? "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter." : ' '} />
                         <TextField
                             margin="normal"
                             required
@@ -147,25 +161,26 @@ const RegisterHost = () => {
                             autoComplete="new-password"
                             value={registerData.confirmPassword}
                             onChange={updateField}
-                        />
-                   <IconButton
-    onClick={handleBack}
-    size="large"
-    sx={{
-        position: 'absolute',
-        left: theme.spacing(2),
-        top: theme.spacing(2),
-        backgroundColor: 'white',
-        color: 'primary.main',
-        '&:hover': {
-            backgroundColor: 'primary.light',
-            color: 'white',
-        },
-        boxShadow: 3,
-    }}
->
-    <ArrowBackIcon sx={{ fontSize: 28 }} />
-</IconButton>
+                            error={registerData.confirmPassword && registerData.password !== registerData.confirmPassword}
+                            helperText={registerData.confirmPassword && registerData.password !== registerData.confirmPassword ? 'Passwords do not match.' : ' '} />
+                        <IconButton
+                            onClick={handleBack}
+                            size="large"
+                            sx={{
+                                position: 'absolute',
+                                left: theme.spacing(2),
+                                top: theme.spacing(2),
+                                backgroundColor: 'white',
+                                color: 'primary.main',
+                                '&:hover': {
+                                    backgroundColor: 'primary.light',
+                                    color: 'white',
+                                },
+                                boxShadow: 3,
+                            }}
+                        >
+                            <ArrowBackIcon sx={{ fontSize: 28 }} />
+                        </IconButton>
                         <Button
                             type="submit"
                             fullWidth
@@ -185,7 +200,19 @@ const RegisterHost = () => {
                     </Box>
                 </Box>
             </Box>
-        </Box>
+        </Box><Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                message={snackbarMessage}
+                action={<IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={handleCloseSnackbar}
+                >
+                    <CloseIcon fontSize="small" />
+                </IconButton>} /></>
     );
 };
 
