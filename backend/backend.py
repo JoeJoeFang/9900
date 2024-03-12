@@ -6,6 +6,8 @@ import datetime
 from functools import wraps
 from flask_cors import CORS
 from datetime import datetime, timedelta, timezone
+import os
+import base64
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -18,6 +20,9 @@ DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
 app.config['SECRET_KEY'] = 'your_secret_key_here'
+current_directory = os.path.dirname(os.path.abspath(__file__))
+pic_folder = os.path.join(current_directory, 'PIC')
+#app.config['PIC_FLODER'] = pic_folder
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -44,7 +49,8 @@ class Customer(db.Model):
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(160),nullable=False)
     name = db.Column(db.String(20), nullable=False)
-    date = db.Column(db.String(20), nullable=True)
+    cvc = db.Column(db.String(20), nullable=False)
+    duedate = db.Column(db.String(20), nullable=True)
     from_time = db.Column(db.String(10), nullable=True)
     to_time = db.Column(db.String(10), nullable=True)
     datentime = db.Column(db.String(30), nullable=True)
@@ -69,7 +75,7 @@ class Events(db.Model):
     to_time = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(100), nullable=True)
     URL = db.Column(db.String(100), nullable=True)
-    thumbnail = db.Column(db.String(100), nullable=True)
+    thumbnail = db.Column(db.String(5000), nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
 class Myevents(db.Model):
@@ -117,8 +123,19 @@ def add_users():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
+    #thumbnail_data = base64.b64decode(data['thumbnail'])
     print(data)
-    new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=data['thumbnail'],
+
+    image_str = data['thumbnail']
+    image_data = base64.b64decode(image_str.split(",")[1])
+
+    if not os.path.exists(pic_folder):
+        os.makedirs(pic_folder)
+    filename = str(data['title']) + '.jpg'
+    file_path = os.path.join(pic_folder, filename)
+    with open(file_path, "wb") as f:
+        f.write(image_data)
+    new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
                        type=data['eventType'], duration=data['duration'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
@@ -135,7 +152,7 @@ def register():
         new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
     else:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = Customer(name=data['name'], email=data['email'], password=hashed_password)
+        new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'], duedate=data['cardExpirationDate'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
@@ -146,17 +163,16 @@ def login():
     print(data)
     email = data.get('email')
     password = data.get('password')
-
     host = Host.query.filter_by(email=email).first()
     # hosts = Host.query.all()
     # for host in hosts:
     #     print(host)
+
     if not host:
         customer = Customer.query.filter_by(email=email).first()
         if not customer:
             print('message: User not found')
             return jsonify({'message': 'User not found'}), 401
-
         if not bcrypt.check_password_hash(customer.password, password):
             print('message: Invalid email or password')
             return jsonify({'message': 'Invalid email or password'}), 401
@@ -164,11 +180,9 @@ def login():
         token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                            app.config['SECRET_KEY'])
         return jsonify({'token': token})
-
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
         return jsonify({'message': 'Invalid email or password'}), 401
-
     #print("package token")
     #print(app.config['SECRET_KEY'])
     token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)}, app.config['SECRET_KEY'])
@@ -184,9 +198,7 @@ def token_required(f):
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
-
         return f(*args, **kwargs)
-
     return decorated
 
 @app.route('/user/auth/logout', methods=['POST'])
