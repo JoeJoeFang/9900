@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-
+import Logout from '../components/Logout';
+import CreateNewEvent from '../components/CreateNewEvent';
+import MyEvents from '../components/MyEvents';
+import HostProfile from '../components/HostProfile';
 
 const theme = createTheme({
     palette: {
@@ -39,7 +42,6 @@ const EventsList = () => {
     }, []);
 
     return (
-        <>
         <Box sx={{
             minHeight: '100vh',
             display: 'flex',
@@ -51,6 +53,12 @@ const EventsList = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
+            <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
+            <CreateNewEvent />
+            <MyEvents />
+            <HostProfile />
+            <Logout />
+        </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                 <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
                 <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
@@ -97,8 +105,7 @@ const EventsList = () => {
             ) : (
                 <Typography variant="subtitle1">No events found.</Typography>
             )}
-        </Box>
-        </> 
+        </Box> 
     );
 };
 
