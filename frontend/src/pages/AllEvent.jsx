@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -38,6 +39,7 @@ const EventsList = () => {
     }, []);
 
     return (
+        <>
         <Box sx={{
             minHeight: '100vh',
             display: 'flex',
@@ -96,6 +98,7 @@ const EventsList = () => {
                 <Typography variant="subtitle1">No events found.</Typography>
             )}
         </Box>
+        </> 
     );
 };
 
