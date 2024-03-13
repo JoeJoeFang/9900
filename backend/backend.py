@@ -8,6 +8,8 @@ from flask_cors import CORS
 from datetime import datetime, timedelta, timezone
 import os
 import base64
+from PIL import Image
+import io
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -84,9 +86,6 @@ class Myevents(db.Model):
     event = db.Column(db.String(50), nullable=False)
     host = db.Column(db.String(50), nullable=False)
 
-
-
-
 @app.route("/user/list")
 def delete():
     want_del_id = request.args.get("delete", default=1, type=int)
@@ -109,6 +108,16 @@ def add_users():
     db.session.add(user1)
     db.session.commit()
     return user1
+
+def image_to_base64(image_path):
+    # 使用 Pillow 打开图片
+    with Image.open(image_path) as image:
+        # 将图片转换为二进制数据
+        buffered = io.BytesIO()
+        image.save(buffered, format=image.format)
+        # 将二进制数据编码为 Base64 字符串
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
 
 #class User(db.Model):
 #    id = db.Column(db.Integer, primary_key=True)
@@ -138,23 +147,26 @@ def get_events():
             'price': event.price,
             'thumbnail': event.thumbnail,
             'organizername': event.organizername,
-            'type' : event.eventType,
-            'seats' :event.seatingCapacity,
+            'eventType' : event.type,
+            'seats' :event.seats,
             'duration' : event.duration,
-            'from_time': event.startDate,
-            'to_time': event.endDate,
+            'from_time': event.from_time,
+            'to_time': event.to_time,
             'description': event.description,
-            'URL':event.youtubeUrl
+            'URL':event.URL
         }
+        #image_path = event.thumbnail
+        #base64_str = image_to_base64(image_path)
+        #event_data['thumbnail'] = base64_str
         event_list.append(event_data)
-
+    print("fanhui", event_list)
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list)
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
     #thumbnail_data = base64.b64decode(data['thumbnail'])
-    print(data)
+    #print(data)
 
     image_str = data['thumbnail']
     image_data = base64.b64decode(image_str.split(",")[1])
@@ -258,7 +270,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
