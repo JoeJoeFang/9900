@@ -123,6 +123,33 @@ def add_users():
 #         db.session.add(default_user)
 #         db.session.commit()
 
+@app.route('/events', methods=['GET'])
+def get_events():
+    # 查询数据库以获取事件列表
+    events = Events.query.all()
+
+    # 将查询到的事件列表转换为 JSON 格式
+    event_list = []
+    for event in events:
+        event_data = {
+            'id': event.id,
+            'title': event.title,
+            'address': event.address,
+            'price': event.price,
+            'thumbnail': event.thumbnail,
+            'organizername': event.organizername,
+            'type' : event.eventType,
+            'seats' :event.seatingCapacity,
+            'duration' : event.duration,
+            'from_time': event.startDate,
+            'to_time': event.endDate,
+            'description': event.description,
+            'URL':event.youtubeUrl
+        }
+        event_list.append(event_data)
+
+    # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
+    return jsonify(event_list)
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
