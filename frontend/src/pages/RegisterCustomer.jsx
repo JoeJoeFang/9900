@@ -66,7 +66,7 @@ const RegisterCustomer = () => {
             });
     
             if (response.status === 201) { 
-                navigate('/all-event');
+                navigate('/login-customer');
             }
         } catch (errorResponse) {
             const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
