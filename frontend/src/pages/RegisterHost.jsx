@@ -52,7 +52,7 @@ const RegisterHost = () => {
 
             if (response.status === 201) { 
                 setOpenDialog(true);
-                navigate('/all-event');
+                navigate('/login-host');
             }
         } catch (errorResponse) {
             const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
