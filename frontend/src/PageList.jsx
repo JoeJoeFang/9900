@@ -28,6 +28,7 @@ const DefaultPage = () => {
 
     const visitorAccess = () => {
         console.log("Accessing as a Visitor");
+        navigate('/all-event')
         // 实现跳转逻辑，例如：navigate('/visitor-access');
     };
 
