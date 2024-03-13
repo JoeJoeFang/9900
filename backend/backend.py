@@ -146,14 +146,14 @@ def get_events():
             'address': event.address,
             'price': event.price,
             'thumbnail': event.thumbnail,
-            'organizername': event.organizername,
+            'organizerName': event.organizername,
             'eventType' : event.type,
-            'seats' :event.seats,
+            'seatingCapacity' :event.seats,
             'duration' : event.duration,
-            'from_time': event.from_time,
-            'to_time': event.to_time,
+            'startDate': event.from_time,
+            'endDate': event.to_time,
             'description': event.description,
-            'URL':event.URL
+            'youtubeUrl':event.URL
         }
         #image_path = event.thumbnail
         #base64_str = image_to_base64(image_path)
