@@ -15,7 +15,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'mwy100621!'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -83,6 +83,9 @@ class Myevents(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     event = db.Column(db.String(50), nullable=False)
     host = db.Column(db.String(50), nullable=False)
+
+
+
 
 @app.route("/user/list")
 def delete():
