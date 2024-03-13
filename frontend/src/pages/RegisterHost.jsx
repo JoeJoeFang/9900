@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme, Snackbar, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CloseIcon from '@mui/icons-material/Close';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 const RegisterHost = () => {
     const theme = useTheme();
@@ -30,6 +30,7 @@ const RegisterHost = () => {
     };
 
     const handleCloseSnackbar = () => setOpenSnackbar(false);
+    const [openDialog, setOpenDialog] = useState(false);
 
     const registerUser = async (e) => {
         e.preventDefault();
@@ -49,15 +50,13 @@ const RegisterHost = () => {
                 headers: { 'Content-Type': 'application/json' },
             });
 
-            if (response.status === 200) {
-                setSnackbarMessage('Registration successful');
-                setOpenSnackbar(true);
-                setTimeout(() => navigate('/'), 3000);
+            if (response.status === 201) { 
+                setOpenDialog(true);
+                navigate('/all-event');
             }
-        } catch (error) {
-            const errorMessage = error.response?.data?.error || "An error occurred during registration.";
-            setSnackbarMessage(errorMessage);
-            setOpenSnackbar(true);
+        } catch (errorResponse) {
+            const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
+            alert(errorMessage);
         }
     };
     return (
@@ -200,19 +199,26 @@ const RegisterHost = () => {
                     </Box>
                 </Box>
             </Box>
-        </Box><Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                message={snackbarMessage}
-                action={<IconButton
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={handleCloseSnackbar}
-                >
-                    <CloseIcon fontSize="small" />
-                </IconButton>} /></>
+        </Box>
+        <Dialog
+                        open={openDialog}
+                        onClose={() => setOpenDialog(false)}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">{"Event Created Successfully"}</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                Your event has been created successfully.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => {
+                                navigate('/all-event'); // 替换为你希望跳转到的路径
+                                setOpenDialog(false);
+                            }}>Go to Events</Button>
+                        </DialogActions>
+                    </Dialog> </>
     );
 };
 

@@ -5,8 +5,7 @@ import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Snackbar } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 
 
@@ -14,8 +13,7 @@ const RegisterCustomer = () => {
     const theme = useTheme();
     const navigate = useNavigate();
 
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [openDialog, setOpenDialog] = useState(false);
 
     
     const handleBack = () => {
@@ -55,13 +53,6 @@ const RegisterCustomer = () => {
         }));
     };
     
-    const handleCloseSnackbar = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenSnackbar(false);
-    };
-
     const registerUser = async (e) => {
         e.preventDefault();
 
@@ -73,25 +64,13 @@ const RegisterCustomer = () => {
                     'Content-Type': 'application/json',
                 },
             });
-
-            if (response.status === 200) {
-                setSnackbarMessage('Registration successful');
-                setOpenSnackbar(true);
-                // 使用 setTimeout 来延迟跳转，给用户显示消息的时间
-                setTimeout(() => {
-                    navigate('/');
-                }, 3000); // 3秒后跳转
-            }
-        } catch (error) {
-            let errorMessage = "An error occurred during registration.";
-            if (error.response) {
-                // Use server's response message if available
-                errorMessage = error.response.data.error || errorMessage;
-            }
     
-            // Set error message for Snackbar
-            setSnackbarMessage(errorMessage);
-            setOpenSnackbar(true);
+            if (response.status === 201) { 
+                navigate('/all-event');
+            }
+        } catch (errorResponse) {
+            const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
+            alert(errorMessage);
         }
     };
 
@@ -217,6 +196,8 @@ const RegisterCustomer = () => {
                     helperText={registerData.cardExpirationDate && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(registerData.cardExpirationDate)
                         ? 'Expiration date must be in the format MM/YY.'
                         : ' '} />
+                
+                
                 <IconButton
                     onClick={handleBack}
                     size="large"
@@ -253,19 +234,28 @@ const RegisterCustomer = () => {
                 </Button>
             </Box>
         </Box>
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                message={snackbarMessage}
-                action={<IconButton
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={handleCloseSnackbar}
-                >
-                    <CloseIcon fontSize="small" />
-                </IconButton>} /></>
+        <Dialog
+    open={openDialog}
+    onClose={() => setOpenDialog(false)}
+    aria-labelledby="alert-dialog-title"
+    aria-describedby="alert-dialog-description"
+>
+    <DialogTitle id="alert-dialog-title">{"Registration Successful"}</DialogTitle>
+    <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+            You have registered successfully.
+        </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+        <Button onClick={() => {
+            navigate('/some-path'); // Replace '/some-path' with the path you want to navigate to
+            setOpenDialog(false); // Close the dialog
+        }}>Go to Dashboard</Button>
+    </DialogActions>
+</Dialog>
+
+                
+    </>
     );
 
 };
