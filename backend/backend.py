@@ -17,7 +17,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -167,7 +167,10 @@ def register_event():
     data = request.get_json()
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
-
+    event_title = data['title']
+    existing_event = Events.query.filter_by(title=event_title).first()
+    if existing_event:
+        return jsonify({'message': 'Event title already exists!'}), 400
     image_str = data['thumbnail']
     image_data = base64.b64decode(image_str.split(",")[1])
 
@@ -188,6 +191,13 @@ def register_event():
 @app.route('/user/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
+    email = data['email']
+    existing_host = Host.query.filter_by(email=email).first()
+    if existing_host:
+        return jsonify({'message': 'Host email already exists!'}), 400
+    existing_cust = Customer.query.filter_by(email=email).first()
+    if existing_cust:
+        return jsonify({'message': 'Customer email already exists!'}), 400
     print(data)
     if 'companyName' in data:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
@@ -270,7 +280,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
