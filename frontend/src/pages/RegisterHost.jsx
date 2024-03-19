@@ -214,7 +214,7 @@ const RegisterHost = () => {
                         <DialogTitle id="alert-dialog-title">{"Event Created Successfully"}</DialogTitle>
                         <DialogContent>
                             <DialogContentText id="alert-dialog-description">
-                                Your event has been created successfully.
+                                Your account has been created successfully.
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
