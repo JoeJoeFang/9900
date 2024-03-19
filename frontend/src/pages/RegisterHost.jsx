@@ -16,6 +16,7 @@ const RegisterHost = () => {
         password: '',
         confirmPassword: '',
     });
+    const [openDialog, setOpenDialog] = useState(false);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -30,7 +31,6 @@ const RegisterHost = () => {
     };
 
     const handleCloseSnackbar = () => setOpenSnackbar(false);
-    const [openDialog, setOpenDialog] = useState(false);
 
     const registerUser = async (e) => {
         e.preventDefault();
@@ -52,7 +52,9 @@ const RegisterHost = () => {
 
             if (response.status === 201) { 
                 setOpenDialog(true);
-                navigate('/login-host');
+                console.log(
+                    'register successfully'
+                );
             }
         } catch (errorResponse) {
             const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
@@ -60,7 +62,8 @@ const RegisterHost = () => {
         }
     };
     return (
-        <><Box sx={{
+        <>
+            <Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -183,11 +186,13 @@ const RegisterHost = () => {
                         >
                             <ArrowBackIcon sx={{ fontSize: 28 }} />
                         </IconButton>
+
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
+                            onClick={registerUser}
                         >
                             Register
                         </Button>
@@ -212,14 +217,14 @@ const RegisterHost = () => {
                         <DialogTitle id="alert-dialog-title">{"Event Created Successfully"}</DialogTitle>
                         <DialogContent>
                             <DialogContentText id="alert-dialog-description">
-                                Your event has been created successfully.
+                                Your account has been created successfully.
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => {
-                                navigate('/all-event'); // 替换为你希望跳转到的路径
+                                navigate('/login-host'); // 替换为你希望跳转到的路径
                                 setOpenDialog(false);
-                            }}>Go to Events</Button>
+                            }}>Login Now</Button>
                         </DialogActions>
                     </Dialog> </>
     );

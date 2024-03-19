@@ -17,7 +17,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -159,15 +159,49 @@ def get_events():
         #base64_str = image_to_base64(image_path)
         #event_data['thumbnail'] = base64_str
         event_list.append(event_data)
-    print("fanhui", event_list)
+    #print("fanhui", event_list)
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list)
+
+@app.route('/events/title', methods=['GET'])
+def get_events_title():
+    # 查询数据库以获取事件列表
+    events = Events.query.all()
+
+    # 将查询到的事件列表转换为 JSON 格式
+    event_list = []
+    for event in events:
+        event_data = {
+            # 'id': event.id,
+            'title': event.title,
+            # 'address': event.address,
+            # 'price': event.price,
+            # 'thumbnail': event.thumbnail,
+            # 'organizerName': event.organizername,
+            # 'eventType' : event.type,
+            # 'seatingCapacity' :event.seats,
+            # 'duration' : event.duration,
+            # 'startDate': event.from_time,
+            # 'endDate': event.to_time,
+            # 'description': event.description,
+            # 'youtubeUrl':event.URL
+        }
+        #image_path = event.thumbnail
+        #base64_str = image_to_base64(image_path)
+        #event_data['thumbnail'] = base64_str
+        event_list.append(event_data)
+    #print("fanhui", event_list)
+    return jsonify(event_list)
+
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
-
+    event_title = data['title']
+    existing_event = Events.query.filter_by(title=event_title).first()
+    if existing_event:
+        return jsonify({'message': 'Event title already exists!'}), 400
     image_str = data['thumbnail']
     image_data = base64.b64decode(image_str.split(",")[1])
 
@@ -188,6 +222,13 @@ def register_event():
 @app.route('/user/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
+    email = data['email']
+    existing_host = Host.query.filter_by(email=email).first()
+    if existing_host:
+        return jsonify({'message': 'Host email already exists!'}), 400
+    existing_cust = Customer.query.filter_by(email=email).first()
+    if existing_cust:
+        return jsonify({'message': 'Customer email already exists!'}), 400
     print(data)
     if 'companyName' in data:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
@@ -270,7 +311,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)

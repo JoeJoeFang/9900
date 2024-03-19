@@ -28,8 +28,10 @@ const DefaultPage = () => {
 
     const visitorAccess = () => {
         console.log("Accessing as a Visitor");
+        navigate('/all-event')
         // 实现跳转逻辑，例如：navigate('/visitor-access');
     };
+
 
     return (
         <Box sx={{
@@ -111,6 +113,7 @@ const PageList = () => {
                 <Route path='/all-event' element={<AllEventPage />} />
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
+
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
                 {/*<Route path='/my-hosted-list/publish/:listingId' element={<ListingPublishScreen />} />*/}
