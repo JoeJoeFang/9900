@@ -109,9 +109,12 @@ const RegisterCustomer = () => {
                     value={registerData.Name}
                     onChange={updateField}
 
-                    error={registerData.Name && (registerData.Name.length < 3 || registerData.Name.length > 100)}
+                    error={registerData.Name && (registerData.Name.length < 3 || registerData.Name.length > 100 || /\s/.test(registerData.Name))}
                     helperText={registerData.Name
-                        ? (registerData.Name.length < 3
+                        ? (/\s/.test(registerData.Name)
+                        ? 'Name cannot include spaces.'
+                        :
+                            registerData.Name.length < 3
                             ? 'Name must be at least 3 characters long.'
                             : registerData.Name.length > 100
                                 ? 'Name cannot be more than 100 characters long.'

@@ -110,9 +110,12 @@ const RegisterHost = () => {
                             autoComplete="company-name"
                             value={registerData.companyName}
                             onChange={updateField}
-                            error={registerData.companyName && (registerData.companyName.length < 3 || registerData.companyName.length > 100)}
+                            error={registerData.companyName && (registerData.companyName.length < 3 || registerData.companyName.length > 100 ||/\s/.test(registerData.companyName))}
                             helperText={registerData.companyName
-                                ? (registerData.companyName.length < 3
+                                ? (/\s/.test(registerData.companyName)
+                                ? 'CompanyName cannot include spaces.'
+                                :
+                                    registerData.companyName.length < 3
                                     ? 'CompanyName must be at least 3 characters long.'
                                     : registerData.companyName.length > 100
                                         ? 'CompanyName cannot be more than 100 characters long.'
