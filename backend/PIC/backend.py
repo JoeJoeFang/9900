@@ -159,40 +159,9 @@ def get_events():
         #base64_str = image_to_base64(image_path)
         #event_data['thumbnail'] = base64_str
         event_list.append(event_data)
-    #print("fanhui", event_list)
+    print("fanhui", event_list)
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list)
-
-@app.route('/events/title', methods=['GET'])
-def get_events_title():
-    # 查询数据库以获取事件列表
-    events = Events.query.all()
-
-    # 将查询到的事件列表转换为 JSON 格式
-    event_list = []
-    for event in events:
-        event_data = {
-            # 'id': event.id,
-            'title': event.title,
-            # 'address': event.address,
-            # 'price': event.price,
-            # 'thumbnail': event.thumbnail,
-            # 'organizerName': event.organizername,
-            # 'eventType' : event.type,
-            # 'seatingCapacity' :event.seats,
-            # 'duration' : event.duration,
-            # 'startDate': event.from_time,
-            # 'endDate': event.to_time,
-            # 'description': event.description,
-            # 'youtubeUrl':event.URL
-        }
-        #image_path = event.thumbnail
-        #base64_str = image_to_base64(image_path)
-        #event_data['thumbnail'] = base64_str
-        event_list.append(event_data)
-    #print("fanhui", event_list)
-    return jsonify(event_list)
-
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
