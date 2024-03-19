@@ -59,19 +59,21 @@ const CreateNewEvent = () => {
 
 
     const validateField = (name, value) => {
+        const trimmedValue = value.trim();
+
         switch (name) {
             case 'title':
-                if (!value || value.length < 3 || value.length > 100) {
+                if (!trimmedValue || trimmedValue.length < 3 || trimmedValue.length > 100) {
                     return 'Title must be between 3 and 100 characters.';
                 }
                 break;
             case 'address':
-                if (!value || value.length < 10 || value.length > 200) {
+                if (!trimmedValue || trimmedValue.length < 10 || trimmedValue.length > 200) {
                     return 'Address must be between 10 and 200 characters.';
                 }
                 break;
             case 'price':
-                if (!value || isNaN(value) || value <= 0 || value > 1000000) {
+                if (!trimmedValue || isNaN(trimmedValue) || trimmedValue <= 0 || trimmedValue > 1000000) {
                     return 'Price must be a positive number less than 1,000,000.';
                 }
                 break;
