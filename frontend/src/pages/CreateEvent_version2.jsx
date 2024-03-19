@@ -197,15 +197,16 @@ const CreateNewEvent = () => {
                 },
             });
             if (response.status === 201) {
-                console.log('Created event ID:', response.data.eventId);
+                console.log('Created event ID:', response.data.message);
                 setOpenDialog(true);
             }
         } catch (error) {
             if (error.response) {
                 if (error.response.status === 400) {
-                    alert('Invalid input: ' + error.response.data.error);
+                    alert('Invalid input: Event title already exists!');
+                    console.log(error.response.data.message);
                 } else if (error.response.status === 403) {
-                    alert('Invalid Token: ' + error.response.data.error);
+                    alert('Invalid Token: ' + error.response.data.message);
                 }
             }
         }
