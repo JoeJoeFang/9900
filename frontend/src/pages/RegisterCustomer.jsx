@@ -1,11 +1,11 @@
-//sijia han
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import Snackbar from '@mui/material/Snackbar';
 
 
 
@@ -13,12 +13,8 @@ const RegisterCustomer = () => {
     const theme = useTheme();
     const navigate = useNavigate();
 
-    const [openDialog, setOpenDialog] = useState(false);
+    const [,setOpenDialog] = useState(false);
 
-    
-    const handleBack = () => {
-        navigate(-1);
-    };
     
     const [registerData, setRegisterData] = useState({
         Name: '',
@@ -30,12 +26,24 @@ const RegisterCustomer = () => {
         cardExpirationDate: '', // Adding card expiration date in MM/YY format
     });
 
-    const updateField = (e) => {
-        setRegisterData({
-            ...registerData,
-            [e.target.name]: e.target.value,
-        });
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarType, setSnackbarType] = useState('info'); 
+    
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenSnackbar(false);
     };
+    const updateField = (e) => {
+        setRegisterData(prevState => ({
+            ...prevState,
+            [e.target.name]: e.target.value,
+        }));
+    };
+
+    const handleBack = () => navigate(-1);
 
     const handleExpirationDateChange = (e) => {
         const { value } = e.target;
@@ -56,26 +64,73 @@ const RegisterCustomer = () => {
     const registerUser = async (e) => {
         e.preventDefault();
 
-        // Your existing validation and registration logic here
-
+         // Check if passwords match
+         if (registerData.password !== registerData.confirmPassword) {
+            setSnackbarMessage("Passwords do not match.");
+            setOpenSnackbar(true);
+            return;
+        }
+    
+        // Attempt to register the host
         try {
-            const response = await axios.post('http://localhost:5005/user/auth/register', registerData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            console.log(registerData)
+            const response = await axios.post('http://localhost:5005/user/auth/register', {
+                Name: registerData.Name,
+                email: registerData.email,
+                password: registerData.password,
+                cardNumber: registerData.cardNumber,
+                cardCVC: registerData.cardCVC,
+                cardExpirationDate:registerData.cardExpirationDate
+            }, {
+                headers: { 'Content-Type': 'application/json' },
             });
     
-            if (response.status === 201) { 
-                navigate('/login-customer');
+            // If registration is successful
+            if (response.status === 201) {
+                setSnackbarMessage("Registration successful!");
+                setOpenDialog(true); 
+                setTimeout(() => {
+                    navigate('/login-customer'); // Redirect to the all events page
+                }, 2000); // Adjust delay as necessary
+    
+                console.log('Register successfully');
             }
         } catch (errorResponse) {
-            const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
-            alert(errorMessage);
+            let errorMessage = 'An unexpected error occurred during registration.';
+            // Ensure the error response structure you're expecting matches what the backend sends
+            if (errorResponse.response && errorResponse.response.data && errorResponse.response.data.message) {
+                // Backend sends error messages in the format { message: '...' }
+                errorMessage = errorResponse.response.data.message;
+            }
+            // This sets the state which triggers the snackbar to show the error message
+            setSnackbarMessage(errorMessage);
+            setOpenSnackbar(true);
         }
     };
-
+    const action = (
+        <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackbar}>
+            <CloseIcon fontSize="small" />
+        </IconButton>
+    );
+    
     return (
-        <><Box sx={{
+
+        <>
+                 <Snackbar
+                    open={openSnackbar}
+                    autoHideDuration={6000}
+                     onClose={handleCloseSnackbar}
+                     message={snackbarMessage}
+                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center',}}
+                     ContentProps={{
+                        style: {
+                            backgroundColor: snackbarType === 'success' ? theme.palette.success.main : theme.palette.error.main,
+                        },
+                    }}
+                    action={action}
+                />
+
+        <Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -219,7 +274,6 @@ const RegisterCustomer = () => {
                 >
                     <ArrowBackIcon sx={{ fontSize: 28 }} />
                 </IconButton>
-
                 <Button
                     type="submit"
                     fullWidth
@@ -236,28 +290,7 @@ const RegisterCustomer = () => {
                     Already have an account? Login
                 </Button>
             </Box>
-        </Box>
-        <Dialog
-    open={openDialog}
-    onClose={() => setOpenDialog(false)}
-    aria-labelledby="alert-dialog-title"
-    aria-describedby="alert-dialog-description"
->
-    <DialogTitle id="alert-dialog-title">{"Registration Successful"}</DialogTitle>
-    <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-            You have registered successfully.
-        </DialogContentText>
-    </DialogContent>
-    <DialogActions>
-        <Button onClick={() => {
-            navigate('/some-path'); // Replace '/some-path' with the path you want to navigate to
-            setOpenDialog(false); // Close the dialog
-        }}>Go to Dashboard</Button>
-    </DialogActions>
-</Dialog>
-
-                
+        </Box>           
     </>
     );
 

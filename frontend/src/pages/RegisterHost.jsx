@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme, Snackbar, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
 
 const RegisterHost = () => {
     const theme = useTheme();
@@ -16,10 +17,19 @@ const RegisterHost = () => {
         password: '',
         confirmPassword: '',
     });
-    const [openDialog, setOpenDialog] = useState(false);
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenSnackbar(false);
+    };
+    
+    const [, setOpenDialog] = useState(false);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarType, setSnackbarType] = useState('info'); 
 
     const handleBack = () => navigate(-1);
     
@@ -30,18 +40,20 @@ const RegisterHost = () => {
         }));
     };
 
-    const handleCloseSnackbar = () => setOpenSnackbar(false);
 
     const registerUser = async (e) => {
         e.preventDefault();
-
+    
+        // Check if passwords match
         if (registerData.password !== registerData.confirmPassword) {
             setSnackbarMessage("Passwords do not match.");
             setOpenSnackbar(true);
             return;
         }
-
+    
+        // Attempt to register the host
         try {
+            console.log(registerData)
             const response = await axios.post('http://localhost:5005/user/auth/register', {
                 companyName: registerData.companyName,
                 email: registerData.email,
@@ -49,21 +61,43 @@ const RegisterHost = () => {
             }, {
                 headers: { 'Content-Type': 'application/json' },
             });
+    
+            // If registration is successful
+            if (response.status === 201) {
+                console.log("Registration is successful, setting the snackbar message.");
+                setSnackbarMessage("Registration successful!");
+                setSnackbarType('success')
+                setOpenDialog(true); 
 
-            if (response.status === 201) { 
-                setOpenDialog(true);
-                console.log(
-                    'register successfully'
-                );
+                setTimeout(() => {
+                    navigate('/login-host'); // Redirect to the all events page
+                }, 2000); // Adjust delay as necessary
+    
+                console.log('Register successfully');
             }
         } catch (errorResponse) {
-            const errorMessage = errorResponse.response?.data?.error || 'An unexpected error occurred';
-            alert(errorMessage);
+            // Handle registration errors
+            let errorMessage = 'An unexpected error occurred during registration.';
+            if (errorResponse.response) {
+                const status = errorResponse.response.status;
+                const message = errorResponse.response.data.message;
+    
+                if (status === 400) {
+                    // Custom error message for duplicate email
+                    errorMessage = message.includes('email already exists') ? 'This email is already in use. Please use a different email address.' : message;
+                }
+            }
+            setSnackbarMessage(errorMessage);
+            setOpenSnackbar(true);
         }
     };
-    return (
-        <>
-            <Box sx={{
+    const action = (
+        <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackbar}>
+            <CloseIcon fontSize="small" />
+        </IconButton>
+    );
+    return (        
+        <Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -186,7 +220,19 @@ const RegisterHost = () => {
                         >
                             <ArrowBackIcon sx={{ fontSize: 28 }} />
                         </IconButton>
-
+                           <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+            message={snackbarMessage}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            ContentProps={{
+                style: {
+                    backgroundColor: snackbarType === 'success' ? theme.palette.success.main : theme.palette.error.main,
+                },
+            }}
+            action={action} // Use the action component here
+        />
                         <Button
                             type="submit"
                             fullWidth
@@ -204,29 +250,12 @@ const RegisterHost = () => {
                         >
                             Already have an account? Login
                         </Button>
+
+                        
                     </Box>
                 </Box>
             </Box>
         </Box>
-        <Dialog
-                        open={openDialog}
-                        onClose={() => setOpenDialog(false)}
-                        aria-labelledby="alert-dialog-title"
-                        aria-describedby="alert-dialog-description"
-                    >
-                        <DialogTitle id="alert-dialog-title">{"Event Created Successfully"}</DialogTitle>
-                        <DialogContent>
-                            <DialogContentText id="alert-dialog-description">
-                                Your account has been created successfully.
-                            </DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => {
-                                navigate('/login-host'); // 替换为你希望跳转到的路径
-                                setOpenDialog(false);
-                            }}>Login Now</Button>
-                        </DialogActions>
-                    </Dialog> </>
     );
 };
 
