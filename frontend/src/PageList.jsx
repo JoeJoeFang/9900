@@ -113,6 +113,7 @@ const PageList = () => {
                 <Route path='/all-event' element={<AllEventPage />} />
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
+                <Route path='/all-event/:eventId' element={<AllEventPage />} />
 
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}

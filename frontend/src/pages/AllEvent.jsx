@@ -6,6 +6,7 @@ import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
 import MyEvents from '../components/MyEvents';
 import HostProfile from '../components/HostProfile';
+import {useNavigate} from "react-router-dom";
 
 const theme = createTheme({
     palette: {
@@ -22,6 +23,7 @@ const EventsList = () => {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -73,7 +75,22 @@ const EventsList = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
                         <Typography variant="h4" gutterBottom>Upcoming Events</Typography>
                         {events.map((event, index) => (
-                            <Card key={index} sx={{ display: 'flex', mb: 2, width: '100%', background: 'rgba(255, 255, 255, 0.8)' }}>
+                            <Card
+                                key={index}
+                                sx={{
+                                    display: 'flex',
+                                    mb: 2,
+                                    width: '100%',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                    transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
+                                    ':hover': {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 改变背景颜色
+                                        transform: 'scale(1.03)', // 轻微放大
+                                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
+                                    },
+                                }}
+                                onClick={() => navigate(`/all-event/${event.id}`)}
+                            >
                                 {event.thumbnail && (
                                     <CardMedia
                                         component="img"
@@ -87,10 +104,11 @@ const EventsList = () => {
                                         {event.title}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
+                                        Event ID: {event.id}<br />
                                         Organizer: {event.organizerName}<br />
                                         Type: {event.eventType}<br />
                                         Seats: {event.seatingCapacity}<br />
-                                        Duration: {event.duration} hours<br />
+                                        {/*Duration: {event.duration} hours<br />*/}
                                         From: {new Date(event.startDate).toLocaleDateString()}<br />
                                         To: {new Date(event.endDate).toLocaleDateString()}<br />
                                         Address: {event.address}<br />

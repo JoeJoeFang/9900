@@ -46,7 +46,7 @@ const CreateNewEvent = () => {
         price: '',
         thumbnail: '',
         eventType: '',
-        duration: '',
+        duration: '100',
         seatingCapacity: '',
         youtubeUrl: '',
         startDate: '',
@@ -181,7 +181,7 @@ const CreateNewEvent = () => {
             price: eventData.price,
             thumbnail: eventData.thumbnail, // Thumbnail in base64 format
             eventType: eventData.eventType,
-            // duration: eventData.duration,
+            duration: eventData.duration,
             seatingCapacity: eventData.seatingCapacity,
             startDate: eventData.startDate,
             endDate: eventData.endDate,
@@ -327,18 +327,37 @@ const CreateNewEvent = () => {
                                 </Grid>
 
 
+                                {/*<Grid item xs={12} sm={6}>*/}
+                                {/*    <TextField*/}
+                                {/*        name="seatingCapacity"*/}
+                                {/*        label="Seating Capacity"*/}
+                                {/*        fullWidth*/}
+                                {/*        value={eventData.seatingCapacity}*/}
+                                {/*        onChange={updateField}*/}
+                                {/*        required*/}
+                                {/*        type="number"*/}
+                                {/*        error={!!formErrors.seatingCapacity}*/}
+                                {/*        helperText={formErrors.seatingCapacity}*/}
+                                {/*    />*/}
+                                {/*</Grid>*/}
                                 <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="seatingCapacity"
-                                        label="Seating Capacity"
-                                        fullWidth
-                                        value={eventData.seatingCapacity}
-                                        onChange={updateField}
-                                        required
-                                        type="number"
-                                        error={!!formErrors.seatingCapacity}
-                                        helperText={formErrors.seatingCapacity}
-                                    />
+                                    <FormControl fullWidth>
+                                        <InputLabel id="seating-capacity-label">Seating Capacity</InputLabel>
+                                        <NativeSelect
+                                            defaultValue="100"
+                                            onChange={updateField}
+                                            value={eventData.seatingCapacity}
+                                            inputProps={{
+                                                name: 'seatingCapacity', // 增加 name 属性，以便 updateField 函数可以识别字段
+                                            }}
+                                        >
+                                            <option value="64">64</option>
+                                            <option value="81">81</option>
+                                            <option value="100">100</option>
+                                            <option value="144">144</option>
+                                            <option value="256">256</option>
+                                        </NativeSelect>
+                                    </FormControl>
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField
