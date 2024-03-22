@@ -10,8 +10,6 @@ import os
 import base64
 from PIL import Image
 import io
-from sqlalchemy import JSON
-#from sqlalchemy.dialects.postgresql import JSON
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -63,7 +61,6 @@ class Customer(db.Model):
     state = db.Column(db.String(100), nullable=True)
     post_code = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(1000), nullable=True)
-    order = db.Column(JSON, nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
 class Events(db.Model):
@@ -82,12 +79,6 @@ class Events(db.Model):
     URL = db.Column(db.String(100), nullable=True)
     thumbnail = db.Column(db.String(5000), nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
-
-class Events_order(db.Model):
-    __tablename__ = "events_order"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    eventtitle = db.Column(db.String(20), nullable=False)
-    orderdetails = db.Column(JSON, nullable=True)
 
 class Myevents(db.Model):
     __tablename__ = "myevents"
@@ -176,6 +167,7 @@ def get_events():
 def get_events_title():
     # 查询数据库以获取事件列表
     events = Events.query.all()
+
     # 将查询到的事件列表转换为 JSON 格式
     event_list = []
     for event in events:
@@ -194,41 +186,12 @@ def get_events_title():
             # 'description': event.description,
             # 'youtubeUrl':event.URL
         }
+        #image_path = event.thumbnail
+        #base64_str = image_to_base64(image_path)
+        #event_data['thumbnail'] = base64_str
         event_list.append(event_data)
     #print("fanhui", event_list)
     return jsonify(event_list)
-
-@app.route('/listings', methods=['PUT'])
-def update_events_order():
-    # 查询数据库以获取事件列表s
-    data = request.get_json()
-    cust_e = data['email']
-    date_ = data['date']
-    seat_number = int(data['seat_number'])-1
-    title = data['title']
-    cust_id = Customer.query.filter_by(email=cust_e).first()
-    event = Events_order.query.filter_by(eventtitle=title).first()
-    if not event:
-        return jsonify({'message': 'Event not found!'}), 404
-    if not cust_id:
-        return jsonify({'message': 'Customer not found!'}), 404
-
-    cust_id.order = {event.id: date_}
-    db.session.commit()
-
-    event_d = event.orderdetails
-    if date_ in event_d:
-        event_d[date_][seat_number] = [1, cust_id.id]
-        event.orderdetails = event_d
-        db.session.commit()
-
-        order_data = {
-            'id': event.id,
-            'eventtitle': event.eventtitle,
-            'orderdetials': event.orderdetails
-        }
-        return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
-    return jsonify({'message': 'Failed to update event details!'}), 400
 
 @app.route('/events/new', methods=['POST'])
 def register_event():
@@ -248,33 +211,12 @@ def register_event():
     file_path = os.path.join(pic_folder, filename)
     with open(file_path, "wb") as f:
         f.write(image_data)
-    seats = data['seatingCapacity']
-    start_date_str = data['startDate']
-    end_date_str = data['endDate']
-    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-    print(data['startDate'])
-    date_list = []
-    current_date = start_date
-    while current_date <= end_date:
-        date_list.append(current_date.strftime("%Y-%m-%d"))
-        current_date += timedelta(days=1)
-    seats_list = [[0, 0] for _ in range(int(data['seatingCapacity']))]
-    seats_c = {}
-    for i in date_list:
-        seats_c[i] = seats_list
-
-    new_order = Events_order(eventtitle=data['title'], orderdetails=seats_c)
-    db.session.add(new_order)
-    db.session.commit()
-
     new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
                        type=data['eventType'], duration=data['duration'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
     db.session.add(new_event)
     db.session.commit()
-
     return jsonify({'message': 'Event created successfully!'}), 201
 
 @app.route('/user/auth/register', methods=['POST'])
@@ -369,7 +311,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        #db.drop_all()
+        db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
