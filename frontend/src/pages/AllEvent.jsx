@@ -6,6 +6,8 @@ import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
 import MyEvents from '../components/MyEvents';
 import HostProfile from '../components/HostProfile';
+import SearchEvents from '../components/SearchEvents';
+
 
 const theme = createTheme({
     palette: {
@@ -22,8 +24,18 @@ const EventsList = () => {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-
+    const handleSearch = (searchTerm) => {
+        // Implement the logic to filter your events based on the search term
+        // For example, you can set the events state to a filtered list of events
+        // that match the search term.
+        const filteredEvents = events.filter((event) =>
+          event.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setEvents(filteredEvents);
+      };
+    
     useEffect(() => {
+        
         const fetchEvents = async () => {
             setIsLoading(true);
             setError(null);
@@ -41,7 +53,7 @@ const EventsList = () => {
         fetchEvents();
     }, []);
     return (
-        <>
+        <>  
             <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
@@ -53,11 +65,14 @@ const EventsList = () => {
                 backgroundPosition: 'center, center',
                 p: theme.spacing(2),
             }}>
+                <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
+                <SearchEvents onSearch={handleSearch} />    
                     <CreateNewEvent />
                     <MyEvents />
                     <HostProfile />
                     <Logout />
+                
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                     <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
