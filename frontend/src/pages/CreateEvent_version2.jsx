@@ -2,9 +2,27 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import { ThemeProvider, createTheme, Container, Box, FormControl, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { ThemeProvider, createTheme, Container, Box, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton } from '@mui/material';
+import {
+    ThemeProvider,
+    createTheme,
+    Container,
+    Typography,
+    Card,
+    CardContent,
+    CardActions,
+    Grid,
+    TextField,
+    Button,
+    IconButton,
+} from '@mui/material';
 import axios from 'axios';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import NativeSelect from '@mui/material/NativeSelect';
+
+
 
 
 
@@ -37,37 +55,26 @@ const CreateNewEvent = () => {
         description: '',
     });
     const [openDialog, setOpenDialog] = useState(false);
-
-    // const eventTypes = ["Conference", "Seminar", "Concert", "Workshop"];
+    // const eventTypes = ['concert', 'conference', 'meeting', 'webinar'];
 
 
     const validateField = (name, value) => {
+        const trimmedValue = value.trim();
+
         switch (name) {
             case 'title':
-                if (!value || value.length < 3 || value.length > 100) {
+                if (!trimmedValue || trimmedValue.length < 3 || trimmedValue.length > 100) {
                     return 'Title must be between 3 and 100 characters.';
                 }
                 break;
             case 'address':
-                if (!value || value.length < 10 || value.length > 200) {
+                if (!trimmedValue || trimmedValue.length < 10 || trimmedValue.length > 200) {
                     return 'Address must be between 10 and 200 characters.';
                 }
                 break;
             case 'price':
-                if (!value || isNaN(value) || value <= 0 || value > 1000000) {
+                if (!trimmedValue || isNaN(trimmedValue) || trimmedValue <= 0 || trimmedValue > 1000000) {
                     return 'Price must be a positive number less than 1,000,000.';
-                }
-                break;
-            case 'eventType':
-                // Assuming a predefined set of event types, validate accordingly
-                const eventTypes = ['concert', 'conference', 'meeting', 'webinar']; // Example event types
-                if (!value || !eventTypes.includes(value)) {
-                    return 'Invalid event type. You should choose one from concert, conference, meeting or webinar.';
-                }
-                break;
-            case 'duration':
-                if (!value || isNaN(value) || value <= 0 || value > 168) {
-                    return 'Duration must be a positive number and no more than 168 hours (1 week).';
                 }
                 break;
             case 'seatingCapacity':
@@ -88,17 +95,12 @@ const CreateNewEvent = () => {
                 if (name === 'startDate' && date < now) {
                     return 'Start date must be today or in the future.';
                 }
-                // if (name === 'endDate') {
-                //
-                //     // const startDateValue = date;
-                //     console.log(date);
-                //     // if (startDateValue) {
-                //     //     const startDate = new Date(startDateValue.replace(new RegExp('/', 'g'), '-'));
-                //     //     if (date <= startDate) {
-                //     //         return 'End date must be after the start date.';
-                //     //     }
-                //     // }
-                // }
+                if (name === 'endDate') {
+                    const startDate = new Date(eventData.startDate.replace(new RegExp('/', 'g'), '-'));
+                    if (date <= startDate) {
+                        return 'End date must be after the start date.';
+                    }
+                }
                 break;
             default:
                 return '';
@@ -179,7 +181,7 @@ const CreateNewEvent = () => {
             price: eventData.price,
             thumbnail: eventData.thumbnail, // Thumbnail in base64 format
             eventType: eventData.eventType,
-            duration: eventData.duration,
+            // duration: eventData.duration,
             seatingCapacity: eventData.seatingCapacity,
             startDate: eventData.startDate,
             endDate: eventData.endDate,
@@ -197,15 +199,16 @@ const CreateNewEvent = () => {
                 },
             });
             if (response.status === 201) {
-                console.log('Created event ID:', response.data.eventId);
+                console.log('Created event ID:', response.data.message);
                 setOpenDialog(true);
             }
         } catch (error) {
             if (error.response) {
                 if (error.response.status === 400) {
-                    alert('Invalid input: ' + error.response.data.error);
+                    alert('Invalid input: Event title already exists!');
+                    console.log(error.response.data.message);
                 } else if (error.response.status === 403) {
-                    alert('Invalid Token: ' + error.response.data.error);
+                    alert('Invalid Token: ' + error.response.data.message);
                 }
             }
         }
@@ -304,38 +307,26 @@ const CreateNewEvent = () => {
                                         helperText={formErrors.organizerName}
                                     />
                                 </Grid>
-                                {/*<Grid item xs={12}>*/}
-                                {/*    <FormControl fullWidth>*/}
-                                {/*        <InputLabel id="event-type-label">Event Type</InputLabel>*/}
-                                {/*        <Select*/}
-                                {/*            labelId="event-type-label"*/}
-                                {/*            id="eventType"*/}
-                                {/*            name="eventType"*/}
-                                {/*            value="Conference" // 直接设置为一个选项的值进行测试*/}
-                                {/*            label="Event Type"*/}
-                                {/*            onChange={updateField}*/}
-                                {/*            required*/}
-                                {/*            error={!!formErrors.eventType}*/}
-                                {/*        >*/}
-                                {/*            <MenuItem value={"Conference"}>Conference</MenuItem>*/}
-                                {/*            <MenuItem value={"Seminar"}>Seminar</MenuItem>*/}
-                                {/*            <MenuItem value={"Workshop"}>Workshop</MenuItem>*/}
-                                {/*        </Select>*/}
-
-                                {/*    </FormControl>*/}
-                                {/*</Grid>*/}
                                 <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="eventType"
-                                        label="Event Type"
-                                        fullWidth
-                                        value={eventData.eventType}
-                                        onChange={updateField}
-                                        required
-                                        error={!!formErrors.eventType}
-                                        helperText={formErrors.eventType}
-                                    />
+                                    <FormControl fullWidth>
+                                        <InputLabel id="event-type-label">Event Type</InputLabel>
+                                        <NativeSelect
+                                            defaultValue="concert"
+                                            onChange={updateField} // 假设这个函数能够正确处理 NativeSelect 的事件
+                                            value={eventData.eventType} // 确保这里使用了用于追踪选中值的状态
+                                            inputProps={{
+                                                name: 'eventType', // 增加 name 属性，以便 updateField 函数可以识别字段
+                                            }}
+                                        >
+                                            <option value="concert">concert</option>
+                                            <option value="conference">conference</option>
+                                            <option value="meeting">meeting</option>
+                                            <option value="webinar">webinar</option>
+                                        </NativeSelect>
+                                    </FormControl>
                                 </Grid>
+
+
                                 <Grid item xs={12} sm={6}>
                                     <TextField
                                         name="seatingCapacity"
@@ -347,19 +338,6 @@ const CreateNewEvent = () => {
                                         type="number"
                                         error={!!formErrors.seatingCapacity}
                                         helperText={formErrors.seatingCapacity}
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="duration"
-                                        label="Duration (days)"
-                                        fullWidth
-                                        value={eventData.duration}
-                                        onChange={updateField}
-                                        required
-                                        type="number"
-                                        error={!!formErrors.duration}
-                                        helperText={formErrors.duration}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
@@ -390,6 +368,7 @@ const CreateNewEvent = () => {
                                         helperText={formErrors.endDate}
                                     />
                                 </Grid>
+
 
                                 <Grid item xs={12}>
                                     <TextField
