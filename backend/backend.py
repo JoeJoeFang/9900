@@ -233,6 +233,7 @@ def update_events_order():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
+    print(data)
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
     event_title = data['title']
@@ -269,7 +270,7 @@ def register_event():
     db.session.commit()
 
     new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
-                       type=data['eventType'], duration=data['duration'], seats=data['seatingCapacity'],
+                       type=data['eventType'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
     db.session.add(new_event)
