@@ -190,10 +190,10 @@ def events_search():
         'perPage': current_app.config['PAGECOUNT_ACTIVITY']
     })
     # 默认返回渲染的 HTML 页面
-    return render_template('event_search.html',
-                           form=form,
-                           events=events,
-                           pagination=pagination)
+    #return render_template('event_search.html',
+                           #form=form,
+                           #events=events,
+                           #pagination=pagination)
 
 
 
