@@ -25,7 +25,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = '114514'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -162,7 +162,7 @@ def get_events_search(keyword, type, days, sort, page=1):
 def events_search():
     form = EventSearchForm()
     page = request.args.get('page', 1, type=int)
-    if request.method == 'POST':
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # 在分页浏览中使用session保存搜索条件；每次POST，添加查询字符串，取回第一页
         session['event-keyword'] = form.keyword.data
         session['event-type'] = form.type.data
@@ -177,6 +177,19 @@ def events_search():
         page
     )
     events = pagination.items
+    events_json = [{
+        'id': event.id,
+        'title': event.title,
+        # 添加其他需要的字段
+    } for event in events]
+
+    return jsonify({
+        'events': events_json,
+        'total': pagination.total,
+        'page': page,
+        'perPage': current_app.config['PAGECOUNT_ACTIVITY']
+    })
+    # 默认返回渲染的 HTML 页面
     return render_template('event_search.html',
                            form=form,
                            events=events,
