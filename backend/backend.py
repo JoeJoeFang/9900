@@ -25,7 +25,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'Hsj991220.'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -287,64 +287,6 @@ def get_events_title():
     #print("fanhui", event_list)
     return jsonify(event_list)
 
-@app.route('/listings/${listingId}', methods=['GET'])
-def get_events_details(listingId):
-    # 查询数据库以获取事件列表
-    event = Events.query.filter_by(id=listingId).first()
-    event_order = Events_order.query.filter_by(id=listingId).first()
-    # 将查询到的事件列表转换为 JSON 格式
-
-    event_data = {
-        'id': event.id,
-        'title': event.title,
-        'address': event.address,
-        'price': event.price,
-        'thumbnail': event.thumbnail,
-        'organizerName': event.organizername,
-        'eventType' : event.type,
-        'seatingCapacity' :event.seats,
-        'duration' : event.duration,
-        'startDate': event.from_time,
-        'endDate': event.to_time,
-        'description': event.description,
-        'youtubeUrl':event.URL,
-        'orderdetails': event_order.orderdetails
-    }
-    #print("fanhui", event_list)
-    return jsonify(event_data)
-
-@app.route('/bookings', methods=['PUT'])
-def update_events_bookings():
-    # 查询数据库以获取事件列表s
-    data = request.get_json()
-    cust_id = data['customerid']
-    date_ = data['date']
-    seat_number = int(data['seat_number'])-1
-    eventid = data['eventid']
-    cust = Customer.query.filter_by(id=cust_id).first()
-    event = Events_order.query.filter_by(id=eventid).first()
-    if not event:
-        return jsonify({'message': 'Event not found!'}), 404
-    if not cust:
-        return jsonify({'message': 'Customer not found!'}), 404
-
-    cust.order = {event.id: date_}
-    db.session.commit()
-
-    event_d = event.orderdetails
-    if date_ in event_d:
-        event_d[date_][seat_number] = [1, cust_id]
-        event.orderdetails = event_d
-        db.session.commit()
-
-        order_data = {
-            'id': event.id,
-            'eventtitle': event.eventtitle,
-            'orderdetials': event.orderdetails
-        }
-        return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
-    return jsonify({'message': 'Failed to update event details!'}), 400
-
 @app.route('/listings', methods=['PUT'])
 def update_events_order():
     # 查询数据库以获取事件列表s
@@ -380,7 +322,7 @@ def update_events_order():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    #print(data)
+    print(data)
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
     event_title = data['title']

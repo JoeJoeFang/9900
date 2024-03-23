@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 const HostProfile = () => {
     const handleHostProfileClick = () => {
         console.log('Host Profile clicked');
-        //window.location.href = '/host-profile'; // 触发跳转到主办方资料的页面
+        window.location.href = '/host-profile'; // 触发跳转到主办方资料的页面
     };
 
     return (

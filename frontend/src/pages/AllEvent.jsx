@@ -6,12 +6,9 @@ import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
 import MyEvents from '../components/MyEvents';
 import HostProfile from '../components/HostProfile';
-<<<<<<< HEAD
 import SearchEvents from '../components/SearchEvents';
 
-=======
 import {useNavigate} from "react-router-dom";
->>>>>>> 877b47cb5b2192a9f30880d15d81295163818f81
 
 const theme = createTheme({
     palette: {
@@ -28,7 +25,6 @@ const EventsList = () => {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-<<<<<<< HEAD
     const handleSearch = (searchTerm) => {
         // Implement the logic to filter your events based on the search term
         // For example, you can set the events state to a filtered list of events
@@ -39,10 +35,8 @@ const EventsList = () => {
         setEvents(filteredEvents);
       };
     
-=======
     const navigate = useNavigate();
 
->>>>>>> 877b47cb5b2192a9f30880d15d81295163818f81
     useEffect(() => {
         
         const fetchEvents = async () => {
@@ -62,8 +56,7 @@ const EventsList = () => {
         fetchEvents();
     }, []);
     return (
-        <>  
-            <Box sx={{
+        <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
@@ -146,7 +139,6 @@ const EventsList = () => {
                     <Typography variant="subtitle1">No events found.</Typography>
                 )}
             </Box>
-        </>
     );
 
 };

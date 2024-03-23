@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 const MyEvents = () => {
     const handleMyEventsClick = () => {
         console.log('My Events clicked');
-        //window.location.href = '/my-events'; // 触发跳转到我的事件的页面
+        window.location.href = '/my-events'; // 触发跳转到我的事件的页面
     };
 
     return (
