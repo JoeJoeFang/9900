@@ -313,13 +313,15 @@ def get_events_title():
     #print("fanhui", event_list)
     return jsonify(event_list)
 
-@app.route('/listings/${listingId}', methods=['GET'])
-def get_events_details(listingId):
+@app.route('/events/${eventId}', methods=['GET'])
+def get_events_details(eventId):
     # 查询数据库以获取事件列表
-    event = Events.query.filter_by(id=listingId).first()
-    event_order = Events_order.query.filter_by(id=listingId).first()
+    event = Events.query.filter_by(id=eventId).first()
+    event_order = Events_order.query.filter_by(id=eventId).first()
     # 将查询到的事件列表转换为 JSON 格式
 
+    if not event_order or not event:
+        return jsonify({'message': 'Event not found!!!!!'}), 404
     event_data = {
         'id': event.id,
         'title': event.title,
@@ -494,14 +496,14 @@ def login():
 
         token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                            app.config['SECRET_KEY'])
-        return jsonify({'token': token})
+        return jsonify({'token': token, 'id': customer.id})
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
         return jsonify({'message': 'Invalid email or password'}), 401
     #print("package token")
     #print(app.config['SECRET_KEY'])
     token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)}, app.config['SECRET_KEY'])
-    return jsonify({'token': token})
+    return jsonify({'token': token, 'id': host.id})
 
 def token_required(f):
     @wraps(f)
