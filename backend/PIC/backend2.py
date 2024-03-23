@@ -12,12 +12,6 @@ from PIL import Image
 import io
 from sqlalchemy import JSON
 #from sqlalchemy.dialects.postgresql import JSON
-from flask_wtf import FlaskForm
-from wtforms import Form, StringField, RadioField, SubmitField
-from wtforms.validators import DataRequired
-from flask import current_app
-from sqlalchemy import or_, and_
-from flask import render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -100,89 +94,6 @@ class Myevents(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     event = db.Column(db.String(50), nullable=False)
     host = db.Column(db.String(50), nullable=False)
-
-# 多条件分页搜索
-class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
-    keyword = StringField('Keyword')        # 关键词输入
-    type = RadioField('Event Type')         # 活动类型
-    duration = RadioField('Event Days')     # 活动天数（单天，2-3天，4-7天，8-15天，16天以上）
-    sort = RadioField('Sort')               # 搜索方式（最新活动，最多浏览，尚未开始，已经开始，价格升序，价格降序）
-    submit = SubmitField('Search')          # 搜索
-
-    def __init__(self, *args, **kwargs):
-        super(EventSearchForm, self).__init__(*args, **kwargs)
-        # 为单选钮赋默认值
-        events = Events.query.all()
-        self.type.choices = [(event.id, event.title) for event in events]
-        duration_source = [(1, '1 day'), (3, '2-3 days'), (7, '4-7 days'), (15, '8-15 days'), (16, '16天 days')]
-        self.duration.choices = duration_source
-        sort_source = [(0, 'Latest Event'), (1, 'Highest Viewed Event'), (2, 'Ready'), (3, 'In progress'),
-                       (4, 'From Low to High in Price'), (5, 'From High to Low in Price')]
-        self.sort.choices = sort_source
-
-@staticmethod
-def get_events_search(keyword, type, days, sort, page=1):
-    events = Events.query
-    if type != 'None':  # 活动类型
-        t = Events.query.get(int(type))
-        events = t.events
-    if keyword:  # 允许多个空格分隔的搜索关键字
-        keywords = keyword.split()
-        for k in keywords:
-            events = events.filter(Events.name.like('%'+k+'%'))
-    if days != 'None':  # 活动天数
-        if days == '1':
-            events = events.filter(Events.duration == 1)
-        elif days == '3':
-            events = events.filter(or_(Events.duration == 2, Events.duration == 3))
-        elif days == '7':
-            events = events.filter(and_(Events.duration > 3, Events.duration < 8))
-        elif days == '15':
-            events = events.filter(and_(Events.duration > 7, Events.duration < 16))
-        else:
-            events = events.filter(Events.duration > 15)
-    if sort != 'None':  # 搜索方式
-        if sort == '1':
-            events = events.order_by(Events.view_count.desc())  # 最多浏览
-        elif sort == '2':
-            events = events.filter(Events.startDate > datetime.utcnow()).order_by(Events.startDate.asc())    # 尚未开始（尚未开始的活动，按开始时间升序）
-        elif sort == '3':
-            events = events.filter(Events.startDate <= datetime.utcnow()).order_by(Events.startDate.asc())   # 已经开始(已经开始的活动，按开始时间升序）
-        elif sort == '4':
-            events = events.order_by(Events.price.desc())   # 价格升序
-        elif sort == '5':
-            events = events.order_by(Events.price.desc())   # 价格降序
-        else:
-            events = events.order_by(Events.timestamp.desc())   # 最新活动
-    return events.paginate(page, current_app.config['PAGECOUNT_ACTIVITY'], error_out=False)  # 把query构建好了，用paginate分页取回活动
-
-
-
-@app.route('/user/search', methods=['GET', 'POST']) # 在View里面添加处理逻辑
-def events_search():
-    form = EventSearchForm()
-    page = request.args.get('page', 1, type=int)
-    if request.method == 'POST':
-        # 在分页浏览中使用session保存搜索条件；每次POST，添加查询字符串，取回第一页
-        session['event-keyword'] = form.keyword.data
-        session['event-type'] = form.type.data
-        session['event-duration'] = form.duration.data
-        session['event-sort'] = form.sort.data
-        page = 1
-    pagination = Events.get_events_search(
-        session.get('event-keyword', ""),
-        session.get('event-type', 'None'),
-        session.get('event-duration', 'None'),
-        session.get('event-sort', 'None'),
-        page
-    )
-    events = pagination.items
-    return render_template('event_search.html',
-                           form=form,
-                           events=events,
-                           pagination=pagination)
-
-
 
 @app.route("/user/list")
 def delete():
@@ -287,64 +198,6 @@ def get_events_title():
     #print("fanhui", event_list)
     return jsonify(event_list)
 
-@app.route('/listings/${listingId}', methods=['GET'])
-def get_events_details(listingId):
-    # 查询数据库以获取事件列表
-    event = Events.query.filter_by(id=listingId).first()
-    event_order = Events_order.query.filter_by(id=listingId).first()
-    # 将查询到的事件列表转换为 JSON 格式
-
-    event_data = {
-        'id': event.id,
-        'title': event.title,
-        'address': event.address,
-        'price': event.price,
-        'thumbnail': event.thumbnail,
-        'organizerName': event.organizername,
-        'eventType' : event.type,
-        'seatingCapacity' :event.seats,
-        'duration' : event.duration,
-        'startDate': event.from_time,
-        'endDate': event.to_time,
-        'description': event.description,
-        'youtubeUrl':event.URL,
-        'orderdetails': event_order.orderdetails
-    }
-    #print("fanhui", event_list)
-    return jsonify(event_data)
-
-@app.route('/bookings', methods=['PUT'])
-def update_events_bookings():
-    # 查询数据库以获取事件列表s
-    data = request.get_json()
-    cust_id = data['customerid']
-    date_ = data['date']
-    seat_number = int(data['seat_number'])-1
-    eventid = data['eventid']
-    cust = Customer.query.filter_by(id=cust_id).first()
-    event = Events_order.query.filter_by(id=eventid).first()
-    if not event:
-        return jsonify({'message': 'Event not found!'}), 404
-    if not cust:
-        return jsonify({'message': 'Customer not found!'}), 404
-
-    cust.order = {event.id: date_}
-    db.session.commit()
-
-    event_d = event.orderdetails
-    if date_ in event_d:
-        event_d[date_][seat_number] = [1, cust_id]
-        event.orderdetails = event_d
-        db.session.commit()
-
-        order_data = {
-            'id': event.id,
-            'eventtitle': event.eventtitle,
-            'orderdetials': event.orderdetails
-        }
-        return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
-    return jsonify({'message': 'Failed to update event details!'}), 400
-
 @app.route('/listings', methods=['PUT'])
 def update_events_order():
     # 查询数据库以获取事件列表s
@@ -380,7 +233,7 @@ def update_events_order():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    #print(data)
+    print(data)
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
     event_title = data['title']
