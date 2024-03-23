@@ -43,6 +43,8 @@ export const LoginCustomer = () => {
             if (response.status === 200) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginInfo.email);
+                localStorage.setItem('userId', response.data.id);
+                console.log(response);
                 navigate('/all-event');
             }
         } catch (errorResponse) {
@@ -206,6 +208,8 @@ export const LoginHost = () => {
             if (response.status === 200) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginInfo.email);
+                localStorage.setItem('userId', response.data.id);
+                console.log(response);
                 navigate('/all-event');
             }
         } catch (errorResponse) {

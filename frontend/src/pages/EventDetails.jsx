@@ -26,14 +26,24 @@ const EventDetails = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchEvents = async () => {
-            setIsLoading(true);
-            setError(null);
+            // setIsLoading(true);
+            // setError(null);
             try {
-                const response = await axios.get('http://localhost:5005/events');
-                setEvents(response.data);
+                // 定义请求配置对象，包括请求头
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                };
+                // 使用配置对象发起请求
+                const response = await axios.get(`http://localhost:5005/events/1`, config);
+                // setEvents(response.data);
+                console.log(response);
             } catch (error) {
                 console.error("There was an error fetching the events:", error);
                 setError("Failed to load events. Please try again later.");
@@ -43,7 +53,8 @@ const EventDetails = () => {
         };
 
         fetchEvents();
-    }, []);
+    }, []); // 这里的空数组表示这个effect在组件挂载时仅执行一次
+
     return (
         <>
             <Box sx={{
@@ -131,4 +142,4 @@ const EventDetails = () => {
 
 };
 
-export default EventsList;
+export default EventDetails;

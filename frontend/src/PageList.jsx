@@ -11,6 +11,7 @@ import CreateNewEvent from "./pages/CreateEvent_version2.jsx";
 import AllEventPage from "./pages/AllEvent.jsx";
 
 import './App.css';
+import EventDetails from "./pages/EventDetails";
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -113,7 +114,7 @@ const PageList = () => {
                 <Route path='/all-event' element={<AllEventPage />} />
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
-                <Route path='/all-event/:eventId' element={<AllEventPage />} />
+                <Route path='/all-event/:eventId' element={<EventDetails />} />
 
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
