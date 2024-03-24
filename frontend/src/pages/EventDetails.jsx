@@ -1,13 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
+// import { Card, CardContent, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
 import MyEvents from '../components/MyEvents';
 import HostProfile from '../components/HostProfile';
 import {useNavigate} from "react-router-dom";
+import NativeSelect from '@mui/material/NativeSelect';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+
 import { useParams } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import {
+    Box,
+    Card,
+    CardContent,
+    CardMedia,
+    Typography,
+    Button,
+    Grid,
+    CircularProgress,
+    Backdrop,
+    Container,
+    Link,
+    Select,
+    MenuItem,
+} from '@mui/material';
+// import { Box, Button, Typography, Grid, Select, MenuItem } from '@mui/material';
+import SearchEvents from "../components/SearchEvents";
 
 const theme = createTheme({
     palette: {
@@ -20,18 +41,38 @@ const theme = createTheme({
     },
 });
 
+
+
 const EventDetails = () => {
     const { eventId } = useParams();
-    const [events, setEvents] = useState([]);
+    // const [events, setEvents] = useState([]);
+    const [eventsInfo, setEventsInfo] = useState({
+        id: 'id',
+        title: 'Title',
+        address: 'Address',
+        price: 0,
+        thumbnail: '',
+        organizerName: '',
+        eventType: 'eventType',
+        seatingCapacity: 100,
+        duration: 0,
+        startDate: '',
+        endDate: '',
+        description: '',
+        youtubeUrl: '',
+        orderdetails: '',
+    });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
 
     useEffect(() => {
         const fetchEvents = async () => {
-            // setIsLoading(true);
-            // setError(null);
+            setIsLoading(true);
+            setError(null);
             try {
                 // 定义请求配置对象，包括请求头
                 const config = {
@@ -41,9 +82,34 @@ const EventDetails = () => {
                     },
                 };
                 // 使用配置对象发起请求
-                const response = await axios.get(`http://localhost:5005/events/1`, config);
-                // setEvents(response.data);
-                console.log(response);
+                const response = await axios.get(`http://localhost:5005/events/${eventId}`, config);
+                if (response.status === 200) {
+                    const event = response.data;
+                    const startDate = new Date(event.startDate);
+                    const endDate = new Date(event.endDate);
+                    const duration = (endDate - startDate) / (1000 * 60 * 60 * 24);
+                    setEventsInfo({
+                        ...eventsInfo,
+                        id: event.id,
+                        title: event.title,
+                        address: event.address,
+                        price: event.price,
+                        thumbnail: event.thumbnail,
+                        organizerName: event.organizerName,
+                        eventType: event.eventType,
+                        seatingCapacity: event.seatingCapacity,
+                        duration: duration + 1,
+                        startDate: event.startDate,
+                        endDate: event.endDate,
+                        description: event.description,
+                        youtubeUrl: event.youtubeUrl,
+                        orderdetails: event.orderdetails,
+                    });
+                    // console.log(event.id);
+                    console.log(response.data);
+                    console.log("response.data.orderDetails", response.data.orderdetails);
+                }
+
             } catch (error) {
                 console.error("There was an error fetching the events:", error);
                 setError("Failed to load events. Please try again later.");
@@ -52,11 +118,115 @@ const EventDetails = () => {
             }
         };
 
+
         fetchEvents();
     }, []); // 这里的空数组表示这个effect在组件挂载时仅执行一次
+    console.log(eventsInfo);
+    // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
+    const [selectedDate, setSelectedDate] = useState('');
+
+    const [selectedSeats, setSelectedSeats] = useState([]);
+
+    useEffect(() => {
+        const dates = Object.keys(eventsInfo.orderdetails ?? {});
+        if (dates.length > 0 && !dates.includes(selectedDate)) {
+            setSelectedDate(dates[0]);
+        }
+    }, [eventsInfo.orderdetails, selectedDate]);
+    const handleDateChange = (event) => {
+        setSelectedDate(event.target.value);
+        setSelectedSeats([]);
+    };
+
+    const toggleSeatSelection = (seatIndex) => {
+        setSelectedSeats((prevSelectedSeats) =>
+            prevSelectedSeats.includes(seatIndex)
+                ? prevSelectedSeats.filter((index) => index !== seatIndex)
+                : [...prevSelectedSeats, seatIndex]
+        );
+    };
+    console.log("Object.keys(eventsInfo.orderdetails)[0]", Object.keys(eventsInfo.orderdetails)[0]);
+    console.log("selectedDate", selectedDate);
+    console.log(
+        Object.keys(eventsInfo.orderdetails)
+    );
+
+    const submitbooking = async (userId, selectedSeats, selectedDate, eventId) => {
+        const token = localStorage.getItem('token');
+
+        const requestBody = {
+            userId: userId,
+            seat: selectedSeats,
+            Date: selectedDate,
+            eventId: eventId,
+        };
+        console.log('requestBody', requestBody);
+        try {
+            const response = await axios.post('http://localhost:5005//bookings', requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status === 200) {
+                // listingId
+                console.log('booking successfully!');
+                navigate(0);
+            }
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 400) {
+                    alert('Invalid input: ' + error.response.error);
+                } else if (error.response.status === 403) {
+                    alert('Invalid Token: ' + error.response.error);
+                }
+            }
+        }
+    };
+
+    const BookingConfirmationDialog = ({ userId, open, onClose, selectedSeats, selectedDate, eventId }) => {
+        return (
+            <Dialog open={open} onClose={onClose}>
+                <DialogTitle>Confirm Booking</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Event ID: {eventId}
+                    </DialogContentText>
+                    <DialogContentText>
+                        Selected Date: {selectedDate}
+                    </DialogContentText>
+                    <DialogContentText>
+                        Selected Seats: {selectedSeats.join(", ")}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={() => {
+                        submitbooking(userId, selectedSeats, selectedDate, eventId);
+                        console.log('Confirmed booking:', { eventId, selectedDate, selectedSeats });
+                        onClose(); // 关闭对话框
+                    }} color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        );
+    };
+
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+
 
     return (
-        <>
+        <ThemeProvider theme={theme}>
             <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
@@ -68,11 +238,13 @@ const EventDetails = () => {
                 backgroundPosition: 'center, center',
                 p: theme.spacing(2),
             }}>
+                <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
                     <CreateNewEvent />
                     <MyEvents />
                     <HostProfile />
                     <Logout />
+
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
                     <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
@@ -80,66 +252,137 @@ const EventDetails = () => {
                         Our Amazing Ticket Platform
                     </Typography>
                 </Box>
-                {isLoading ? (
-                    <CircularProgress />
-                ) : error ? (
-                    <Typography color="error">{error}</Typography>
-                ) : events.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                        <Typography variant="h4" gutterBottom>Upcoming Events</Typography>
-                        {events.map((event, index) => (
-                            <Card
-                                key={index}
-                                sx={{
-                                    display: 'flex',
-                                    mb: 2,
-                                    width: '100%',
-                                    background: 'rgba(255, 255, 255, 0.8)',
-                                    transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
-                                    ':hover': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 改变背景颜色
-                                        transform: 'scale(1.03)', // 轻微放大
-                                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
-                                    },
-                                }}
-                                onClick={() => navigate(`/all-event/${event.id}`)}
-                            >
-                                {event.thumbnail && (
+                <Backdrop
+                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={isLoading}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                <Container maxWidth="md">
+                    <Grid container spacing={3} justifyContent="center">
+                        <Grid item xs={12}>
+                            <Typography variant="h4" gutterBottom align="center" color="common.white">
+                                Event Details
+                            </Typography>
+                        </Grid>
+                        {error ? (
+                            <Typography variant="h6" color="error" align="center">
+                                {error}
+                            </Typography>
+                        ) : (
+                            <Grid item xs={12} md={8} lg={6}>
+                                <Card raised sx={{ maxWidth: 600, mx: "auto", boxShadow: "5px 5px 15px rgba(0,0,0,0.2)" }}>
                                     <CardMedia
                                         component="img"
-                                        sx={{ width: 240, objectFit: 'cover' }}
+                                        height="250"
                                         image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
-                                        alt={event.title}
+                                        alt="event"
                                     />
-                                )}
-                                <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {event.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Event ID: {event.id}<br />
-                                        Organizer: {event.organizerName}<br />
-                                        Type: {event.eventType}<br />
-                                        Seats: {event.seatingCapacity}<br />
-                                        {/*Duration: {event.duration} hours<br />*/}
-                                        From: {new Date(event.startDate).toLocaleDateString()}<br />
-                                        To: {new Date(event.endDate).toLocaleDateString()}<br />
-                                        Address: {event.address}<br />
-                                        Price: ${parseFloat(event.price).toFixed(2)}<br />
-                                        Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
-                                        {event.youtubeUrl && <a href={event.youtubeUrl}>Event Video</a>}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <Typography variant="subtitle1">No events found.</Typography>
-                )}
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {eventsInfo.title}
+                                        </Typography>
+                                        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                            {eventsInfo.description}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Organizer:</strong> {eventsInfo.organizerName}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Address:</strong> {eventsInfo.address}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Price:</strong> ${eventsInfo.price}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Event Type:</strong> {eventsInfo.eventType}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Seating Capacity:</strong> {eventsInfo.seatingCapacity}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Start Date:</strong> {new Date(eventsInfo.startDate).toLocaleDateString()}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>End Date:</strong> {new Date(eventsInfo.endDate).toLocaleDateString()}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Duration:</strong> {eventsInfo.duration} Days
+                                        </Typography>
+                                        {eventsInfo.youtubeUrl && (
+                                            <Typography variant="body2" color="text.primary" sx={{ mt: 2 }}>
+                                                <Link href={eventsInfo.youtubeUrl} target="_blank" rel="noopener">
+                                                    Watch Event Trailer
+                                                </Link>
+                                            </Typography>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        )}
+                    </Grid>
+                    <Box sx={{ p: 2 }}>
+                        <Typography variant="h6">Select a date:</Typography>
+                        <NativeSelect
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            fullWidth
+                        >
+                            {Object.keys(eventsInfo.orderdetails ?? {}).map((date) => (
+                                <option key={date} value={date}>
+                                    {date}
+                                </option>
+                            ))}
+                        </NativeSelect>
+
+                        <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
+                            Select your seats:
+                        </Typography>
+                        <Grid container spacing={1}>
+                            {eventsInfo.orderdetails && selectedDate && eventsInfo.orderdetails[selectedDate] ?
+                                eventsInfo.orderdetails[selectedDate].map((seat, index) => (
+                                    <Grid item key={index} xs={2} sm={1} md={1}>
+                                        <Button
+                                            variant={selectedSeats.includes(index) ? "contained" : "outlined"}
+                                            sx={{
+                                                minWidth: 35,
+                                                minHeight: 35,
+                                                backgroundColor: selectedSeats.includes(index) ?  "#f76c6c" : "#63fc82", // 绿色为选中，红色为未选中
+                                                color: 'white',
+                                                '&:hover': {
+                                                    backgroundColor: selectedSeats.includes(index) ? "#d32f2f" : "#388e3c", // 深绿色或深红色变体
+                                                },
+                                            }}
+                                            onClick={() => toggleSeatSelection(index)}
+                                            disabled={seat[0] === 1} // 如果座位已预订，则禁用点击
+                                        >
+                                            {index + 1}
+                                        </Button>
+                                    </Grid>
+                                )) : null
+                            }
+                        </Grid>
+
+                        <Button
+                            variant="contained"
+                            color="success"
+                            sx={{ mt: 2 }}
+                            disabled={selectedSeats.length === 0}
+                            onClick={handleOpen}
+                        >
+                            Book Seats
+                        </Button>
+                        <BookingConfirmationDialog
+                            open={open}
+                            onClose={handleClose}
+                            selectedSeats={selectedSeats}
+                            selectedDate={selectedDate}
+                            eventId={eventId}
+                        />
+                    </Box>
+                </Container>
             </Box>
-        </>
+        </ThemeProvider>
     );
-
 };
-
 export default EventDetails;
