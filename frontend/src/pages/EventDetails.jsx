@@ -162,7 +162,7 @@ const EventDetails = () => {
         };
         console.log('requestBody', requestBody);
         try {
-            const response = await axios.post('http://localhost:5005//bookings', requestBody, {
+            const response = await axios.post('http://localhost:5005/bookings', requestBody, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
