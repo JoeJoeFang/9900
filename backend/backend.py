@@ -25,7 +25,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = 'mwy100621!'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -313,15 +313,19 @@ def get_events_title():
     #print("fanhui", event_list)
     return jsonify(event_list)
 
-@app.route('/events/${eventId}', methods=['GET'])
+@app.route('/events/<int:eventId>', methods=['GET'])
 def get_events_details(eventId):
     # 查询数据库以获取事件列表
+    print(1111111111)
+    print(eventId)
     event = Events.query.filter_by(id=eventId).first()
     event_order = Events_order.query.filter_by(id=eventId).first()
     # 将查询到的事件列表转换为 JSON 格式
-
+    print("if not event_order or not event:")
+    print(event, event_order)
     if not event_order or not event:
         return jsonify({'message': 'Event not found!!!!!'}), 404
+    print("if not event_order or not event: enddddddd")
     event_data = {
         'id': event.id,
         'title': event.title,
@@ -338,7 +342,7 @@ def get_events_details(eventId):
         'youtubeUrl':event.URL,
         'orderdetails': event_order.orderdetails
     }
-    #print("fanhui", event_list)
+    print("finish", event_data)
     return jsonify(event_data)
 
 @app.route('/bookings', methods=['PUT'])
@@ -545,7 +549,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        #db.drop_all()
+        # db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
