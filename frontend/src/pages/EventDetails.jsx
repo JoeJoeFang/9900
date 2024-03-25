@@ -67,6 +67,7 @@ const EventDetails = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    const email = localStorage.getItem('userEmail');
 
 
     useEffect(() => {
@@ -154,6 +155,7 @@ const EventDetails = () => {
     const submitbooking = async (selectedSeats, selectedDate, eventId) => {
         const token = localStorage.getItem('token');
         const userId = localStorage.getItem('userId');
+        const email = localStorage.getItem('userEmail');
 
 
         const requestBody = {
@@ -161,6 +163,7 @@ const EventDetails = () => {
             seat: selectedSeats,
             Date: selectedDate,
             eventId: eventId,
+            email : email,
         };
         console.log('requestBody', requestBody);
         try {
@@ -186,7 +189,7 @@ const EventDetails = () => {
         }
     };
 
-    const BookingConfirmationDialog = ({ open, onClose, selectedSeats, selectedDate, eventId }) => {
+    const BookingConfirmationDialog = ({ open, onClose, selectedSeats, selectedDate, eventId, email }) => {
         return (
             <Dialog open={open} onClose={onClose}>
                 <DialogTitle>Confirm Booking</DialogTitle>
@@ -200,12 +203,15 @@ const EventDetails = () => {
                     <DialogContentText>
                         Selected Seats: {selectedSeats.join(", ")}
                     </DialogContentText>
+                    <DialogContentText>
+                        Booking Email: {email}
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onClose}>Cancel</Button>
                     <Button onClick={() => {
                         submitbooking(selectedSeats, selectedDate, eventId);
-                        console.log('Confirmed booking:', { userId, eventId, selectedDate, selectedSeats });
+                        console.log('Confirmed booking:', { userId, eventId, selectedDate, selectedSeats, email });
                         onClose(); // 关闭对话框
                     }} color="primary">
                         Confirm
@@ -380,6 +386,7 @@ const EventDetails = () => {
                             selectedSeats={selectedSeats}
                             selectedDate={selectedDate}
                             eventId={eventId}
+                            email={email}
                         />
                     </Box>
                 </Container>
