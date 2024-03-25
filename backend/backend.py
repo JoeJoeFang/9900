@@ -25,7 +25,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'mwy100621!'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -316,7 +316,7 @@ def get_events_title():
 @app.route('/events/<int:eventId>', methods=['GET'])
 def get_events_details(eventId):
     # 查询数据库以获取事件列表
-    print(1111111111)
+    #print(1111111111)
     print(eventId)
     event = Events.query.filter_by(id=eventId).first()
     event_order = Events_order.query.filter_by(id=eventId).first()
@@ -349,10 +349,11 @@ def get_events_details(eventId):
 def update_events_bookings():
     # 查询数据库以获取事件列表s
     data = request.get_json()
-    cust_id = data['customerid']
-    date_ = data['date']
-    seat_number = int(data['seat_number'])-1
-    eventid = data['eventid']
+    print(data)
+    cust_id = data['userId']
+    date_ = data['Date']
+    seat_number = int(data['seat'])
+    eventid = data['eventId']
     cust = Customer.query.filter_by(id=cust_id).first()
     event = Events_order.query.filter_by(id=eventid).first()
     if not event:
@@ -365,8 +366,9 @@ def update_events_bookings():
 
     event_d = event.orderdetails
     if date_ in event_d:
-        event_d[date_][seat_number] = [1, cust_id]
-        event.orderdetails = event_d
+        for i in seat_number:
+            event_d[date_][seat_number] = [1, cust_id]
+            event.orderdetails = event_d
         db.session.commit()
 
         order_data = {
