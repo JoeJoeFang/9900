@@ -151,8 +151,10 @@ const EventDetails = () => {
         Object.keys(eventsInfo.orderdetails)
     );
 
-    const submitbooking = async (userId, selectedSeats, selectedDate, eventId) => {
+    const submitbooking = async (selectedSeats, selectedDate, eventId) => {
         const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+
 
         const requestBody = {
             userId: userId,
@@ -162,7 +164,7 @@ const EventDetails = () => {
         };
         console.log('requestBody', requestBody);
         try {
-            const response = await axios.post('http://localhost:5005/bookings', requestBody, {
+            const response = await axios.put('http://localhost:5005/bookings', requestBody, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
@@ -184,7 +186,7 @@ const EventDetails = () => {
         }
     };
 
-    const BookingConfirmationDialog = ({ userId, open, onClose, selectedSeats, selectedDate, eventId }) => {
+    const BookingConfirmationDialog = ({ open, onClose, selectedSeats, selectedDate, eventId }) => {
         return (
             <Dialog open={open} onClose={onClose}>
                 <DialogTitle>Confirm Booking</DialogTitle>
@@ -202,8 +204,8 @@ const EventDetails = () => {
                 <DialogActions>
                     <Button onClick={onClose}>Cancel</Button>
                     <Button onClick={() => {
-                        submitbooking(userId, selectedSeats, selectedDate, eventId);
-                        console.log('Confirmed booking:', { eventId, selectedDate, selectedSeats });
+                        submitbooking(selectedSeats, selectedDate, eventId);
+                        console.log('Confirmed booking:', { userId, eventId, selectedDate, selectedSeats });
                         onClose(); // 关闭对话框
                     }} color="primary">
                         Confirm

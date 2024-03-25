@@ -5,7 +5,8 @@ const Logout = () => {
   const logout = () => {
     console.log('Logout clicked');
     localStorage.removeItem('token');
-   localStorage.removeItem('userEmail');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
     window.location.href = '/'; // 触发跳转到首页或登录页
   };
 
