@@ -352,7 +352,7 @@ def update_events_bookings():
     print(data)
     cust_id = data['userId']
     date_ = data['Date']
-    seat_number = int(data['seat'])
+    seat_number = data['seat']
     eventid = data['eventId']
     cust = Customer.query.filter_by(id=cust_id).first()
     event = Events_order.query.filter_by(id=eventid).first()
@@ -367,9 +367,11 @@ def update_events_bookings():
     event_d = event.orderdetails
     if date_ in event_d:
         for i in seat_number:
-            event_d[date_][seat_number] = [1, cust_id]
+            print(event_d[date_][i])
+            event_d[date_][i] = [1, cust_id]
+            print(event_d[date_][i])
             event.orderdetails = event_d
-        db.session.commit()
+            db.session.commit()
 
         order_data = {
             'id': event.id,
@@ -385,7 +387,7 @@ def update_events_order():
     data = request.get_json()
     cust_e = data['email']
     date_ = data['date']
-    seat_number = int(data['seat_number'])-1
+    seat_number = data['seat_number']
     title = data['title']
     cust_id = Customer.query.filter_by(email=cust_e).first()
     event = Events_order.query.filter_by(eventtitle=title).first()
@@ -399,8 +401,9 @@ def update_events_order():
 
     event_d = event.orderdetails
     if date_ in event_d:
-        event_d[date_][seat_number] = [1, cust_id.id]
-        event.orderdetails = event_d
+        for i in seat_number:
+            event_d[date_][i] = [1, cust_id.id]
+            event.orderdetails = event_d
         db.session.commit()
 
         order_data = {
