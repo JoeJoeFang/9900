@@ -4,7 +4,7 @@ import axios from 'axios';
 import { createTheme } from '@mui/material/styles';
 import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
-import MyEvents from '../components/MyEvents';
+import MyBookings from '../components/MyBookings';
 import HostProfile from '../components/HostProfile';
 import {useNavigate} from "react-router-dom";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -190,35 +190,60 @@ const EventDetails = () => {
     };
 
     const BookingConfirmationDialog = ({ open, onClose, selectedSeats, selectedDate, eventId, email }) => {
-        return (
-            <Dialog open={open} onClose={onClose}>
-                <DialogTitle>Confirm Booking</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Event ID: {eventId}
-                    </DialogContentText>
-                    <DialogContentText>
-                        Selected Date: {selectedDate}
-                    </DialogContentText>
-                    <DialogContentText>
-                        Selected Seats: {selectedSeats.join(", ")}
-                    </DialogContentText>
-                    <DialogContentText>
-                        Booking Email: {email}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button onClick={() => {
-                        submitbooking(selectedSeats, selectedDate, eventId);
-                        console.log('Confirmed booking:', { userId, eventId, selectedDate, selectedSeats, email });
-                        onClose(); // 关闭对话框
-                    }} color="primary">
-                        Confirm
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        );
+        const identity = localStorage.getItem('identity');
+        if (identity === 'host') {
+            // 如果是 host，返回一个提示对话框
+            return (
+                <Dialog open={open} onClose={onClose}>
+                    <DialogTitle>Unavailable Action</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            As a host, you cannot perform ticket booking.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={onClose}>Close</Button>
+                    </DialogActions>
+                </Dialog>
+            );
+        } else {
+            return (
+                <Dialog open={open} onClose={onClose}>
+                    <DialogTitle>Confirm Booking</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Event ID: {eventId}
+                        </DialogContentText>
+                        <DialogContentText>
+                            Selected Date: {selectedDate}
+                        </DialogContentText>
+                        <DialogContentText>
+                            Selected Seats: {selectedSeats.join(", ")}
+                        </DialogContentText>
+                        <DialogContentText>
+                            Booking Email: {email}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={onClose}>Cancel</Button>
+                        <Button onClick={() => {
+                            submitbooking(selectedSeats, selectedDate, eventId, email)
+                                .then(() => {
+                                    console.log('Booking confirmed:', { eventId, selectedDate, selectedSeats, email });
+                                    onClose(); // 关闭对话框
+                                })
+                                .catch((error) => {
+                                    console.error('Failed to confirm booking:', error);
+                                    // 可以在这里处理错误，比如显示一个错误消息给用户
+                                });
+                        }} color="primary">
+                            Confirm
+                        </Button>
+
+                    </DialogActions>
+                </Dialog>
+            );
+        }
     };
 
     const [open, setOpen] = useState(false);
@@ -249,7 +274,7 @@ const EventDetails = () => {
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
                     <CreateNewEvent />
-                    <MyEvents />
+                    <MyBookings />
                     <HostProfile />
                     <Logout />
 

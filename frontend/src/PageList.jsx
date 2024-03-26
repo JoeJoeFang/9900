@@ -12,6 +12,7 @@ import AllEventPage from "./pages/AllEvent.jsx";
 
 import './App.css';
 import EventDetails from "./pages/EventDetails";
+import BookingList from "./pages/MyBookingPage";
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -115,6 +116,7 @@ const PageList = () => {
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
                 <Route path='/all-event/:eventId' element={<EventDetails />} />
+                <Route path='/my-booking' element={<BookingList />} />
 
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}

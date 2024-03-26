@@ -4,7 +4,7 @@ import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from 
 import { createTheme } from '@mui/material/styles';
 import Logout from '../components/Logout';
 import CreateNewEvent from '../components/CreateNewEvent';
-import MyEvents from '../components/MyEvents';
+import MyBookings from '../components/MyBookings';
 import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
 
@@ -71,7 +71,7 @@ const EventsList = () => {
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
                 <SearchEvents onSearch={handleSearch} />    
                     <CreateNewEvent />
-                    <MyEvents />
+                    <MyBookings />
                     <HostProfile />
                     <Logout />
                 

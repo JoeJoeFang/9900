@@ -44,6 +44,7 @@ export const LoginCustomer = () => {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginInfo.email);
                 localStorage.setItem('userId', response.data.id);
+                localStorage.setItem('identity', 'customer');
                 console.log(response);
                 navigate('/all-event');
             }
@@ -209,6 +210,7 @@ export const LoginHost = () => {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginInfo.email);
                 localStorage.setItem('userId', response.data.id);
+                localStorage.setItem('identity', 'host');
                 console.log(response);
                 navigate('/all-event');
             }
