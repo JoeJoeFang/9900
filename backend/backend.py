@@ -394,6 +394,32 @@ def update_events_bookings():
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
+
+@app.route('/bookings/<int:userId>', methods=['GET'])
+def get_bookings(userId):
+    cust = Customer.query.filter_by(id=userId).first()
+    events_list = []
+    for k,v in cust.order.items():
+        event_order = Events_order.query.filter_by(id=int(k)).first()
+        events = Events.query.filter_by(id=int(k)).first()
+        orderdetails = event_order.orderdetails[v]
+
+        seat_list = []
+        for i in range(len(orderdetails)):
+            if orderdetails[i][0] == int(k):
+                seat_list.append(i)
+        event1 = {
+            'eventId': event_order.id,
+            'userId': cust.id,
+            'eventtitle': event_order.eventtitle,
+            'thumbnail': events.thumbnail,
+            'description': events.description,
+            'date': v,
+            'seat': seat_list
+        }
+        events_list.append(event1)
+    return jsonify(events_list), 200
+
 @app.route('/listings', methods=['PUT'])
 def update_events_order():
     # 查询数据库以获取事件列表s
