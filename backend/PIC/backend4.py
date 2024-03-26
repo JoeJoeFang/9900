@@ -18,7 +18,6 @@ from wtforms.validators import DataRequired
 from flask import current_app
 from sqlalchemy import or_, and_
 from flask import render_template, request, session, redirect, url_for
-from flask_mail import Mail, Message
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -35,17 +34,8 @@ current_directory = os.path.dirname(os.path.abspath(__file__))
 pic_folder = os.path.join(current_directory, 'PIC')
 #app.config['PIC_FLODER'] = pic_folder
 
-app.config['MAIL_SERVER'] = "smtp.qq.com"
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = "924082621@qq.com"
-app.config['MAIL_PASSWORD'] = ""
-app.config['MAIL_DEFAULT_SENDER'] = "924082621@qq.com"
-
 db = SQLAlchemy(app)
-mail = Mail(app)
 bcrypt = Bcrypt(app)
-mail.init_app(app)
 
 class Host(db.Model):
     __tablename__ = "host"
@@ -388,9 +378,6 @@ def update_events_bookings():
             'eventtitle': event.eventtitle,
             'orderdetials': event.orderdetails
         }
-        print(cust.email)
-        message = Message(subject="Ticket", recipients=["2180127506@qq.com"], body="Order successfully!!")
-        mail.send(message)
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
