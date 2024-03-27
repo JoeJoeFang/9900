@@ -19,6 +19,7 @@ from flask import current_app
 from sqlalchemy import or_, and_
 from flask import render_template, request, session, redirect, url_for
 from flask_mail import Mail, Message
+from sqlalchemy.orm.attributes import flag_modified
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -281,9 +282,9 @@ def get_events():
             'price': event.price,
             'thumbnail': event.thumbnail,
             'organizerName': event.organizername,
-            'eventType' : event.type,
-            'seatingCapacity' :event.seats,
-            'duration' : event.duration,
+            'eventType': event.type,
+            'seatingCapacity': event.seats,
+            'duration': event.duration,
             'startDate': event.from_time,
             'endDate': event.to_time,
             'description': event.description,
@@ -359,7 +360,7 @@ def get_events_details(eventId):
 def update_events_bookings():
     # 查询数据库以获取事件列表s
     data = request.get_json()
-    print(data)
+    #print(data)
     cust_id = data['userId']
     date_ = data['Date']
     seat_number = data['seat']
@@ -370,43 +371,53 @@ def update_events_bookings():
         return jsonify({'message': 'Event not found!'}), 404
     if not cust:
         return jsonify({'message': 'Customer not found!'}), 404
-
-    cust.order = {event.id: date_}
+    if cust.order is None:
+        cust.order = {}
+    cust.order[event.id] = date_
+    print("Before commit:", cust.order)
+    flag_modified(cust, "order")
     db.session.commit()
+    print("After commit:", cust.order)
+
 
     event_d = event.orderdetails
     if date_ in event_d:
         for i in seat_number:
-            print(event_d[date_][i])
+            print(event_d[date_])
             event_d[date_][i] = [1, cust_id]
-            print(event_d[date_][i])
+            print(event_d[date_])
             event.orderdetails = event_d
-            db.session.commit()
-
+            print(event.orderdetails)
+        flag_modified(event, "orderdetails")
+        db.session.commit()
         order_data = {
             'id': event.id,
             'eventtitle': event.eventtitle,
-            'orderdetials': event.orderdetails
+            'orderdetails': event.orderdetails
         }
         print(cust.email)
-        message = Message(subject="Ticket", recipients=["2180127506@qq.com"], body="Order successfully!!")
-        mail.send(message)
+        # message = Message(subject="Ticket", recipients=["2180127506@qq.com"], body="Order successfully!!")
+        # mail.send(message)
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
 
 @app.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
+    print("------------------------------------------")
+    print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
     for k,v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         orderdetails = event_order.orderdetails[v]
+        # print(orderdetails, k, v)
 
         seat_list = []
         for i in range(len(orderdetails)):
-            if orderdetails[i][0] == int(k):
+            if orderdetails[i][0] == userId:
+                # print(1)
                 seat_list.append(i)
         event1 = {
             'eventId': event_order.id,
@@ -418,40 +429,26 @@ def get_bookings(userId):
             'seat': seat_list
         }
         events_list.append(event1)
+    print(events_list)
     return jsonify(events_list), 200
 
-@app.route('/listings', methods=['PUT'])
-def update_events_order():
-    # 查询数据库以获取事件列表s
+@app.route('/bookings/cancel/<int:userId>', methods=['PUT'])
+def cancel_bookings(userId):
     data = request.get_json()
-    cust_e = data['email']
-    date_ = data['date']
-    seat_number = data['seat_number']
-    title = data['title']
-    cust_id = Customer.query.filter_by(email=cust_e).first()
-    event = Events_order.query.filter_by(eventtitle=title).first()
-    if not event:
-        return jsonify({'message': 'Event not found!'}), 404
-    if not cust_id:
-        return jsonify({'message': 'Customer not found!'}), 404
-
-    cust_id.order = {event.id: date_}
-    db.session.commit()
-
-    event_d = event.orderdetails
-    if date_ in event_d:
-        for i in seat_number:
-            event_d[date_][i] = [1, cust_id.id]
-            event.orderdetails = event_d
+    cust = Customer.query.filter_by(id=int(data.userId)).first()
+    if data.eventId in cust.order:
+        del cust.order[data.eventId]
+        flag_modified(cust, "order")
+        event_order = Events_order.query.filter_by(id=int(data.eventId)).first()
+        for i in range(len(event_order.orderdetails[data.date])):
+            if event_order.orderdetails[data.date][i] == int(data.userId):
+                event_order.orderdetails[data.date][i] = [0,0]
+            flag_modified(event_order, "orderdetails")
         db.session.commit()
+        return jsonify({'message': 'Refund successfully!'}), 201
+    else:
+        return jsonify({'message': 'Event not Found!!!'}), 400
 
-        order_data = {
-            'id': event.id,
-            'eventtitle': event.eventtitle,
-            'orderdetials': event.orderdetails
-        }
-        return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
-    return jsonify({'message': 'Failed to update event details!'}), 400
 
 @app.route('/events/new', methods=['POST'])
 def register_event():
@@ -593,7 +590,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.drop_all()
+        #db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
