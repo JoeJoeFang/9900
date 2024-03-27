@@ -29,13 +29,17 @@ const BookingList = () => {
     const [error, setError] = useState(null);
 
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+    const [selectedEventId, setSelectedEventId] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
 
     const handleNavigateToEventDetail = (eventId, e) => {
         e.stopPropagation(); // 阻止事件冒泡
         navigate(`/all-event/${eventId}`);
     };
 
-    const handleOpenConfirmDialog = (eventId) => {
+    const handleOpenConfirmDialog = (eventId, eventDate) => {
+        console.log("handleOpenConfirmDialog clicked");
+        setSelectedDate(eventDate);
         setSelectedEventId(eventId);
         setOpenConfirmDialog(true);
     };
@@ -45,20 +49,21 @@ const BookingList = () => {
         setOpenConfirmDialog(false);
     };
 
-    const [selectedEventId, setSelectedEventId] = useState(null);
+
 
     const handleCancelBooking = async (userId) => {
         if (selectedEventId) {
             // 使用 selectedEventId 来取消预订
             console.log("Cancel booking for event ID:", selectedEventId);
+            console.log("Cancel booking for event Date:", selectedDate);
             // 假设取消成功后的处理逻辑...
             setOpenConfirmDialog(false);
-            setSelectedEventId(null); // 重置选中的事件ID
+
             const token = localStorage.getItem('token');
             const requestBody = {
                 userId: userId,
                 // seat: selectedSeats,
-                // Date: selectedDate,
+                Date: selectedDate,
                 eventId: selectedEventId,
                 // email : email,
             };
@@ -73,6 +78,8 @@ const BookingList = () => {
                 if (response.status === 200) {
                     // listingId
                     console.log('cancel successfully!');
+                    setSelectedEventId(null); // 重置选中的事件ID
+                    setSelectedDate(null);
                     navigate(0);
                 }
             } catch (error) {
@@ -168,7 +175,6 @@ const BookingList = () => {
                                     boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
                                 },
                             }}
-                            onClick={() => navigate(`/all-event/${event.eventId}`)}
                         >
                             {event.thumbnail && (
                                 <CardMedia
@@ -188,7 +194,7 @@ const BookingList = () => {
                                     Your Booked Date: {event.date}<br />
                                     Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
                                     <Button onClick={(e) => handleNavigateToEventDetail(event.eventId, e)}>View Details</Button>
-                                    <Button onClick={() => handleOpenConfirmDialog(event.eventId)}>Cancel Booking</Button>
+                                    <Button onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>Cancel Booking</Button>
                                 </Typography>
                             </CardContent>
                         </Card>
