@@ -112,11 +112,6 @@ class Myevents(db.Model):
     event = db.Column(db.String(50), nullable=False)
     host = db.Column(db.String(50), nullable=False)
 
-class Comments(db.Model):
-    __tablename__ = "comments"
-    eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    comment = db.Column(JSON, nullable=True)
-
 # 多条件分页搜索
 class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
     keyword = StringField('Keyword')        # 关键词输入
@@ -401,7 +396,7 @@ def update_events_bookings():
             'orderdetails': event.orderdetails
         }
         print(cust.email)
-        # message = Message(subject="Ticket", recipients=[cust.email], body="Order successfully!!")
+        # message = Message(subject="Ticket", recipients=["2180127506@qq.com"], body="Order successfully!!")
         # mail.send(message)
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
@@ -439,34 +434,21 @@ def get_bookings(userId):
 
 @app.route('/bookings/cancel/<int:userId>', methods=['PUT'])
 def cancel_bookings(userId):
-    print('2222222')
     data = request.get_json()
-    cust = Customer.query.filter_by(id=int(userId)).first()
+    cust = Customer.query.filter_by(id=int(data.userId)).first()
     if data.eventId in cust.order:
         del cust.order[data.eventId]
         flag_modified(cust, "order")
-        event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
-        for i in range(len(event_order.orderdetails[data['date']])):
-            if event_order.orderdetails[data.date][i] == int(data['userId']):
+        event_order = Events_order.query.filter_by(id=int(data.eventId)).first()
+        for i in range(len(event_order.orderdetails[data.date])):
+            if event_order.orderdetails[data.date][i] == int(data.userId):
                 event_order.orderdetails[data.date][i] = [0,0]
             flag_modified(event_order, "orderdetails")
-        # message = Message(subject="Cancel", recipients=[data['email']], body="Cancel order successfully!!")
-        # mail.send(message)
         db.session.commit()
         return jsonify({'message': 'Refund successfully!'}), 201
     else:
         return jsonify({'message': 'Event not Found!!!'}), 400
 
-
-@app.route('/comments', methods=['PUT'])
-def comments():
-    data = request.get_json()
-    c = [data['date'], data['comment']]
-    comment = Comments.query.filter_by(id=int(data['eventId']))
-    comment.comment[data['userId']] = c
-    flag_modified(comment, "comment")
-    db.session.commit()
-    return jsonify({'message': 'Add comment successfully!'}), 201
 
 @app.route('/events/new', methods=['POST'])
 def register_event():
@@ -505,10 +487,6 @@ def register_event():
 
     new_order = Events_order(eventtitle=data['title'], orderdetails=seats_c)
     db.session.add(new_order)
-    db.session.commit()
-
-    new_comment = Comments(eventid=data['eventId'], comment={})
-    db.session.add(new_comment)
     db.session.commit()
 
     new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
