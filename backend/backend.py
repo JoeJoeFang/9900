@@ -87,6 +87,7 @@ class Customer(db.Model):
 class Events(db.Model):
     __tablename__ = "events"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    hostId = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(20), nullable=False)
     address = db.Column(db.String(100), nullable=True)
     price = db.Column(db.Integer, nullable=True)
@@ -330,6 +331,31 @@ def get_events_title():
     #print("fanhui", event_list)
     return jsonify(event_list)
 
+@app.route('/events/host/<int:userId>', methods=['GET'])
+def get_host_events(userId):
+    events = Events.query.filter_by(hostId=userId)
+    event_list = []
+    for event in events:
+        event_data = {
+            'id': event.id,
+            'hostId': event.hostId,
+            'title': event.title,
+            'address': event.address,
+            'price': event.price,
+            'organizerName': event.organizername,
+            'eventType': event.type,
+            'seatingCapacity': event.seats,
+            'duration': event.duration,
+            'startDate': event.from_time,
+            'endDate': event.to_time,
+            'description': event.description,
+            'youtubeUrl': event.URL,
+            'thumbnail': event.thumbnail
+        }
+        event_list.append(event_data)
+    return jsonify(event_list)
+
+
 @app.route('/events/<int:eventId>', methods=['GET'])
 def get_events_details(eventId):
     # 查询数据库以获取事件列表
@@ -476,7 +502,7 @@ def cancel_events(userId):
     db.session.delete(event)
     db.session.commit()
     return jsonify({'message': 'Event has been canceled!'}), 201
-    
+
 
 @app.route('/comments', methods=['PUT'])
 def comments():
@@ -491,7 +517,7 @@ def comments():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    print(data)
+    #print(data)
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
     event_title = data['title']
@@ -526,12 +552,12 @@ def register_event():
     new_order = Events_order(eventtitle=data['title'], orderdetails=seats_c)
     db.session.add(new_order)
     db.session.commit()
-
-    new_comment = Comments(eventid=data['eventId'], comment={})
+    #print(type(new_order.id))
+    new_comment = Comments(eventId=new_order.id, comment={})
     db.session.add(new_comment)
     db.session.commit()
 
-    new_event = Events(title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
+    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
                        type=data['eventType'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])

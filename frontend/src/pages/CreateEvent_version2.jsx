@@ -175,6 +175,7 @@ const CreateNewEvent = () => {
         setFormErrors(errors);
 
         const token = localStorage.getItem('token');
+        const hostId = localStorage.getItem('userId');
         const requestBody = {
             title: eventData.title,
             address: eventData.address,
@@ -188,6 +189,7 @@ const CreateNewEvent = () => {
             youtubeUrl: eventData.youtubeUrl,
             organizerName: eventData.organizerName,
             description: eventData.description,
+            hostId: hostId,
 
         };
         console.log('requestBody', requestBody);
