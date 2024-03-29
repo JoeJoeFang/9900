@@ -27,7 +27,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'Hsj991220.'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -633,7 +633,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        #db.drop_all()
+        db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)

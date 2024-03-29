@@ -7,8 +7,9 @@ import CreateNewEvent from '../components/CreateNewEvent';
 import MyBookings from '../components/MyBookings';
 import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
-
+import AllEvents from '../components/AllEvents';
 import {useNavigate} from "react-router-dom";
+
 
 const theme = createTheme({
     palette: {
@@ -69,7 +70,8 @@ const EventsList = () => {
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                <SearchEvents onSearch={handleSearch} />    
+                <SearchEvents onSearch={handleSearch} />
+                    <AllEvents   />   
                     <CreateNewEvent />
                     <MyBookings />
                     <HostProfile />
