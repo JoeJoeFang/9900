@@ -517,12 +517,11 @@ def comments():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    print(data)
+    #print(data)
     #thumbnail_data = base64.b64decode(data['thumbnail'])
     #print(data)
     event_title = data['title']
     existing_event = Events.query.filter_by(title=event_title).first()
-    host = Host.query.filter_by(companyName=data['organizerName']).first()
     if existing_event:
         return jsonify({'message': 'Event title already exists!'}), 400
     image_str = data['thumbnail']
@@ -558,7 +557,7 @@ def register_event():
     db.session.add(new_comment)
     db.session.commit()
 
-    new_event = Events(hostId=host.id,title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
+    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
                        type=data['eventType'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
