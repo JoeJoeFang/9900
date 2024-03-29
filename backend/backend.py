@@ -80,6 +80,7 @@ class Customer(db.Model):
     state = db.Column(db.String(100), nullable=True)
     post_code = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(1000), nullable=True)
+    wallet = db.Column(db.Integer, nullable=True)
     order = db.Column(JSON, nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
@@ -457,6 +458,25 @@ def cancel_bookings(userId):
     else:
         return jsonify({'message': 'Event not Found!!!'}), 400
 
+@app.route('/bookings/cancel_event/<int:userId>', methods=['PUT'])
+def cancel_events(userId):
+    data = request.get_json()
+    event_order = Events_order.query.filter_by(id=data['eventId']).first()
+    event = Events.query.filter_by(id=data['eventId']).first()
+    user_list = []
+    for k, v in event_order.orderdetails.iteritems():
+        for i in range(len(v)):
+            if v[i][0] == 1:
+                user_list.append(v[i][1])
+    for i in user_list:
+        user = Customer.query.filter_by(id=int(i)).first()
+        del user.order[str(data['eventId'])]
+        # message = Message(subject="Order Changed!", recipients=[user.email], body="Event has been Canceled!")
+        # mail.send(message)
+    db.session.delete(event)
+    db.session.commit()
+    return jsonify({'message': 'Event has been canceled!'}), 201
+    
 
 @app.route('/comments', methods=['PUT'])
 def comments():
@@ -536,7 +556,8 @@ def register():
         new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
     else:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'], duedate=data['cardExpirationDate'])
+        new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
+                            duedate=data['cardExpirationDate'], wallet=0)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
