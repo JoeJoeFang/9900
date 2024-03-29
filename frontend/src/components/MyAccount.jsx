@@ -14,7 +14,7 @@ const MyAccount = () => {
             sx={{ mr: 1 }} 
             onClick={handleMyAccountClick} // 绑定处理函数到按钮的点击事件
         >
-            My Bookings
+            My Account
         </Button>
     );
 };

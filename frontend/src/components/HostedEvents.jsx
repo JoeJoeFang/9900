@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 const HostedEvents = () => {
     const handleHostedEventsClick = () => {
         console.log('Hosted events clicked');
-        window.location.href = '/hosted-event'; 
+        window.location.href = '/my-hosted-event'; 
     };
 
     return (
@@ -14,7 +14,7 @@ const HostedEvents = () => {
             sx={{ mr: 1 }} 
             onClick={handleHostedEventsClick} // 绑定处理函数到按钮的点击事件
         >
-            Host Profile
+            Hosted Event
         </Button>
     );
 };

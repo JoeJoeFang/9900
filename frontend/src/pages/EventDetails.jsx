@@ -9,7 +9,7 @@ import HostProfile from '../components/HostProfile';
 import {useNavigate} from "react-router-dom";
 import NativeSelect from '@mui/material/NativeSelect';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-
+import HeaderLogo from '../components/HeaderLogo';
 import { useParams } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -24,11 +24,9 @@ import {
     Backdrop,
     Container,
     Link,
-    Select,
-    MenuItem,
 } from '@mui/material';
 // import { Box, Button, Typography, Grid, Select, MenuItem } from '@mui/material';
-import SearchEvents from "../components/SearchEvents";
+//import SearchEvents from "../components/SearchEvents";
 
 const theme = createTheme({
     palette: {
@@ -66,7 +64,7 @@ const EventDetails = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
+    //const userId = localStorage.getItem('userId');
     const email = localStorage.getItem('userEmail');
 
 
@@ -279,12 +277,7 @@ const EventDetails = () => {
                     <Logout />
 
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                    <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                    <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                        Our Amazing Ticket Platform
-                    </Typography>
-                </Box>
+                <HeaderLogo theme={theme} />
                 <Backdrop
                     sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={isLoading}

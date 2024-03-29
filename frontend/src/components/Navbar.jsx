@@ -5,12 +5,13 @@ import CreateNewEvent from '../components/CreateNewEvent';
 import HostProfile from '../components/HostProfile';
 import Logout from '../components/Logout';
 import MyAccount from '../components/MyAccount'; // Assuming the Navbar is in the same directory level as HostedEvents
+import HostedEvents from '../components/HostedEvents';
 
 
 const Navbar = () => {
   // 使用 useState 钩子来创建 identity 状态
   const [identity, setIdentity] = useState(localStorage.getItem('identity'));
-
+  console.log('Initial identity value:', identity);
   // 使用 useEffect 钩子来监听 localStorage 的变化
   useEffect(() => {
     const handleStorageChange = (event) => {
@@ -41,11 +42,12 @@ const Navbar = () => {
     const buttonsForHost = [
       <AllEvents key="allEvents" />,
       // 假设 HostedEvents 是你的一个组件，代表主办的活动 
+      <HostedEvents key="HostedEvents" />,
       <CreateNewEvent key="createNewEvent" />,
       <HostProfile key="hostProfile" />,
       <Logout key="logout" />
     ];
-
+    console.log(identity)
     return identity === 'customer' ? buttonsForCustomer : buttonsForHost;
   };
 
