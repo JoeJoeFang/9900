@@ -9,7 +9,7 @@ import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
-
+import HeaderLogo from '../components/HeaderLogo';
 const theme = createTheme({
     palette: {
         primary: {
@@ -23,7 +23,7 @@ const theme = createTheme({
 
 
 const BookingList = () => {
-    const userId = localStorage.getItem('userId');
+    // const userId = localStorage.getItem('userId');
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -51,7 +51,7 @@ const BookingList = () => {
 
 
 
-    const handleCancelBooking = async (userId) => {
+    const handleCancelBooking = async () => {
         if (selectedEventId) {
             // 使用 selectedEventId 来取消预订
             console.log("Cancel booking for event ID:", selectedEventId);
@@ -60,6 +60,7 @@ const BookingList = () => {
             setOpenConfirmDialog(false);
 
             const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
             const requestBody = {
                 userId: userId,
                 // seat: selectedSeats,
@@ -80,7 +81,7 @@ const BookingList = () => {
                     console.log('cancel successfully!');
                     setSelectedEventId(null); // 重置选中的事件ID
                     setSelectedDate(null);
-                    navigate(0);
+
                 }
             } catch (error) {
                 if (error.response) {
@@ -109,6 +110,7 @@ const BookingList = () => {
     useEffect(() => {
 
         const fetchEvents = async () => {
+            const userId = localStorage.getItem('userId');
             setIsLoading(true);
             setError(null);
             try {
@@ -147,12 +149,7 @@ const BookingList = () => {
                 <Logout />
 
             </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                    Our Amazing Ticket Platform
-                </Typography>
-            </Box>
+            <HeaderLogo theme={theme} />
             {isLoading ? (
                 <CircularProgress />
             ) : error ? (

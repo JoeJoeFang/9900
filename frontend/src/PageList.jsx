@@ -3,7 +3,7 @@ import React from 'react';
 // import { Container, Button, Typography, Box, Stack } from '@mui/material';
 import { Button, Typography, Box, Stack, useTheme } from '@mui/material';
 import { useNavigate, Route, Routes } from 'react-router-dom';
-
+import HeaderLogo from './components/HeaderLogo';
 import { LoginHost, LoginCustomer } from './pages/Login.jsx'
 import RegisterHost from './pages/RegisterHost.jsx';
 import RegisterCustomer from './pages/RegisterCustomer.jsx';
@@ -13,6 +13,7 @@ import AllEventPage from "./pages/AllEvent.jsx";
 import './App.css';
 import EventDetails from "./pages/EventDetails";
 import BookingList from "./pages/MyBookingPage";
+import MyHostedEventsPage from "./pages/MyHostedEventsPage";
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -48,12 +49,7 @@ const DefaultPage = () => {
             p: theme.spacing(2),
         }}>
             {/* 商标图片和平台标题 */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                    Our Amazing Ticket Platform
-                </Typography>
-            </Box>
+            <HeaderLogo theme={theme} />
 
             {/* 内容容器 */}
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
@@ -117,6 +113,7 @@ const PageList = () => {
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
                 <Route path='/all-event/:eventId' element={<EventDetails />} />
                 <Route path='/my-booking' element={<BookingList />} />
+                <Route path='/my-hosted-event' element={<MyHostedEventsPage />} />
 
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { ThemeProvider, createTheme, Container, Box, FormControl, Typography, Card, CardContent, CardActions, Grid, TextField, Button, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
     ThemeProvider,
@@ -21,6 +20,8 @@ import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import NativeSelect from '@mui/material/NativeSelect';
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import HeaderLogo from '../components/HeaderLogo';
 
 
 
@@ -38,6 +39,7 @@ const theme = createTheme({
 });
 
 const CreateNewEvent = () => {
+    const identity = localStorage.getItem('identity');
     const navigate = useNavigate();
     const [formErrors, setFormErrors] = useState({});
     const [eventData, setEventData] = useState({
@@ -163,6 +165,7 @@ const CreateNewEvent = () => {
         }
     };
 
+
     const handleSubmit = async () => {
         const errors = Object.keys(eventData).reduce((acc, key) => {
             const error = validateField(key, eventData[key]);
@@ -216,6 +219,44 @@ const CreateNewEvent = () => {
         }
     };
 
+    if (identity !== 'host') {
+        // Display an alternative UI if the user is not a host
+        return (
+            <Container sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
+                backgroundSize: 'cover, cover',
+                backgroundPosition: 'center, center',
+                p: theme.spacing(2),
+            }}>
+                <Box sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 2, // Provides space between items
+                    textAlign: 'center',
+                }}>
+                    <ErrorOutlineIcon sx={{ fontSize: 60, color: 'error.main' }} />
+                    <Typography variant="h5" gutterBottom>
+                        You do not have permission to view this page.
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary">
+                        Please explore other areas of our platform.
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={() => navigate('/all-event')} sx={{ mt: 2 }}>
+                        Go to All Events
+                    </Button>
+                </Box>
+            </Container>
+        );
+    }
+
     return (
         <ThemeProvider theme={theme}>
             <Box
@@ -247,12 +288,7 @@ const CreateNewEvent = () => {
                 >
                     <ArrowBackIcon sx={{ fontSize: 28 }} />
                 </IconButton>
-                <Box sx={{ width: '100%', mb: 4, pt: 4, textAlign: 'center' }}>
-                    <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                    <Typography variant="h3" component="h1" gutterBottom sx={{ color: 'white', fontWeight: 'bold' }}>
-                        Our Amazing Ticket Platform
-                    </Typography>
-                </Box>
+                <HeaderLogo theme={theme} />
                 <Container maxWidth="md" sx={{ mb: 4, backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '15px', p: 2, mt: 5 }}>
                     <Card raised sx={{ mt: 3 }}>
                         <CardContent>
@@ -313,9 +349,8 @@ const CreateNewEvent = () => {
                                     <FormControl fullWidth>
                                         <InputLabel id="event-type-label">Event Type</InputLabel>
                                         <NativeSelect
-                                            defaultValue="concert"
                                             onChange={updateField} // 假设这个函数能够正确处理 NativeSelect 的事件
-                                            value={eventData.eventType} // 确保这里使用了用于追踪选中值的状态
+                                            value={eventData.eventType} // 使用状态来追踪选中值
                                             inputProps={{
                                                 name: 'eventType', // 增加 name 属性，以便 updateField 函数可以识别字段
                                             }}
@@ -325,6 +360,7 @@ const CreateNewEvent = () => {
                                             <option value="meeting">meeting</option>
                                             <option value="webinar">webinar</option>
                                         </NativeSelect>
+
                                     </FormControl>
                                 </Grid>
 
@@ -346,7 +382,7 @@ const CreateNewEvent = () => {
                                     <FormControl fullWidth>
                                         <InputLabel id="seating-capacity-label">Seating Capacity</InputLabel>
                                         <NativeSelect
-                                            defaultValue="100"
+                                            // defaultValue="100"
                                             onChange={updateField}
                                             value={eventData.seatingCapacity}
                                             inputProps={{

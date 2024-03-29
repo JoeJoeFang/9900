@@ -7,7 +7,7 @@ import CreateNewEvent from '../components/CreateNewEvent';
 import MyBookings from '../components/MyBookings';
 import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
-
+import HeaderLogo from '../components/HeaderLogo';
 import {useNavigate} from "react-router-dom";
 
 const theme = createTheme({
@@ -76,18 +76,13 @@ const EventsList = () => {
                     <Logout />
                 
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                    <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                    <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                        Our Amazing Ticket Platform
-                    </Typography>
-                </Box>
+                <HeaderLogo theme={theme} />
                 {isLoading ? (
                     <CircularProgress />
                 ) : error ? (
                     <Typography color="error">{error}</Typography>
                 ) : events.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px', width: '90%' }}>
                         <Typography variant="h4" gutterBottom>Upcoming Events</Typography>
                         {events.map((event, index) => (
                             <Card
