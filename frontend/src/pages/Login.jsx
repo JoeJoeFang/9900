@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {TextField, Button, Typography, Box, useTheme, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import HeaderLogo from '../components/HeaderLogo';
 
 export const LoginCustomer = () => {
     const theme = useTheme();
@@ -83,12 +84,7 @@ export const LoginCustomer = () => {
             >
                 <ArrowBackIcon sx={{ fontSize: 28 }} />
             </IconButton>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                    Our Amazing Ticket Platform
-                </Typography>
-            </Box>
+            <HeaderLogo theme={theme} />
 
             <Box sx={{ display: 'flex',
                 flexDirection: 'row',
@@ -250,22 +246,22 @@ export const LoginHost = () => {
                 <ArrowBackIcon sx={{ fontSize: 28 }} />
             </IconButton>
             {/* 商标图片和平台标题 */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                    Our Amazing Ticket Platform
-                </Typography>
-            </Box>
+            <HeaderLogo theme={theme} />
 
             {/* 内容容器 */}
-            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
-                {/* 标语 */}
-                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'rgba(0, 0, 0, 0.5)', borderRadius: theme.shape.borderRadius }}>
+            <Box sx={{ display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '100%',
+                maxWidth: 1200,
+                px: theme.spacing(5),
+                gap: theme.spacing(3) }}>
+                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'transparent', borderRadius: theme.shape.borderRadius }}>
                     <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
-                        The best way to book an event and know all about
+                        The best way to host an event and know all about
                     </Typography>
                     <Typography variant="body1" sx={{ color: 'white', fontWeight: 'medium' }}>
-                        Start your booking with us and join our community!
+                        Start your events with us and join our community!
                     </Typography>
                 </Box>
 
