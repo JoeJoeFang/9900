@@ -49,7 +49,7 @@ const handleSearch = async () => {
   }).toString();
 
   try {
-    const response = await fetch(`/user/search?${params}`, {
+    const response = await fetch(`http://127.0.0.1:5005/user/search?${params}`, {
       method: 'GET',
       headers: {
         'Cache-Control': 'no-cache'
@@ -64,7 +64,7 @@ const handleSearch = async () => {
       throw new Error('Non-JSON response received');
     }
     const data = await response.json();
-    onSearch(data);
+    // onSearch(data);
   } catch (error) {
     console.error('Fetch error:', error);
     setError('Failed to load events. Please try again.');
