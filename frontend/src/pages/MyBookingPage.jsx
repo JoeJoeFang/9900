@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
+import { Card, CardContent, Typography, CardMedia, CircularProgress, Box,ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 // import Logout from '../components/Logout';
 // import CreateNewEvent from '../components/CreateNewEvent';
@@ -130,6 +130,7 @@ const BookingList = () => {
         fetchEvents();
     }, []);
     return (
+    <ThemeProvider theme={theme}>
         <Box sx={{
             minHeight: '100vh',
             display: 'flex',
@@ -215,6 +216,7 @@ const BookingList = () => {
                 </DialogActions>
             </Dialog>
         </Box>
+        </ThemeProvider>
     );
 
 };

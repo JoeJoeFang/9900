@@ -20,14 +20,6 @@ const SearchEvents = ({ onSearch }) => {
     // 添加更多类型...
   ];
 
-  const eventDurations = [
-    { value: 'None', label: 'Any Duration' }, // Option to not apply duration filter
-    { value: '1', label: '1 day' },
-    { value: '3', label: '2-3 days' },
-    { value: '7', label: '4-7 days' },
-    { value: '15', label: '8-15 days' },
-    { value: '16', label: 'More than 15 days' }, // Assuming '16' signifies more than 15 days
-];
 
   const sortOptions = [
     // Assuming 'None' is a valid option to indicate no specific sorting
@@ -110,18 +102,6 @@ const handleKeyPress = (event) => {
         >
           {eventTypes.map((type) => (
             <MenuItem key={type.id} value={type.id}>{type.title}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Duration</InputLabel>
-        <Select
-          value={eventDuration}
-          label="Duration"
-          onChange={(e) => setEventDuration(e.target.value)}
-        >
-          {eventDurations.map((duration) => (
-            <MenuItem key={duration.value} value={duration.value}>{duration.label}</MenuItem>
           ))}
         </Select>
       </FormControl>

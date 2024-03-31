@@ -11,6 +11,7 @@ import NativeSelect from '@mui/material/NativeSelect';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import HeaderLogo from '../components/HeaderLogo';
 import { useParams } from 'react-router-dom';
+import SearchEvents from '../components/SearchEvents'; 
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Box,
@@ -25,6 +26,7 @@ import {
     Container,
     Link,
 } from '@mui/material';
+import Navbar from '../components/Navbar';
 // import { Box, Button, Typography, Grid, Select, MenuItem } from '@mui/material';
 //import SearchEvents from "../components/SearchEvents";
 
@@ -39,7 +41,10 @@ const theme = createTheme({
     },
 });
 
-
+const handleSearch = (searchTerm) => {
+    console.log("Search term:", searchTerm);
+    // Implement search logic here, e.g., filter your data or make a new API call
+};
 
 const EventDetails = () => {
     const { eventId } = useParams();
@@ -206,40 +211,47 @@ const EventDetails = () => {
             );
         } else {
             return (
-                <Dialog open={open} onClose={onClose}>
-                    <DialogTitle>Confirm Booking</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Event ID: {eventId}
-                        </DialogContentText>
-                        <DialogContentText>
-                            Selected Date: {selectedDate}
-                        </DialogContentText>
-                        <DialogContentText>
-                            Selected Seats: {selectedSeats.join(", ")}
-                        </DialogContentText>
-                        <DialogContentText>
-                            Booking Email: {email}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={onClose}>Cancel</Button>
-                        <Button onClick={() => {
-                            submitbooking(selectedSeats, selectedDate, eventId, email)
-                                .then(() => {
-                                    console.log('Booking confirmed:', { eventId, selectedDate, selectedSeats, email });
-                                    onClose(); // 关闭对话框
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to confirm booking:', error);
-                                    // 可以在这里处理错误，比如显示一个错误消息给用户
-                                });
-                        }} color="primary">
-                            Confirm
-                        </Button>
+                <><box>
+                    <SearchEvents onSearch={handleSearch} />
+                    {/* <CreateNewEvent /> */}
+                    {/* <MyBookings /> */}
+                    {/* <HostProfile /> */}
+                    {/* <Logout /> */}
+                    <Navbar></Navbar>
+                </box><Dialog open={open} onClose={onClose}>
+                        <DialogTitle>Confirm Booking</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Event ID: {eventId}
+                            </DialogContentText>
+                            <DialogContentText>
+                                Selected Date: {selectedDate}
+                            </DialogContentText>
+                            <DialogContentText>
+                                Selected Seats: {selectedSeats.join(", ")}
+                            </DialogContentText>
+                            <DialogContentText>
+                                Booking Email: {email}
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={onClose}>Cancel</Button>
+                            <Button onClick={() => {
+                                submitbooking(selectedSeats, selectedDate, eventId, email)
+                                    .then(() => {
+                                        console.log('Booking confirmed:', { eventId, selectedDate, selectedSeats, email });
+                                        onClose(); // 关闭对话框
+                                    })
+                                    .catch((error) => {
+                                        console.error('Failed to confirm booking:', error);
+                                        // 可以在这里处理错误，比如显示一个错误消息给用户
+                                    });
+                            } } color="primary">
+                                Confirm
+                            </Button>
 
-                    </DialogActions>
-                </Dialog>
+                        </DialogActions>
+                    </Dialog></>
             );
         }
     };
@@ -271,11 +283,12 @@ const EventDetails = () => {
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                    <CreateNewEvent />
-                    <MyBookings />
-                    <HostProfile />
-                    <Logout />
-
+                <SearchEvents onSearch={handleSearch} />
+                    {/* <CreateNewEvent /> */}
+                    {/* <MyBookings /> */}
+                    {/* <HostProfile /> */}
+                    {/* <Logout /> */}
+                    <Navbar></Navbar>
                 </Box>
                 <HeaderLogo theme={theme} />
                 <Backdrop

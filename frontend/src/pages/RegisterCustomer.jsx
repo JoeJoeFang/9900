@@ -1,43 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { TextField, Button, Typography, Box, useTheme } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { TextField, Button, Typography, Box, useTheme, IconButton, Snackbar } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
-import Snackbar from '@mui/material/Snackbar';
-
-
 
 const RegisterCustomer = () => {
     const theme = useTheme();
     const navigate = useNavigate();
 
-    const [,setOpenDialog] = useState(false);
-
-    
     const [registerData, setRegisterData] = useState({
         Name: '',
         email: '',
         password: '',
         confirmPassword: '',
-        cardNumber: '', // Assuming we're adding a card number for some reason
-        cardCVC: '', // Assuming we're adding CVC for some reason
-        cardExpirationDate: '', // Adding card expiration date in MM/YY format
+        cardNumber: '',
+        cardCVC: '',
+        cardExpirationDate: '',
     });
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarType, setSnackbarType] = useState('info'); 
-    
+    const [snackbarType, setSnackbarType] = useState('info');
+    const [expirationDateError, setExpirationDateError] = useState('');
+
     const handleCloseSnackbar = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setOpenSnackbar(false);
     };
+
     const updateField = (e) => {
-        setRegisterData(prevState => ({
+        setRegisterData((prevState) => ({
             ...prevState,
             [e.target.name]: e.target.value,
         }));
@@ -45,68 +40,88 @@ const RegisterCustomer = () => {
 
     const handleBack = () => navigate(-1);
 
-    const handleExpirationDateChange = (e) => {
-        const { value } = e.target;
-        let formattedValue = value.replace(
-            /[^0-9]/g, '' // Remove non-digit characters
-        ).substring(0, 4); // Limit length to 4 digits to fit MMYY
-
-        if (formattedValue.length > 2) {
-            formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2, 4);
+    const validateExpirationDate = (expiration) => {
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiration)) {
+            return false;
         }
 
-        setRegisterData(prevState => ({
-            ...prevState,
-            cardExpirationDate: formattedValue
-        }));
+        const [expMonth, expYear] = expiration.split('/');
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+
+        if (parseInt(expYear, 10) < currentYear || (parseInt(expYear, 10) === currentYear && parseInt(expMonth, 10) < currentMonth)) {
+            return false;
+        }
+
+        return true;
     };
-    
+
+    const handleExpirationDateChange = (e) => {
+        const { value } = e.target;
+        let formattedValue = value.replace(/[^0-9]/g, '').substring(0, 4);
+
+        if (formattedValue.length > 2) {
+            formattedValue = `${formattedValue.substring(0, 2)}/${formattedValue.substring(2, 4)}`;
+        }
+
+        setRegisterData((prevState) => ({
+            ...prevState,
+            cardExpirationDate: formattedValue,
+        }));
+
+        const isValidDate = validateExpirationDate(formattedValue);
+        setExpirationDateError(
+            isValidDate ? '' : 'Expiration date must be in the future and mm/yy.'
+        );
+    };
+
     const registerUser = async (e) => {
         e.preventDefault();
 
-         // Check if passwords match
-         if (registerData.password !== registerData.confirmPassword) {
-            setSnackbarMessage("Passwords do not match.");
+        // Check if the card expiration date is valid
+        if (!validateExpirationDate(registerData.cardExpirationDate)) {
+            setExpirationDateError('Expiration date must be in the future.');
             setOpenSnackbar(true);
+            setSnackbarMessage('Expiration date must be in the future.');
+            setSnackbarType('error');
             return;
         }
-    
-        // Attempt to register the host
+
+        // Check if passwords match
+        if (registerData.password !== registerData.confirmPassword) {
+            setExpirationDateError('');
+            setOpenSnackbar(true);
+            setSnackbarMessage("Passwords do not match.");
+            setSnackbarType('error');
+            return;
+        }
+
         try {
-            console.log(registerData)
             const response = await axios.post('http://localhost:5005/user/auth/register', {
                 Name: registerData.Name,
                 email: registerData.email,
                 password: registerData.password,
                 cardNumber: registerData.cardNumber,
                 cardCVC: registerData.cardCVC,
-                cardExpirationDate:registerData.cardExpirationDate
+                cardExpirationDate: registerData.cardExpirationDate,
             }, {
                 headers: { 'Content-Type': 'application/json' },
             });
-    
-            // If registration is successful
+
             if (response.status === 201) {
                 setSnackbarMessage("Registration successful!");
-                setOpenDialog(true); 
-                setTimeout(() => {
-                    navigate('/login-customer'); // Redirect to the all events page
-                }, 2000); // Adjust delay as necessary
-    
-                console.log('Register successfully');
+                setSnackbarType('success');
+                setOpenSnackbar(true);
+                setTimeout(() => navigate('/login-customer'), 2000);
             }
         } catch (errorResponse) {
-            let errorMessage = 'An unexpected error occurred during registration.';
-            // Ensure the error response structure you're expecting matches what the backend sends
-            if (errorResponse.response && errorResponse.response.data && errorResponse.response.data.message) {
-                // Backend sends error messages in the format { message: '...' }
-                errorMessage = errorResponse.response.data.message;
-            }
-            // This sets the state which triggers the snackbar to show the error message
-            setSnackbarMessage(errorMessage);
+            const errorMessage = errorResponse.response?.data?.message || 'An unexpected error occurred during registration.';
             setOpenSnackbar(true);
+            setSnackbarMessage(errorMessage);
+            setSnackbarType('error');
         }
     };
+
     const action = (
         <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackbar}>
             <CloseIcon fontSize="small" />
@@ -242,18 +257,17 @@ const RegisterCustomer = () => {
                     error={registerData.cardCVC && !/^\d{3}$/.test(registerData.cardCVC)}
                     helperText={registerData.cardCVC && !/^\d{3}$/.test(registerData.cardCVC) ? 'CVC must be 3 digits.' : ' '} />
                 <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="cardExpirationDate"
-                    label="Expiration Date (MM/YY)"
-                    value={registerData.cardExpirationDate}
-                    onChange={handleExpirationDateChange}
-                    inputProps={{ maxLength: 5 }}
-                    error={registerData.cardExpirationDate && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(registerData.cardExpirationDate)}
-                    helperText={registerData.cardExpirationDate && !/^(0[1-9]|1[0-2])\/\d{2}$/.test(registerData.cardExpirationDate)
-                        ? 'Expiration date must be in the format MM/YY.'
-                        : ' '} />
+                         margin="normal"
+                         required    
+                         fullWidth
+                         name="cardExpirationDate"
+                         label="Expiration Date (MM/YY)"
+                         value={registerData.cardExpirationDate}
+                         onChange={handleExpirationDateChange}
+                         inputProps={{ maxLength: 5 }}
+                         error={!!expirationDateError} // Error state derived from expirationDateError
+                         helperText={expirationDateError} // Display the error message from expirationDateError
+                    />
                 
                 
                 <IconButton

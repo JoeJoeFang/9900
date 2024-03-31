@@ -583,24 +583,33 @@ def register():
     else:
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
         new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
-                            duedate=data['cardExpirationDate'], wallet=0)
+                            duedate=data['cardExpirationDate'],wallet=0)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
 
+# Flask后端示例
 @app.route('/user/auth/customer', methods=['GET'])
 def get_customer():
-    data = request.get_json()
-    cust = Customer.query.filter_by(email=data['customerId']).first()
+    # 获取userId参数，并尝试将其转换为整数
+    user_id = request.args.get('userId')
+    user_id = int(user_id) if user_id is not None else None
+    print('UserID received:', user_id)
+
+    # 使用转换后的整数进行查询
+    cust = Customer.query.filter_by(id=user_id).first()
+
+    if cust is None:
+        print('No customer found for UserID:', user_id)  # 如果查询无结果，输出信息
+        return jsonify({'error': 'Customer not found'}), 404
+
+    # 如果找到了customer，构造详情字典
     cust_detail = {
         'id': cust.id,
         'email': cust.email,
-        'password': cust.password,
         'name': cust.name,
-        'cvc': cust.cvc,
         'duedate': cust.duedate,
         'wallet': cust.wallet,
-        'orders': cust.orders
     }
     return jsonify(cust_detail)
 

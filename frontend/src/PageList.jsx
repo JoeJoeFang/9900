@@ -14,6 +14,7 @@ import './App.css';
 import EventDetails from "./pages/EventDetails";
 import BookingList from "./pages/MyBookingPage";
 import MyHostedEventsPage from "./pages/MyHostedEventsPage";
+import MyAccount from "./pages/MyAccount";
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -109,13 +110,12 @@ const PageList = () => {
                 <Route path='/register-host' element={<RegisterHost />} />
                 <Route path='/register-customer' element={<RegisterCustomer />} />
                 <Route path='/all-event' element={<AllEventPage />} />
-                {/*<Route path='/my-account' element={<MyAccount />} />
+                <Route path='/my-account' element={<MyAccount  token={token}/>} />
                 {/*<Route path='/my-hosted-list' element={<HostedListsScreen />} />*/}
                 <Route path='/create-new-event' element={<CreateNewEvent />} />
                 <Route path='/all-event/:eventId' element={<EventDetails />} />
                 <Route path='/my-booking' element={<BookingList />} />
                 <Route path='/my-hosted-event' element={<MyHostedEventsPage />} />
-
                 {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
                 {/*<Route path='/my-hosted-list/publish/:listingId' element={<ListingPublishScreen />} />*/}

@@ -9,7 +9,7 @@ const AllEvents = () => {
 
     return (
         <Button 
-            color="success" 
+            color="secondary" 
             variant="contained" 
             sx={{ mr: 1 }} 
             onClick={handleAllEventsClick} // 绑定处理函数到按钮的点击事件

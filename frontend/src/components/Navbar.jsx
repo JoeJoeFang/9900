@@ -6,12 +6,12 @@ import HostProfile from '../components/HostProfile';
 import Logout from '../components/Logout';
 import MyAccount from '../components/MyAccount'; // Assuming the Navbar is in the same directory level as HostedEvents
 import HostedEvents from '../components/HostedEvents';
+import Login from '../components/Login';
 
 
 const Navbar = () => {
   // 使用 useState 钩子来创建 identity 状态
   const [identity, setIdentity] = useState(localStorage.getItem('identity'));
-  console.log('Initial identity value:', identity);
   // 使用 useEffect 钩子来监听 localStorage 的变化
   useEffect(() => {
     const handleStorageChange = (event) => {
@@ -48,9 +48,20 @@ const Navbar = () => {
       <Logout key="logout" />
     ];
     console.log(identity)
-    return identity === 'customer' ? buttonsForCustomer : buttonsForHost;
-  };
+    const buttonsForVisitor = [
+      <Login key="login" /> // Replace with your actual Login component
+    ];
 
+    // Determine what buttons to render based on the identity
+    switch (identity) {
+      case 'customer':
+        return buttonsForCustomer;
+      case 'host':
+        return buttonsForHost;
+      default:
+        return buttonsForVisitor; // Assume any other identity is a visitor
+    }
+  };
   // JSX 返回语句，这里实际调用了渲染按钮的函数
   return (
     <div style={{ display: 'flex', justifyContent: 'space-around', padding: '20px 0' }}>
