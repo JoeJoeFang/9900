@@ -20,8 +20,8 @@ import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import NativeSelect from '@mui/material/NativeSelect';
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import HeaderLogo from '../components/HeaderLogo';
+import UnauthorizedAccess from "../components/UnauthorizedAccess";
 
 
 
@@ -220,41 +220,7 @@ const CreateNewEvent = () => {
     };
 
     if (identity !== 'host') {
-        // Display an alternative UI if the user is not a host
-        return (
-            <Container sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
-                backgroundSize: 'cover, cover',
-                backgroundPosition: 'center, center',
-                p: theme.spacing(2),
-            }}>
-                <Box sx={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 2, // Provides space between items
-                    textAlign: 'center',
-                }}>
-                    <ErrorOutlineIcon sx={{ fontSize: 60, color: 'error.main' }} />
-                    <Typography variant="h5" gutterBottom>
-                        You do not have permission to view this page.
-                    </Typography>
-                    <Typography variant="body1" color="textSecondary">
-                        Please explore other areas of our platform.
-                    </Typography>
-                    <Button variant="contained" color="primary" onClick={() => navigate('/all-event')} sx={{ mt: 2 }}>
-                        Go to All Events
-                    </Button>
-                </Box>
-            </Container>
-        );
+        return <UnauthorizedAccess theme={theme} />;
     }
 
     return (

@@ -7,7 +7,7 @@ import HeaderLogo from './components/HeaderLogo';
 import { LoginHost, LoginCustomer } from './pages/Login.jsx'
 import RegisterHost from './pages/RegisterHost.jsx';
 import RegisterCustomer from './pages/RegisterCustomer.jsx';
-import CreateNewEvent from "./pages/CreateEvent_version2.jsx";
+import CreateNewEvent from "./pages/CreateEventPage.jsx";
 import AllEventPage from "./pages/AllEvent.jsx";
 
 import './App.css';

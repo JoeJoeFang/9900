@@ -24,6 +24,7 @@ const theme = createTheme({
 
 
 const BookingList = () => {
+    console.log('fetch.....');
     // const userId = localStorage.getItem('userId');
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +50,26 @@ const BookingList = () => {
     const handleCloseConfirmDialog = () => {
         setOpenConfirmDialog(false);
     };
+
+    const fetchEvents = async () => {
+        const userId = localStorage.getItem('userId');
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`http://localhost:5005/bookings/${userId}`);
+            console.log(response.data);
+            setEvents(response.data);
+        } catch (error) {
+            console.error("There was an error fetching the events:", error);
+            setError("Failed to load events. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
 
 
 
@@ -77,12 +98,12 @@ const BookingList = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                if (response.status === 200) {
-                    // listingId
+                if (response.status === 200 || response.status === 201) {
                     console.log('cancel successfully!');
                     setSelectedEventId(null); // 重置选中的事件ID
                     setSelectedDate(null);
-
+                    setOpenConfirmDialog(false);
+                    fetchEvents();
                 }
             } catch (error) {
                 if (error.response) {
@@ -97,9 +118,6 @@ const BookingList = () => {
     };
 
     const handleSearch = (searchTerm) => {
-        // Implement the logic to filter your events based on the search term
-        // For example, you can set the events state to a filtered list of events
-        // that match the search term.
         const filteredEvents = events.filter((event) =>
             event.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -108,27 +126,7 @@ const BookingList = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
 
-        const fetchEvents = async () => {
-            const userId = localStorage.getItem('userId');
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get(`http://localhost:5005/bookings/${userId}`);
-                console.log(response.data);
-                setEvents(response.data);
-
-            } catch (error) {
-                console.error("There was an error fetching the events:", error);
-                setError("Failed to load events. Please try again later.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchEvents();
-    }, []);
     return (
     <ThemeProvider theme={theme}>
         <Box sx={{

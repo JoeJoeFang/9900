@@ -102,6 +102,44 @@ class Events(db.Model):
     thumbnail = db.Column(db.String(5000), nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
+    @staticmethod
+    def get_events_search(keyword, type, days, sort, page=1):
+        events = Events.query
+        if type != 'None':  # 活动类型
+            t = Events.query.get(int(type))
+            events = t.events
+        if keyword:  # 允许多个空格分隔的搜索关键字
+            keywords = keyword.split()
+            for k in keywords:
+                events = events.filter(Events.name.like('%' + k + '%'))
+        if days != 'None':  # 活动天数
+            if days == '1':
+                events = events.filter(Events.duration == 1)
+            elif days == '3':
+                events = events.filter(or_(Events.duration == 2, Events.duration == 3))
+            elif days == '7':
+                events = events.filter(and_(Events.duration > 3, Events.duration < 8))
+            elif days == '15':
+                events = events.filter(and_(Events.duration > 7, Events.duration < 16))
+            else:
+                events = events.filter(Events.duration > 15)
+        if sort != 'None':  # 搜索方式
+            if sort == '1':
+                events = events.order_by(Events.view_count.desc())  # 最多浏览
+            elif sort == '2':
+                events = events.filter(Events.startDate > datetime.utcnow()).order_by(
+                    Events.startDate.asc())  # 尚未开始（尚未开始的活动，按开始时间升序）
+            elif sort == '3':
+                events = events.filter(Events.startDate <= datetime.utcnow()).order_by(
+                    Events.startDate.asc())  # 已经开始(已经开始的活动，按开始时间升序）
+            elif sort == '4':
+                events = events.order_by(Events.price.desc())  # 价格升序
+            elif sort == '5':
+                events = events.order_by(Events.price.desc())  # 价格降序
+            else:
+                events = events.order_by(Events.timestamp.desc())  # 最新活动
+        return events.paginate(page=page, per_page=30, error_out=False)  # 把query构建好了，用paginate分页取回活动
+
 class Events_order(db.Model):
     __tablename__ = "events_order"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -137,44 +175,6 @@ class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
         sort_source = [(0, 'Latest Event'), (1, 'Highest Viewed Event'), (2, 'Ready'), (3, 'In progress'),
                        (4, 'From Low to High in Price'), (5, 'From High to Low in Price')]
         self.sort.choices = sort_source
-
-@staticmethod
-def get_events_search(keyword, type, days, sort, page=1):
-    events = Events.query
-    if type != 'None':  # 活动类型
-        t = Events.query.get(int(type))
-        events = t.events
-    if keyword:  # 允许多个空格分隔的搜索关键字
-        keywords = keyword.split()
-        for k in keywords:
-            events = events.filter(Events.name.like('%'+k+'%'))
-    if days != 'None':  # 活动天数
-        if days == '1':
-            events = events.filter(Events.duration == 1)
-        elif days == '3':
-            events = events.filter(or_(Events.duration == 2, Events.duration == 3))
-        elif days == '7':
-            events = events.filter(and_(Events.duration > 3, Events.duration < 8))
-        elif days == '15':
-            events = events.filter(and_(Events.duration > 7, Events.duration < 16))
-        else:
-            events = events.filter(Events.duration > 15)
-    if sort != 'None':  # 搜索方式
-        if sort == '1':
-            events = events.order_by(Events.view_count.desc())  # 最多浏览
-        elif sort == '2':
-            events = events.filter(Events.startDate > datetime.utcnow()).order_by(Events.startDate.asc())    # 尚未开始（尚未开始的活动，按开始时间升序）
-        elif sort == '3':
-            events = events.filter(Events.startDate <= datetime.utcnow()).order_by(Events.startDate.asc())   # 已经开始(已经开始的活动，按开始时间升序）
-        elif sort == '4':
-            events = events.order_by(Events.price.desc())   # 价格升序
-        elif sort == '5':
-            events = events.order_by(Events.price.desc())   # 价格降序
-        else:
-            events = events.order_by(Events.timestamp.desc())   # 最新活动
-    return events.paginate(page, current_app.config['PAGECOUNT_ACTIVITY'], error_out=False)  # 把query构建好了，用paginate分页取回活动
-
-
 
 @app.route('/user/search', methods=['GET', 'POST']) # 在View里面添加处理逻辑
 def events_search():
@@ -221,11 +221,6 @@ def events_search():
     }
     return jsonify(response)
     # 默认返回渲染的 HTML 页面
-    #return render_template('event_search.html',
-                           #form=form,
-                           #events=events,
-                           #pagination=pagination)
-
 
 
 @app.route("/user/list")
