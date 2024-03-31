@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import Logout from '../components/Logout';
-import CreateNewEvent from '../components/CreateNewEvent';
-import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
 import { Button, Container } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -61,7 +58,7 @@ const MyHostedEventsPage = () => {
         };
 
         fetchEvents();
-    }, [identity, userId]);
+    }, [identity, userId, setEvents]);
 
     if (identity !== 'host') {
         // Display an alternative UI if the user is not a host
@@ -110,11 +107,40 @@ const MyHostedEventsPage = () => {
         setOpenDialog(false);
     };
 
-    const handleCancelEvent = () => {
-        // Here, implement the logic to cancel the event, such as sending a request to your server
-        // For demonstration, we'll just close the dialog and log the event ID
-        console.log("Cancelling event with ID:", currentEventId);
-        setOpenDialog(false);
+    const handleCancelEvent = async () => {
+        if (currentEventId) {
+            // 使用 selectedEventId 来取消预订
+            // const identity = localStorage.getItem('identity');
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const requestBody = {
+                userId: userId,
+                eventId: currentEventId,
+            };
+            console.log('requestBody', requestBody);
+            try {
+                const response = await axios.put(`http://localhost:5005/bookings/cancel_event/${userId}`, requestBody, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.status === 200) {
+                    // listingId
+                    console.log('cancel successfully!');
+                    console.log("Cancelling event with ID:", currentEventId);
+                    setOpenDialog(false);
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        alert('Invalid input: ' + error.response.error);
+                    } else if (error.response.status === 403) {
+                        alert('Invalid Token: ' + error.response.error);
+                    }
+                }
+            }
+        }
     };
 
     const canCancelEvent = (startDate) => {

@@ -106,7 +106,16 @@ const EventDetails = () => {
                     });
                     // console.log(event.id);
                     console.log(response.data);
-                    console.log("response.data.orderDetails", response.data.orderdetails);
+                    setEventsInfo(prevEventsInfo => {
+                        if (prevEventsInfo.id !== event.id) {
+                            return {
+                                ...prevEventsInfo,
+                                ...event,
+                                duration: duration + 1, // 计算持续时间
+                            };
+                        }
+                        return prevEventsInfo;
+                    });
                 }
 
             } catch (error) {
@@ -119,7 +128,7 @@ const EventDetails = () => {
 
 
         fetchEvents();
-    }, []); // 这里的空数组表示这个effect在组件挂载时仅执行一次
+    }, [eventId, token, setEventsInfo]); // 这里的空数组表示这个effect在组件挂载时仅执行一次
     console.log(eventsInfo);
     // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');
