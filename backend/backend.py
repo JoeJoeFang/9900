@@ -588,6 +588,23 @@ def register():
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
 
+@app.route('/user/auth/customer', methods=['GET'])
+def get_customer():
+    data = request.get_json()
+    cust = Customer.query.filter_by(email=data['customerId']).first()
+    cust_detail = {
+        'id': cust.id,
+        'email': cust.email,
+        'password': cust.password,
+        'name': cust.name,
+        'cvc': cust.cvc,
+        'duedate': cust.duedate,
+        'wallet': cust.wallet,
+        'orders': cust.orders
+    }
+    return jsonify(cust_detail)
+
+
 @app.route('/user/auth/login', methods=['POST'])
 def login():
     data = request.json
