@@ -128,7 +128,7 @@ const EventDetails = () => {
 
 
         fetchEvents();
-    }, [eventId, token, setEventsInfo]); // 这里的空数组表示这个effect在组件挂载时仅执行一次
+    }, [eventId, token]); // 这里的空数组表示这个effect在组件挂载时仅执行一次
     console.log(eventsInfo);
     // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');

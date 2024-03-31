@@ -3,12 +3,12 @@ import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents';
-import { Button, Container } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import HeaderLogo from '../components/HeaderLogo';
 import Navbar from '../components/Navbar';
+import UnauthorizedAccess from "../components/UnauthorizedAccess";
 
 const theme = createTheme({
     palette: {
@@ -58,44 +58,10 @@ const MyHostedEventsPage = () => {
         };
 
         fetchEvents();
-    }, [identity, userId, setEvents]);
+    }, [identity, userId]);
 
     if (identity !== 'host') {
-        // Display an alternative UI if the user is not a host
-        return (
-            <Container sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
-                backgroundSize: 'cover, cover',
-                backgroundPosition: 'center, center',
-                p: theme.spacing(2),
-            }}>
-                <Box sx={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 2, // Provides space between items
-                    textAlign: 'center',
-                }}>
-                    <ErrorOutlineIcon sx={{ fontSize: 60, color: 'error.main' }} />
-                    <Typography variant="h5" gutterBottom>
-                        You do not have permission to view this page.
-                    </Typography>
-                    <Typography variant="body1" color="textSecondary">
-                        Please explore other areas of our platform.
-                    </Typography>
-                    <Button variant="contained" color="primary" onClick={() => navigate('/all-event')} sx={{ mt: 2 }}>
-                        Go to All Events
-                    </Button>
-                </Box>
-            </Container>
-        );
+        return <UnauthorizedAccess theme={theme} />;
     }
 
     const handleOpenDialog = (eventId) => {
@@ -125,7 +91,7 @@ const MyHostedEventsPage = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                if (response.status === 200) {
+                if (response.status === 200 || response.status === 201) {
                     // listingId
                     console.log('cancel successfully!');
                     console.log("Cancelling event with ID:", currentEventId);
