@@ -54,7 +54,7 @@ const RegisterHost = () => {
         // Attempt to register the host
         try {
             console.log(registerData)
-            const response = await axios.post('http://localhost:5005/user/auth/register', {
+            const response = await axios.post('http://localhost:5005/user/auth/host_register', {
                 companyName: registerData.companyName,
                 email: registerData.email,
                 password: registerData.password,
