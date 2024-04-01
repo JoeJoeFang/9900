@@ -116,8 +116,6 @@ class Events(db.Model):
 class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
     keyword = StringField('Keyword')        # 关键词输入
     type = RadioField('Event Type')         # 活动类型
-    duration = RadioField('Event Days')     # 活动天数（单天，2-3天，4-7天，8-15天，16天以上）
-    sort = RadioField('Sort')               # 搜索方式（最新活动，最多浏览，尚未开始，已经开始，价格升序，价格降序）
     submit = SubmitField('Search')          # 搜索
 
     def __init__(self, *args, **kwargs):
