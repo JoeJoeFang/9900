@@ -2,16 +2,13 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-//import Logout from '../components/Logout';
-//import CreateNewEvent from '../components/CreateNewEvent';
-//import HostProfile from '../components/HostProfile';
 import SearchEvents from '../components/SearchEvents';
-import { Button, Container } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import HeaderLogo from '../components/HeaderLogo';
 import Navbar from '../components/Navbar';
+import UnauthorizedAccess from "../components/UnauthorizedAccess";
 
 const theme = createTheme({
     palette: {
@@ -64,41 +61,7 @@ const MyHostedEventsPage = () => {
     }, [identity, userId]);
 
     if (identity !== 'host') {
-        // Display an alternative UI if the user is not a host
-        return (
-            <Container sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
-                backgroundSize: 'cover, cover',
-                backgroundPosition: 'center, center',
-                p: theme.spacing(2),
-            }}>
-                <Box sx={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 2, // Provides space between items
-                    textAlign: 'center',
-                }}>
-                    <ErrorOutlineIcon sx={{ fontSize: 60, color: 'error.main' }} />
-                    <Typography variant="h5" gutterBottom>
-                        You do not have permission to view this page.
-                    </Typography>
-                    <Typography variant="body1" color="textSecondary">
-                        Please explore other areas of our platform.
-                    </Typography>
-                    <Button variant="contained" color="primary" onClick={() => navigate('/all-event')} sx={{ mt: 2 }}>
-                        Go to All Events
-                    </Button>
-                </Box>
-            </Container>
-        );
+        return <UnauthorizedAccess theme={theme} />;
     }
 
     const handleOpenDialog = (eventId) => {
@@ -110,11 +73,40 @@ const MyHostedEventsPage = () => {
         setOpenDialog(false);
     };
 
-    const handleCancelEvent = () => {
-        // Here, implement the logic to cancel the event, such as sending a request to your server
-        // For demonstration, we'll just close the dialog and log the event ID
-        console.log("Cancelling event with ID:", currentEventId);
-        setOpenDialog(false);
+    const handleCancelEvent = async () => {
+        if (currentEventId) {
+            // 使用 selectedEventId 来取消预订
+            // const identity = localStorage.getItem('identity');
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const requestBody = {
+                userId: userId,
+                eventId: currentEventId,
+            };
+            console.log('requestBody', requestBody);
+            try {
+                const response = await axios.put(`http://localhost:5005/bookings/cancel_event/${userId}`, requestBody, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.status === 200 || response.status === 201) {
+                    // listingId
+                    console.log('cancel successfully!');
+                    console.log("Cancelling event with ID:", currentEventId);
+                    setOpenDialog(false);
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        alert('Invalid input: ' + error.response.error);
+                    } else if (error.response.status === 403) {
+                        alert('Invalid Token: ' + error.response.error);
+                    }
+                }
+            }
+        }
     };
 
     const canCancelEvent = (startDate) => {
@@ -159,18 +151,18 @@ const MyHostedEventsPage = () => {
                         <Card
                             key={event.id}
                             sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', sm: 'row' }, // Stack vertically on small screens, horizontally on larger
-                            mb: 2,
-                            width: '100%',
-                            background: 'rgba(255, 255, 255, 0.8)',
-                            transition: 'transform 0.3s, box-shadow 0.3s',
-                            ':hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                transform: 'scale(1.03)',
-                                boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)',
-                            },
-                        }}>
+                                display: 'flex',
+                                flexDirection: { xs: 'column', sm: 'row' }, // Stack vertically on small screens, horizontally on larger
+                                mb: 2,
+                                width: '100%',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                                transition: 'transform 0.3s, box-shadow 0.3s',
+                                ':hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    transform: 'scale(1.03)',
+                                    boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)',
+                                },
+                            }}>
                             {event.thumbnail && (
                                 <CardMedia
                                     component="img"
