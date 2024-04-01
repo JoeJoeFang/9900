@@ -1,4 +1,7 @@
-
+frontend/node_modules
 backend/PIC/213.jpg
 backend/PIC/123.jpg
 backend/PIC/new event 100.jpg
+/frontend/node_modules
+backend/PIC/*
+/backend/PIC/*
