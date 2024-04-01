@@ -27,7 +27,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '114514'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -431,17 +431,25 @@ def cancel_events(userId):
     data = request.get_json()
     event_order = Events_order.query.filter_by(id=data['eventId']).first()
     event = Events.query.filter_by(id=data['eventId']).first()
+    comment = Comments.query.filter_by(eventId=data['eventId']).first()
     user_list = []
-    for k, v in event_order.orderdetails.iteritems():
+    for k, v in event_order.orderdetails.items():
         for i in range(len(v)):
             if v[i][0] == 1:
-                user_list.append(v[i][1])
+                if v[i][1] not in user_list:
+                    user_list.append(v[i][1])
+    print(user_list)
     for i in user_list:
         user = Customer.query.filter_by(id=int(i)).first()
+        print(data['eventId'], user.order)
         del user.order[str(data['eventId'])]
+        flag_modified(user, "order")
+        db.session.commit()
         # message = Message(subject="Order Changed!", recipients=[user.email], body="Event has been Canceled!")
         # mail.send(message)
     db.session.delete(event)
+    db.session.delete(event_order)
+    db.session.delete(comment)
     db.session.commit()
     return jsonify({'message': 'Event has been canceled!'}), 201
 
