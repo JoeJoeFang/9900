@@ -106,12 +106,11 @@ class Events(db.Model):
     def get_events_search(keyword, type, page=1):
         events = Events.query
         if type != 'None':  # 活动类型
-            t = Events.query.get(int(type))
-            events = t.events
+            events = Events.query.filter(Events.type == type)
         if keyword:  # 允许多个空格分隔的搜索关键字
             keywords = keyword.split()
             for k in keywords:
-                events = events.filter(Events.name.like('%' + k + '%'))
+                events = events.filter(Events.title.like('%' + k + '%'))
         return events.paginate(page=page, per_page=30, error_out=False)  # 把query构建好了，用paginate分页取回活动
 
 class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
@@ -185,11 +184,6 @@ class Comments(db.Model):
     __tablename__ = "comments"
     eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     comment = db.Column(JSON, nullable=True)
-
-# 多条件分页搜索
-
-
-
 
 @app.route("/user/list")
 def delete():
