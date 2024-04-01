@@ -27,7 +27,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -79,7 +79,7 @@ class Customer(db.Model):
     suburb = db.Column(db.String(100), nullable=True)
     state = db.Column(db.String(100), nullable=True)
     post_code = db.Column(db.String(10), nullable=True)
-    description = db.Column(db.String(1000), nullable=True)
+    cardNumber = db.Column(db.String(100), nullable=True)
     wallet = db.Column(db.Integer, nullable=True)
     order = db.Column(JSON, nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
@@ -255,19 +255,6 @@ def image_to_base64(image_path):
         # 将二进制数据编码为 Base64 字符串
         img_str = base64.b64encode(buffered.getvalue()).decode()
     return img_str
-
-#class User(db.Model):
-#    id = db.Column(db.Integer, primary_key=True)
-#    email = db.Column(db.String(120), unique=True, nullable=False)
-#    password = db.Column(db.String(60), nullable=False)
-
-# def create_default_user():
-#     default_user = User.query.filter_by(email='default@example.com').first()
-#     if not default_user:
-#         hashed_password = bcrypt.generate_password_hash('default_password').decode('utf-8')
-#         default_user = User(email='default@example.com', password=hashed_password)
-#         db.session.add(default_user)
-#         db.session.commit()
 
 @app.route('/events', methods=['GET'])
 def get_events():
@@ -561,24 +548,31 @@ def register_event():
 
     return jsonify({'message': 'Event created successfully!'}), 201
 
-@app.route('/user/auth/register', methods=['POST'])
-def register():
+@app.route('/user/auth/host_register', methods=['POST'])
+def host_register():
     data = request.get_json()
     email = data['email']
     existing_host = Host.query.filter_by(email=email).first()
     if existing_host:
         return jsonify({'message': 'Host email already exists!'}), 400
-    existing_cust = Customer.query.filter_by(email=email).first()
+    print(data)
+    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User created successfully!'}), 201
+
+@app.route('/user/auth/customer_register', methods=['POST'])
+def cust_register():
+    data = request.get_json()
+    print(data)
+    email = data['email']
+    existing_cust = Host.query.filter_by(email=email).first()
     if existing_cust:
         return jsonify({'message': 'Customer email already exists!'}), 400
-    print(data)
-    if 'companyName' in data:
-        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
-    else:
-        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
-                            duedate=data['cardExpirationDate'],wallet=0)
+    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
+                        duedate=data['cardExpirationDate'], wallet=0, cardNumber=data['cardNumber'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
@@ -605,6 +599,7 @@ def get_customer():
         'name': cust.name,
         'duedate': cust.duedate,
         'wallet': cust.wallet,
+        'cardNumber': cust.cardNumber
     }
     return jsonify(cust_detail)
 
@@ -680,7 +675,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.drop_all()
+        #db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
