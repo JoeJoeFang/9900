@@ -27,7 +27,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = '114514'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -103,7 +103,7 @@ class Events(db.Model):
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
     @staticmethod
-    def get_events_search(keyword, type, days, sort, page=1):
+    def get_events_search(keyword, type, page=1):
         events = Events.query
         if type != 'None':  # 活动类型
             t = Events.query.get(int(type))
@@ -112,52 +112,8 @@ class Events(db.Model):
             keywords = keyword.split()
             for k in keywords:
                 events = events.filter(Events.name.like('%' + k + '%'))
-        if days != 'None':  # 活动天数
-            if days == '1':
-                events = events.filter(Events.duration == 1)
-            elif days == '3':
-                events = events.filter(or_(Events.duration == 2, Events.duration == 3))
-            elif days == '7':
-                events = events.filter(and_(Events.duration > 3, Events.duration < 8))
-            elif days == '15':
-                events = events.filter(and_(Events.duration > 7, Events.duration < 16))
-            else:
-                events = events.filter(Events.duration > 15)
-        if sort != 'None':  # 搜索方式
-            if sort == '1':
-                events = events.order_by(Events.view_count.desc())  # 最多浏览
-            elif sort == '2':
-                events = events.filter(Events.startDate > datetime.utcnow()).order_by(
-                    Events.startDate.asc())  # 尚未开始（尚未开始的活动，按开始时间升序）
-            elif sort == '3':
-                events = events.filter(Events.startDate <= datetime.utcnow()).order_by(
-                    Events.startDate.asc())  # 已经开始(已经开始的活动，按开始时间升序）
-            elif sort == '4':
-                events = events.order_by(Events.price.desc())  # 价格升序
-            elif sort == '5':
-                events = events.order_by(Events.price.desc())  # 价格降序
-            else:
-                events = events.order_by(Events.timestamp.desc())  # 最新活动
         return events.paginate(page=page, per_page=30, error_out=False)  # 把query构建好了，用paginate分页取回活动
 
-class Events_order(db.Model):
-    __tablename__ = "events_order"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    eventtitle = db.Column(db.String(20), nullable=False)
-    orderdetails = db.Column(JSON, nullable=True)
-
-class Myevents(db.Model):
-    __tablename__ = "myevents"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    event = db.Column(db.String(50), nullable=False)
-    host = db.Column(db.String(50), nullable=False)
-
-class Comments(db.Model):
-    __tablename__ = "comments"
-    eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    comment = db.Column(JSON, nullable=True)
-
-# 多条件分页搜索
 class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
     keyword = StringField('Keyword')        # 关键词输入
     type = RadioField('Event Type')         # 活动类型
@@ -169,12 +125,8 @@ class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
         super(EventSearchForm, self).__init__(*args, **kwargs)
         # 为单选钮赋默认值
         events = Events.query.all()
-        self.type.choices = [(event.id, event.title) for event in events]
-        duration_source = [(1, '1 day'), (3, '2-3 days'), (7, '4-7 days'), (15, '8-15 days'), (16, '16天 days')]
-        self.duration.choices = duration_source
-        sort_source = [(0, 'Latest Event'), (1, 'Highest Viewed Event'), (2, 'Ready'), (3, 'In progress'),
-                       (4, 'From Low to High in Price'), (5, 'From High to Low in Price')]
-        self.sort.choices = sort_source
+        self.type.choices = [(event.id, event.title, event.description) for event in events]
+
 
 @app.route('/user/search', methods=['GET', 'POST']) # 在View里面添加处理逻辑
 def events_search():
@@ -184,14 +136,10 @@ def events_search():
         # 在分页浏览中使用session保存搜索条件；每次POST，添加查询字符串，取回第一页
         session['event-keyword'] = form.keyword.data
         session['event-type'] = form.type.data
-        session['event-duration'] = form.duration.data
-        session['event-sort'] = form.sort.data
         page = 1
     pagination = Events.get_events_search(
         session.get('event-keyword', ""),
         session.get('event-type', 'None'),
-        session.get('event-duration', 'None'),
-        session.get('event-sort', 'None'),
         page
     )
     events = pagination.items
@@ -220,7 +168,27 @@ def events_search():
         'total_pages': pagination.pages
     }
     return jsonify(response)
-    # 默认返回渲染的 HTML 页面
+
+class Events_order(db.Model):
+    __tablename__ = "events_order"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    eventtitle = db.Column(db.String(20), nullable=False)
+    orderdetails = db.Column(JSON, nullable=True)
+
+class Myevents(db.Model):
+    __tablename__ = "myevents"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event = db.Column(db.String(50), nullable=False)
+    host = db.Column(db.String(50), nullable=False)
+
+class Comments(db.Model):
+    __tablename__ = "comments"
+    eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    comment = db.Column(JSON, nullable=True)
+
+# 多条件分页搜索
+
+
 
 
 @app.route("/user/list")
