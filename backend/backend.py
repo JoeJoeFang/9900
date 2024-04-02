@@ -251,8 +251,7 @@ def get_events():
 
 @app.route('/events/search', methods=['GET'])
 def search_events():
-    data = request.get_json()
-    string = data['keyWord']
+    string = request.args.get('keyWord')
     events = Events.query.all()
     print(string, events)
     event_list = []
