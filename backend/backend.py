@@ -28,7 +28,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'mwy100621!'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -413,6 +413,9 @@ def get_bookings(userId):
     print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
+    print(cust.order)
+    if cust.order is None or len(cust.order) == 0:
+        return jsonify({'message': 'No events found!'}), 404
     for k,v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()

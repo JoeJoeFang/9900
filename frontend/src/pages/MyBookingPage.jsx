@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box,ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-// import Logout from '../components/Logout';
-// import CreateNewEvent from '../components/CreateNewEvent';
-// import MyBookings from '../components/MyBookings';
-// import HostProfile from '../components/HostProfile';
+import ErrorIcon from '@mui/icons-material/Error';
 import SearchEvents from '../components/SearchEvents';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
@@ -34,11 +31,6 @@ const BookingList = () => {
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
 
-    const handleNavigateToEventDetail = (eventId, e) => {
-        e.stopPropagation(); // 阻止事件冒泡
-        navigate(`/all-event/${eventId}`);
-    };
-
     const handleOpenConfirmDialog = (eventId, eventDate) => {
         console.log("handleOpenConfirmDialog clicked");
         setSelectedDate(eventDate);
@@ -57,18 +49,25 @@ const BookingList = () => {
         setError(null);
         try {
             const response = await axios.get(`http://localhost:5005/bookings/${userId}`);
-            console.log(response.data);
-            setEvents(response.data);
+            if (response.status === 200 || response.status === 201) {
+                console.log(response.data);
+                setEvents(response.data);
+            }
         } catch (error) {
             console.error("There was an error fetching the events:", error);
-            setError("Failed to load events. Please try again later.");
+            if (error.response && error.response.status === 404) {
+                setError("You haven't booked your tickets yet");
+            } else {
+                setError("Failed to load events. Please try again later.");
+            }
         } finally {
             setIsLoading(false);
         }
+
     };
 
     useEffect(() => {
-        fetchEvents();
+        fetchEvents().then(r => console.log("fetching tickets successfully"));
     }, []);
 
 
@@ -156,7 +155,12 @@ const BookingList = () => {
             {isLoading ? (
                 <CircularProgress />
             ) : error ? (
-                <Typography color="error">{error}</Typography>
+                <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" marginTop={2}>
+                    <ErrorIcon color="error" style={{ fontSize: 40, marginBottom: 8 }} />
+                    <Typography variant="h6" color="error" align="center">
+                        {error}
+                    </Typography>
+                </Box>
             ) : events.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
                     <Typography variant="h4" gutterBottom>Your booked Events</Typography>
@@ -197,7 +201,7 @@ const BookingList = () => {
                                     {/*<Button onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>Cancel Booking</Button>*/}
                                 </Typography>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
-                                    <Button variant="contained" color="primary" onClick={() => navigate(`/all-event/${event.id}`)}>
+                                    <Button variant="contained" color="primary" onClick={() => navigate(`/all-event/${event.eventId}`)}>
                                         View Details
                                     </Button>
                                     {canCancelEvent(event.date) ? (
