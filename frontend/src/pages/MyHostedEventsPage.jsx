@@ -39,25 +39,28 @@ const MyHostedEventsPage = () => {
         );
         setEvents(filteredEvents);
     };
+
+    const fetchEvents = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`http://localhost:5005/events/host/${userId}`);
+            setEvents(response.data);
+        } catch (error) {
+            console.error("There was an error fetching the events:", error);
+            setError("Failed to load events. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (identity !== 'host') {
             return; // Early return if not a host, no need to fetch events
         }
-        const fetchEvents = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get(`http://localhost:5005/events/host/${userId}`);
-                setEvents(response.data);
-            } catch (error) {
-                console.error("There was an error fetching the events:", error);
-                setError("Failed to load events. Please try again later.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
 
-        fetchEvents();
+
+        fetchEvents().then(r => console.log("fetch events successfully"));
     }, [identity, userId]);
 
     if (identity !== 'host') {
@@ -96,6 +99,7 @@ const MyHostedEventsPage = () => {
                     console.log('cancel successfully!');
                     console.log("Cancelling event with ID:", currentEventId);
                     setOpenDialog(false);
+                    await fetchEvents();
                 }
             } catch (error) {
                 if (error.response) {

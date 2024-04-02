@@ -103,7 +103,7 @@ const BookingList = () => {
                     setSelectedEventId(null); // 重置选中的事件ID
                     setSelectedDate(null);
                     setOpenConfirmDialog(false);
-                    fetchEvents();
+                    await fetchEvents();
                 }
             } catch (error) {
                 if (error.response) {
@@ -115,6 +115,13 @@ const BookingList = () => {
                 }
             }
         }
+    };
+
+    const canCancelEvent = (startDate) => {
+        const eventDate = new Date(startDate);
+        const today = new Date();
+        const difference = (eventDate - today) / (1000 * 3600 * 24);
+        return difference > 7;
     };
 
     const handleSearch = (searchTerm) => {
@@ -143,10 +150,6 @@ const BookingList = () => {
             <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
             <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
                 <SearchEvents onSearch={handleSearch} />
-                {/* <CreateNewEvent /> */}
-                {/* <MyBookings /> */}
-                {/* <HostProfile /> */}
-                {/* <Logout /> */}
                 <Navbar></Navbar>
             </Box>
             <HeaderLogo theme={theme} />
@@ -190,9 +193,23 @@ const BookingList = () => {
                                     Your booked Seats: {event.seat.join(", ")}<br />
                                     Your Booked Date: {event.date}<br />
                                     Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
-                                    <Button onClick={(e) => handleNavigateToEventDetail(event.eventId, e)}>View Details</Button>
-                                    <Button onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>Cancel Booking</Button>
+                                    {/*<Button onClick={(e) => handleNavigateToEventDetail(event.eventId, e)}>View Details</Button>*/}
+                                    {/*<Button onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>Cancel Booking</Button>*/}
                                 </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
+                                    <Button variant="contained" color="primary" onClick={() => navigate(`/all-event/${event.id}`)}>
+                                        View Details
+                                    </Button>
+                                    {canCancelEvent(event.date) ? (
+                                        <Button variant="contained" color="error" onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>
+                                            Cancel Event
+                                        </Button>
+                                    ) : (
+                                        <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
+                                            Tickets within 7 days cannot be cancelled.
+                                        </Typography>
+                                    )}
+                                </Box>
                             </CardContent>
                         </Card>
                     ))}
