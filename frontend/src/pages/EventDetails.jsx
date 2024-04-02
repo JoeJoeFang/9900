@@ -220,14 +220,8 @@ const EventDetails = () => {
             );
         } else {
             return (
-                <><box>
-                    <SearchEvents onSearch={handleSearch} />
-                    {/* <CreateNewEvent /> */}
-                    {/* <MyBookings /> */}
-                    {/* <HostProfile /> */}
-                    {/* <Logout /> */}
-                    <Navbar></Navbar>
-                </box><Dialog open={open} onClose={onClose}>
+                <>
+                    <Dialog open={open} onClose={onClose}>
                         <DialogTitle>Confirm Booking</DialogTitle>
                         <DialogContent>
                             <DialogContentText>
