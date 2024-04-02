@@ -20,6 +20,7 @@ from sqlalchemy import or_, and_
 from flask import render_template, request, session, redirect, url_for
 from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
+from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -27,7 +28,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'mwy100621!'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -40,7 +41,7 @@ app.config['MAIL_SERVER'] = "smtp.qq.com"
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "924082621@qq.com"
-app.config['MAIL_PASSWORD'] = ""
+app.config['MAIL_PASSWORD'] = "vyiubszzwbojbdic"
 app.config['MAIL_DEFAULT_SENDER'] = "924082621@qq.com"
 
 db = SQLAlchemy(app)
@@ -370,6 +371,7 @@ def update_events_bookings():
     eventid = data['eventId']
     cust = Customer.query.filter_by(id=cust_id).first()
     event = Events_order.query.filter_by(id=eventid).first()
+    events = Events.query.filter_by(id=eventid).first()
     if not event:
         return jsonify({'message': 'Event not found!'}), 404
     if not cust:
@@ -377,10 +379,9 @@ def update_events_bookings():
     if cust.order is None:
         cust.order = {}
     cust.order[event.id] = date_
-    print("Before commit:", cust.order)
+    print(events)
     flag_modified(cust, "order")
     db.session.commit()
-    print("After commit:", cust.order)
 
 
     event_d = event.orderdetails
@@ -388,6 +389,7 @@ def update_events_bookings():
         for i in seat_number:
             print(event_d[date_])
             event_d[date_][i] = [1, cust_id]
+            cust.wallet -= events.price
             print(event_d[date_])
             event.orderdetails = event_d
             print(event.orderdetails)
@@ -437,18 +439,26 @@ def get_bookings(userId):
 
 @app.route('/bookings/cancel/<int:userId>', methods=['PUT'])
 def cancel_bookings(userId):
-    print('2222222')
     data = request.get_json()
+    print(data)
     cust = Customer.query.filter_by(id=int(userId)).first()
-    if data.eventId in cust.order:
-        del cust.order[data.eventId]
+    events = Events.query.filter_by(id=int(data['eventId'])).first()
+    price = events.price
+    event_id = str(data['eventId'])
+    if event_id in cust.order:
+        del cust.order[event_id]
         flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
-        for i in range(len(event_order.orderdetails[data['date']])):
-            if event_order.orderdetails[data.date][i] == int(data['userId']):
-                event_order.orderdetails[data.date][i] = [0,0]
+        for i in range(len(event_order.orderdetails[data['Date']])):
+            #print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
+            if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
+                event_order.orderdetails[data['Date']][i] = [0, 0]
+                cust.wallet += price
             flag_modified(event_order, "orderdetails")
-        # message = Message(subject="Cancel", recipients=[data['email']], body="Cancel order successfully!!")
+            flag_modified(cust, "wallet")
+        print(event_order.orderdetails)
+        print(cust.wallet)
+        # message = Message(subject="Cancel", recipients=[cust.email], body="Cancel order successfully!!")
         # mail.send(message)
         db.session.commit()
         return jsonify({'message': 'Refund successfully!'}), 201
@@ -461,18 +471,21 @@ def cancel_events(userId):
     event_order = Events_order.query.filter_by(id=data['eventId']).first()
     event = Events.query.filter_by(id=data['eventId']).first()
     comment = Comments.query.filter_by(eventId=data['eventId']).first()
-    user_list = []
+    user_list = defaultdict(int)
+    events = Events.query.filter_by(id=int(data['eventId'])).first()
+    price = events.price
     for k, v in event_order.orderdetails.items():
         for i in range(len(v)):
             if v[i][0] == 1:
-                if v[i][1] not in user_list:
-                    user_list.append(v[i][1])
+                user_list[v[i][1]] += 1
     print(user_list)
-    for i in user_list:
+    for i, j in user_list.items():
         user = Customer.query.filter_by(id=int(i)).first()
         print(data['eventId'], user.order)
+        user.wallet += price*(int(j))
         del user.order[str(data['eventId'])]
         flag_modified(user, "order")
+        flag_modified(user, "wallet")
         db.session.commit()
         # message = Message(subject="Order Changed!", recipients=[user.email], body="Event has been Canceled!")
         # mail.send(message)
@@ -603,8 +616,7 @@ def get_customer():
 @app.route('/user/auth/customer/recharge', methods=['PUT'])
 def top_up():
     data = request.get_json()
-    print(data)
-    user_id = int(data['userId'])
+    user_id = data['userId']
     amount = data['amount']
     cust = Customer.query.filter_by(id=user_id).first()
     cust.wallet += int(amount)
@@ -685,7 +697,7 @@ def protected():
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.drop_all()
+        #db.drop_all()
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
