@@ -245,17 +245,16 @@ def get_events():
         event_list.append(event_data)
     #print("fanhui", event_list)
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
-    return jsonify(event_list)
+    return jsonify(event_list), 201
 
 
 
 @app.route('/events/search', methods=['GET'])
 def search_events():
-    # 查询数据库以获取事件列表
     data = request.get_json()
     string = data['keyWord']
     events = Events.query.all()
-    
+    print(string, events)
     event_list = []
     for event in events:
         if string in event.title or string in event.description or string in event.eventType:
@@ -272,10 +271,11 @@ def search_events():
                 'startDate': event.from_time,
                 'endDate': event.to_time,
                 'description': event.description,
-                'youtubeUrl':event.URL
+                'youtubeUrl': event.URL
             }
             event_list.append(event_data)
-    return jsonify(event_list)
+    print(event_list)
+    return jsonify(event_list), 201
 
 @app.route('/events/title', methods=['GET'])
 def get_events_title():
@@ -600,6 +600,18 @@ def get_customer():
         'cardNumber': cust.cardNumber
     }
     return jsonify(cust_detail)
+
+@app.route('/user/auth/customer/recharge', methods=['PUT'])
+def top_up():
+    data = request.get_json()
+    user_id = data['userId']
+    amount = data['amount']
+    cust = Customer.query.filter_by(id=user_id).first()
+    cust.wallet += int(amount)
+    flag_modified(cust, "wallet")
+    db.session.commit()
+    amount = cust.wallet
+    return jsonify(amount), 201
 
 
 @app.route('/user/auth/login', methods=['POST'])
