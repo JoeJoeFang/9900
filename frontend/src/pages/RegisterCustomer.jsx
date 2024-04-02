@@ -112,7 +112,7 @@ const RegisterCustomer = () => {
                 setSnackbarMessage("Registration successful!");
                 setSnackbarType('success');
                 setOpenSnackbar(true);
-                setTimeout(() => navigate('/login-customer'), 2000);
+                setTimeout(() => navigate('/login-customer'), 500);
             }
         } catch (errorResponse) {
             const errorMessage = errorResponse.response?.data?.message || 'An unexpected error occurred during registration.';

@@ -71,7 +71,7 @@ const RegisterHost = () => {
 
                 setTimeout(() => {
                     navigate('/login-host'); // Redirect to the all events page
-                }, 2000); // Adjust delay as necessary
+                }, 500); // Adjust delay as necessary
     
                 console.log('Register successfully');
             }

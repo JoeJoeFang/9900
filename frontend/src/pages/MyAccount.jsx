@@ -23,53 +23,63 @@ const MyAccount = () => {
     const [error, setError] = useState('');
     const [rechargeAmount, setRechargeAmount] = useState('');
 
+
     const handleSearch = (searchTerm) => {
         console.log("Search term:", searchTerm);
     };
+
+    const fetchCustomerDetails = async () => {
+        setIsLoading(true);
+        const userId = localStorage.getItem('userId'); // Fetch the 'userId' from localStorage
+
+        if (!userId) {
+            setError('User ID is not available');
+            setIsLoading(false);
+            return; // Exit early if no userId is found
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:5005/user/auth/customer?userId=${userId}`);
+            if (response.data) {
+                setCustDetail(response.data);
+                setError(null); // Ensure to clear any previous errors
+            } else {
+                throw new Error('No data returned'); // Handle case where no data is returned
+            }
+        } catch (error) {
+            console.error('There was an error fetching the customer details:', error);
+            setError(error.response?.data?.error || 'Unknown error occurred');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleRecharge = async () => {
+        const userId = localStorage.getItem('userId');
         // 实际操作中应当检查 rechargeAmount 是否为有效数值
         try {
             const response = await axios.put('http://localhost:5005/user/auth/customer/recharge', {
-                userId:custDetail.id,
+                userId: userId,
                 amount:rechargeAmount,
             });
+            if (response.status === 200 || response.status === 201) {
+                // listingId
+                // 假设API返回了更新后的用户详情，包括新的钱包余额
+                setCustDetail(response.data);
+                setRechargeAmount(''); // 清空输入框
+                await fetchCustomerDetails();
+            }
             
-            // 假设API返回了更新后的用户详情，包括新的钱包余额
-            setCustDetail(response.data);
-            setRechargeAmount(''); // 清空输入框
+
         } catch (error) {
             console.error('充值失败:', error);
             // 根据需要处理错误
         }
     };
     useEffect(() => {
-        const fetchCustomerDetails = async () => {
-          setIsLoading(true);
-          const userId = localStorage.getItem('userId'); // Fetch the 'userId' from localStorage
+
       
-          if (!userId) {
-            setError('User ID is not available');
-            setIsLoading(false);
-            return; // Exit early if no userId is found
-          }
-      
-          try {
-            const response = await axios.get(`http://localhost:5005/user/auth/customer?userId=${userId}`);
-            if (response.data) {
-              setCustDetail(response.data);
-              setError(null); // Ensure to clear any previous errors
-            } else {
-              throw new Error('No data returned'); // Handle case where no data is returned
-            }
-          } catch (error) {
-            console.error('There was an error fetching the customer details:', error);
-            setError(error.response?.data?.error || 'Unknown error occurred');
-          } finally {
-            setIsLoading(false);
-          }
-        };
-      
-        fetchCustomerDetails();
+        fetchCustomerDetails().then(r => console.log("fetch customerdetails successfully"));
       }, []); 
       
 
