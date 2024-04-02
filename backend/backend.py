@@ -247,6 +247,36 @@ def get_events():
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list)
 
+
+
+@app.route('/events/search', methods=['GET'])
+def search_events():
+    # 查询数据库以获取事件列表
+    data = request.get_json()
+    string = data['keyWord']
+    events = Events.query.all()
+    
+    event_list = []
+    for event in events:
+        if string in event.title or string in event.description or string in event.eventType:
+            event_data = {
+                'id': event.id,
+                'title': event.title,
+                'address': event.address,
+                'price': event.price,
+                'thumbnail': event.thumbnail,
+                'organizerName': event.organizername,
+                'eventType': event.type,
+                'seatingCapacity': event.seats,
+                'duration': event.duration,
+                'startDate': event.from_time,
+                'endDate': event.to_time,
+                'description': event.description,
+                'youtubeUrl':event.URL
+            }
+            event_list.append(event_data)
+    return jsonify(event_list)
+
 @app.route('/events/title', methods=['GET'])
 def get_events_title():
     # 查询数据库以获取事件列表
