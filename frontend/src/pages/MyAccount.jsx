@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Typography, CircularProgress, Card, CardContent, Avatar, ThemeProvider } from '@mui/material';
+import { Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents'; // Ensure this is the correct path
 import Navbar from '../components/Navbar';
@@ -21,12 +21,27 @@ const MyAccount = () => {
     const [custDetail, setCustDetail] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [rechargeAmount, setRechargeAmount] = useState('');
 
     const handleSearch = (searchTerm) => {
         console.log("Search term:", searchTerm);
-        // Implement search logic here, e.g., filter your data or make a new API call
     };
-
+    const handleRecharge = async () => {
+        // 实际操作中应当检查 rechargeAmount 是否为有效数值
+        try {
+            const response = await axios.put('http://localhost:5005/user/auth/customer/recharge', {
+                userId:custDetail.id,
+                amount:rechargeAmount,
+            });
+            
+            // 假设API返回了更新后的用户详情，包括新的钱包余额
+            setCustDetail(response.data);
+            setRechargeAmount(''); // 清空输入框
+        } catch (error) {
+            console.error('充值失败:', error);
+            // 根据需要处理错误
+        }
+    };
     useEffect(() => {
         const fetchCustomerDetails = async () => {
           setIsLoading(true);
@@ -106,6 +121,19 @@ const MyAccount = () => {
                 Due Date: {custDetail.duedate || 'Due date not available'}<br />
                 Wallet Balance: ${custDetail.wallet ? custDetail.wallet.toFixed(2) : 'Balance not available'}
                                 </Typography>
+                                <Box sx={{ mt: 2 }}>
+                                <TextField
+                                    label="充值金额"
+                                    variant="outlined"
+                                    type="number"
+                                    value={rechargeAmount}
+                                    onChange={(e) => setRechargeAmount(e.target.value)}
+                                    size="small"
+                                />
+                                <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleRecharge}>
+                                    充值
+                                </Button>
+                            </Box>
                             </Box>
                         </CardContent>
                     </Card>
