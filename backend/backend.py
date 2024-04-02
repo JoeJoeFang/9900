@@ -41,7 +41,7 @@ app.config['MAIL_SERVER'] = "smtp.qq.com"
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "924082621@qq.com"
-app.config['MAIL_PASSWORD'] = "vyiubszzwbojbdic"
+app.config['MAIL_PASSWORD'] = "" #vyiubszzwbojbdic
 app.config['MAIL_DEFAULT_SENDER'] = "924082621@qq.com"
 
 db = SQLAlchemy(app)
