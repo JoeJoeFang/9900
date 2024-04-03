@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box,ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import ErrorIcon from '@mui/icons-material/Error';
-import SearchEvents from '../components/SearchEvents';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
 import HeaderLogo from '../components/HeaderLogo';

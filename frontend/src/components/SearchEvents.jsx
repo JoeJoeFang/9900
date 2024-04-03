@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box,Card, TextField, IconButton, FormControl, Select, MenuItem, InputLabel, Snackbar, Alert, Typography, CardContent, CardMedia, CircularProgress, } from '@mui/material';
+import { Box,TextField, IconButton, FormControl, InputLabel, Snackbar, Alert } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-  import axios from 'axios';
-  import {useNavigate} from "react-router-dom";
+import axios from 'axios';
+import {useNavigate} from "react-router-dom";
+import { NativeSelect } from '@mui/material';
 const SearchEvents = (props) => {
   const [searchTitle, setSearchTitle] = useState('');
   const [eventType, setEventType] = useState('');
@@ -66,17 +67,21 @@ const SearchEvents = (props) => {
         value={searchTitle}
         onChange={(e) => setSearchTitle(e.target.value)}
       />
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Event Type</InputLabel>
-        <Select
-          value={eventType}
-          label="Event Type"
-          onChange={(e) => setEventType(e.target.value)}>
-          {eventTypes.map((type) => (
-            <MenuItem key={type.id} value={type.id}>{type.title}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel htmlFor="event-type-selector">Event Type</InputLabel>
+            <NativeSelect
+                value={eventType}
+                onChange={(e) => setEventType(e.target.value)}
+                inputProps={{
+                  name: 'event-type',
+                  id: 'event-type-selector',
+                }}
+            >
+              {eventTypes.map((type) => (
+                  <option key={type.id} value={type.id}>{type.title}</option>
+              ))}
+            </NativeSelect>
+          </FormControl>
       <TextField
         label="Description"
         variant="outlined"
