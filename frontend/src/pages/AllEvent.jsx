@@ -32,6 +32,10 @@ const EventsList = () => {
         );
         setEvents(filteredEvents);
       };
+
+      const searchCallback = (res) => {
+        setEvents(res)
+      }
     
     const navigate = useNavigate();
 
@@ -66,8 +70,8 @@ const EventsList = () => {
                 p: theme.spacing(2),
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
-                <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                <SearchEvents onSearch={handleSearch} />
+                <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems:'center' }}>
+                <SearchEvents onSearch={handleSearch} searchCallback={searchCallback} />
                     {/* <AllEvents   />   
                     <CreateNewEvent /> */}
                     {/* <MyBookings /> */}
