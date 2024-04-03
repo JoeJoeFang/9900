@@ -284,7 +284,6 @@ const EventDetails = () => {
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
-                <SearchEvents onSearch={handleSearch} />
                     {/* <CreateNewEvent /> */}
                     {/* <MyBookings /> */}
                     {/* <HostProfile /> */}

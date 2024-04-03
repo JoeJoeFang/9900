@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import SearchEvents from '../components/SearchEvents';
+//import SearchEvents from '../components/SearchEvents';
 import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -30,15 +30,15 @@ const MyHostedEventsPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [currentEventId, setCurrentEventId] = useState(null);
     const navigate = useNavigate();
-    const handleSearch = (searchTerm) => {
-        // Implement the logic to filter your events based on the search term
-        // For example, you can set the events state to a filtered list of events
-        // that match the search term.
-        const filteredEvents = events.filter((event) =>
-            event.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setEvents(filteredEvents);
-    };
+    // const handleSearch = (searchTerm) => {
+    //     // Implement the logic to filter your events based on the search term
+    //     // For example, you can set the events state to a filtered list of events
+    //     // that match the search term.
+    //     const filteredEvents = events.filter((event) =>
+    //         event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    //     );
+    //     setEvents(filteredEvents);
+    // };
 
     const fetchEvents = async () => {
         setIsLoading(true);
@@ -136,7 +136,6 @@ const MyHostedEventsPage = () => {
         }}>
             <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
             <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
-                <SearchEvents onSearch={handleSearch} />
                 {/* <CreateNewEvent /> */}
                 {/* <HostProfile /> */}
                 {/* <Logout /> */}
