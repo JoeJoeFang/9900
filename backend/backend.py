@@ -23,13 +23,14 @@ from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
 from collections import defaultdict
 
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 #db = SQLAlchemy(app)
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '114514'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -415,7 +416,6 @@ def update_events_bookings():
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
-
 @app.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
 def get_recommendation(userId):
     # （思路：
@@ -449,7 +449,6 @@ def get_recommendation(userId):
     } for event in recommended_events]
 
     return jsonify(events_json)
-
 
 @app.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
@@ -569,7 +568,7 @@ def get_comments(eventId):
     comments = Comments.query.filter_by(eventId=eventId).first_or_404()
     return jsonify(comments.comment), 201
 
-@app.route('/comments/host', methods=['GET'])
+@app.route('/comments/host', methods=['PUT'])
 def host_comments():
     data = request.get_json()
     comment = Comments.query.filter_by(id=int(data['eventId'])).first_or_404()
