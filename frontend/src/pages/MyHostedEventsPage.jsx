@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import SearchEvents from '../components/SearchEvents';
+//import SearchEvents from '../components/SearchEvents';
 import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -30,34 +30,37 @@ const MyHostedEventsPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [currentEventId, setCurrentEventId] = useState(null);
     const navigate = useNavigate();
-    const handleSearch = (searchTerm) => {
-        // Implement the logic to filter your events based on the search term
-        // For example, you can set the events state to a filtered list of events
-        // that match the search term.
-        const filteredEvents = events.filter((event) =>
-            event.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setEvents(filteredEvents);
+    // const handleSearch = (searchTerm) => {
+    //     // Implement the logic to filter your events based on the search term
+    //     // For example, you can set the events state to a filtered list of events
+    //     // that match the search term.
+    //     const filteredEvents = events.filter((event) =>
+    //         event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    //     );
+    //     setEvents(filteredEvents);
+    // };
+
+    const fetchEvents = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(`http://localhost:5005/events/host/${userId}`);
+            setEvents(response.data);
+        } catch (error) {
+            console.error("There was an error fetching the events:", error);
+            setError("Failed to load events. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
     };
+
     useEffect(() => {
         if (identity !== 'host') {
             return; // Early return if not a host, no need to fetch events
         }
-        const fetchEvents = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get(`http://localhost:5005/events/host/${userId}`);
-                setEvents(response.data);
-            } catch (error) {
-                console.error("There was an error fetching the events:", error);
-                setError("Failed to load events. Please try again later.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
 
-        fetchEvents();
+
+        fetchEvents().then(r => console.log("fetch events successfully"));
     }, [identity, userId]);
 
     if (identity !== 'host') {
@@ -96,6 +99,7 @@ const MyHostedEventsPage = () => {
                     console.log('cancel successfully!');
                     console.log("Cancelling event with ID:", currentEventId);
                     setOpenDialog(false);
+                    await fetchEvents();
                 }
             } catch (error) {
                 if (error.response) {
@@ -131,8 +135,7 @@ const MyHostedEventsPage = () => {
             p: theme.spacing(2),
         }}>
             <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
-            <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                <SearchEvents onSearch={handleSearch} />
+            <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
                 {/* <CreateNewEvent /> */}
                 {/* <HostProfile /> */}
                 {/* <Logout /> */}

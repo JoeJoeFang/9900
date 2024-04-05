@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 // import { Card, CardContent, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
@@ -73,67 +73,69 @@ const EventDetails = () => {
     const email = localStorage.getItem('userEmail');
 
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                // 定义请求配置对象，包括请求头
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                };
-                // 使用配置对象发起请求
-                const response = await axios.get(`http://localhost:5005/events/${eventId}`, config);
-                if (response.status === 200) {
-                    const event = response.data;
-                    const startDate = new Date(event.startDate);
-                    const endDate = new Date(event.endDate);
-                    const duration = (endDate - startDate) / (1000 * 60 * 60 * 24);
-                    setEventsInfo({
-                        ...eventsInfo,
-                        id: event.id,
-                        title: event.title,
-                        address: event.address,
-                        price: event.price,
-                        thumbnail: event.thumbnail,
-                        organizerName: event.organizerName,
-                        eventType: event.eventType,
-                        seatingCapacity: event.seatingCapacity,
-                        duration: duration + 1,
-                        startDate: event.startDate,
-                        endDate: event.endDate,
-                        description: event.description,
-                        youtubeUrl: event.youtubeUrl,
-                        orderdetails: event.orderdetails,
-                    });
-                    // console.log(event.id);
-                    console.log(response.data);
-                    setEventsInfo(prevEventsInfo => {
-                        if (prevEventsInfo.id !== event.id) {
-                            return {
-                                ...prevEventsInfo,
-                                ...event,
-                                duration: duration + 1, // 计算持续时间
-                            };
-                        }
-                        return prevEventsInfo;
-                    });
-                }
-
-            } catch (error) {
-                console.error("There was an error fetching the events:", error);
-                setError("Failed to load events. Please try again later.");
-            } finally {
-                setIsLoading(false);
+    const fetchEvents = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // 定义请求配置对象，包括请求头
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            };
+            // 使用配置对象发起请求
+            const response = await axios.get(`http://localhost:5005/events/${eventId}`, config);
+            if (response.status === 200) {
+                const event = response.data;
+                const startDate = new Date(event.startDate);
+                const endDate = new Date(event.endDate);
+                const duration = (endDate - startDate) / (1000 * 60 * 60 * 24);
+                setEventsInfo({
+                    ...eventsInfo,
+                    id: event.id,
+                    title: event.title,
+                    address: event.address,
+                    price: event.price,
+                    thumbnail: event.thumbnail,
+                    organizerName: event.organizerName,
+                    eventType: event.eventType,
+                    seatingCapacity: event.seatingCapacity,
+                    duration: duration + 1,
+                    startDate: event.startDate,
+                    endDate: event.endDate,
+                    description: event.description,
+                    youtubeUrl: event.youtubeUrl,
+                    orderdetails: event.orderdetails,
+                });
+                // console.log(event.id);
+                console.log(response.data);
+                setEventsInfo(prevEventsInfo => {
+                    if (prevEventsInfo.id !== event.id) {
+                        return {
+                            ...prevEventsInfo,
+                            ...event,
+                            duration: duration + 1, // 计算持续时间
+                        };
+                    }
+                    return prevEventsInfo;
+                });
             }
-        };
+
+        } catch (error) {
+            console.error("There was an error fetching the events:", error);
+            setError("Failed to load events. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [eventId, token]);
+
+    useEffect(() => {
+        fetchEvents().then(r => console.log("event details fetching successfully"));
+    }, [eventId, token]);
 
 
-        fetchEvents();
-    }, [eventId, token]); // 这里的空数组表示这个effect在组件挂载时仅执行一次
+
     console.log(eventsInfo);
     // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');
@@ -158,11 +160,7 @@ const EventDetails = () => {
                 : [...prevSelectedSeats, seatIndex]
         );
     };
-    console.log("Object.keys(eventsInfo.orderdetails)[0]", Object.keys(eventsInfo.orderdetails)[0]);
-    console.log("selectedDate", selectedDate);
-    console.log(
-        Object.keys(eventsInfo.orderdetails)
-    );
+
 
     const submitbooking = async (selectedSeats, selectedDate, eventId) => {
         const token = localStorage.getItem('token');
@@ -285,8 +283,7 @@ const EventDetails = () => {
                 p: theme.spacing(2),
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
-                <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                <SearchEvents onSearch={handleSearch} />
+                <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
                     {/* <CreateNewEvent /> */}
                     {/* <MyBookings /> */}
                     {/* <HostProfile /> */}

@@ -5,3 +5,7 @@ backend/PIC/new event 100.jpg
 /frontend/node_modules
 backend/PIC/*
 /backend/PIC/*
+/backend/PIC
+/backend/PIC
+*.pack
+frontend/node_modules/.cache/.eslintcache

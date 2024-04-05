@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar, ThemeProvider } from '@mui/material';
+import { Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents'; // Ensure this is the correct path
 import Navbar from '../components/Navbar';
@@ -22,11 +22,7 @@ const MyAccount = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [rechargeAmount, setRechargeAmount] = useState('');
-
-
-    const handleSearch = (searchTerm) => {
-        console.log("Search term:", searchTerm);
-    };
+;
 
     const fetchCustomerDetails = async () => {
         setIsLoading(true);
@@ -43,6 +39,8 @@ const MyAccount = () => {
             if (response.data) {
                 setCustDetail(response.data);
                 setError(null); // Ensure to clear any previous errors
+                console.log("response", response);
+                console.log("CustDetail", custDetail);
             } else {
                 throw new Error('No data returned'); // Handle case where no data is returned
             }
@@ -79,8 +77,8 @@ const MyAccount = () => {
     useEffect(() => {
 
       
-        fetchCustomerDetails().then(r => console.log("fetch customerdetails successfully"));
-      }, []); 
+        fetchCustomerDetails().then(r => console.log("fetch customer details successfully"));
+      }, []);
       
 
        // Dependency array left empty to run once on component mount
@@ -100,55 +98,53 @@ const MyAccount = () => {
             p: theme.spacing(2),
         }}>
             <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
-            <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex' }}>
-                <SearchEvents onSearch={handleSearch} />
-                {/* <CreateNewEvent /> */}
-                {/* <MyBookings /> */}
-                {/* <HostProfile /> */}
-                {/* <Logout /> */}
+            <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center' }}>
                 <Navbar></Navbar>
             </Box>
-            <HeaderLogo theme={theme} />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '20px' }}>
+                <HeaderLogo theme={theme} />
                 {isLoading ? (
-                    <CircularProgress />
+                    <CircularProgress color="secondary" style={{ marginTop: '20px' }} />
                 ) : error ? (
-                    <Typography color="error">{error}</Typography>
+                    <Typography color="error" style={{ marginTop: '20px' }}>{error}</Typography>
                 ) : (
-                    <Card sx={{ maxWidth: 345, mt: 5 }}>
+                    <Card sx={{ maxWidth: 345, mt: 5, boxShadow: '0 8px 16px 0 rgba(0,0,0,0.2)' }}>
                         <CardContent>
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <Avatar
                                     sx={{ width: 100, height: 100, mb: 2 }}
-                                    src="https://pic2.zhimg.com/80/v2-e6caae14bcb1ef3901b3d8af41752501_1440w.webp" // Replace with userDetails.avatar if available
+                                    src={custDetail.avatar || "https://pic2.zhimg.com/80/v2-e6caae14bcb1ef3901b3d8af41752501_1440w.webp"} // Use custDetail.avatar if available
                                     alt="User Avatar"
                                 />
                                 <Typography gutterBottom variant="h5" component="div">
-                {custDetail.name || 'Name not available'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                UserID: {custDetail.id || 'ID not available'}<br />
-                Email: {custDetail.email || 'Email not available'}<br />
-                Due Date: {custDetail.duedate || 'Due date not available'}<br />
-                Wallet Balance: ${custDetail.wallet ? custDetail.wallet.toFixed(2) : 'Balance not available'}
+                                    {custDetail.name || 'Name Unavailable'}
                                 </Typography>
-                                <Box sx={{ mt: 2 }}>
-                                <TextField
-                                    label="充值金额"
-                                    variant="outlined"
-                                    type="number"
-                                    value={rechargeAmount}
-                                    onChange={(e) => setRechargeAmount(e.target.value)}
-                                    size="small"
-                                />
-                                <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleRecharge}>
-                                    充值
-                                </Button>
-                            </Box>
+                                <Typography variant="body2" color="text.secondary" style={{ textAlign: 'center' }}>
+                                    UserID: {custDetail.id || 'ID Unavailable'}<br />
+                                    Email: {custDetail.email || 'Email Unavailable'}<br />
+                                    Due Date: {custDetail.duedate || 'Due Date Unavailable'}<br />
+                                    Wallet Balance: ${custDetail.wallet ? custDetail.wallet.toFixed(2) : 'Balance Unavailable'}
+                                </Typography>
+                                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextField
+                                        label="Recharge Amount"
+                                        variant="outlined"
+                                        type="number"
+                                        value={rechargeAmount}
+                                        onChange={(e) => setRechargeAmount(e.target.value)}
+                                        size="small"
+                                        style={{ marginRight: '10px' }}
+                                    />
+                                    <Button variant="contained" color="primary" onClick={handleRecharge}>
+                                        Recharge
+                                    </Button>
+                                </Box>
                             </Box>
                         </CardContent>
                     </Card>
                 )}
-            </Box>
+            </div>
+        </Box>
        
     );
 };
