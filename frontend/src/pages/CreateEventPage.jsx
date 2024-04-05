@@ -17,11 +17,9 @@ import {
 import axios from 'axios';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import NativeSelect from '@mui/material/NativeSelect';
 import HeaderLogo from '../components/HeaderLogo';
 import UnauthorizedAccess from "../components/UnauthorizedAccess";
+import Autocomplete from '@mui/material/Autocomplete';
 
 
 
@@ -47,9 +45,9 @@ const CreateNewEvent = () => {
         address: '',
         price: '',
         thumbnail: '',
-        eventType: '',
+        eventType: 'concert',
         duration: '100',
-        seatingCapacity: '',
+        seatingCapacity: '64',
         youtubeUrl: '',
         startDate: '',
         endDate: '',
@@ -61,7 +59,7 @@ const CreateNewEvent = () => {
 
 
     const validateField = (name, value) => {
-        const trimmedValue = value.trim();
+        const trimmedValue = typeof value === 'string' ? value.trim() : '';
 
         switch (name) {
             case 'title':
@@ -89,6 +87,12 @@ const CreateNewEvent = () => {
                     return 'Invalid YouTube URL. URL should be in the format https://www.youtube.com/watch?v=VIDEO_ID';
                 }
                 break;
+            case 'eventType':
+                const eventTypes = ['concert', 'conference', 'meeting', 'webinar'];
+                if (!eventTypes.includes(trimmedValue)) {
+                    return 'Event type must be one of the following: concert, conference, meeting, webinar.';
+                }
+                break;
             case 'startDate':
             case 'endDate':
                 const date = new Date(value.replace(new RegExp('/', 'g'), '-'));
@@ -99,8 +103,8 @@ const CreateNewEvent = () => {
                 }
                 if (name === 'endDate') {
                     const startDate = new Date(eventData.startDate.replace(new RegExp('/', 'g'), '-'));
-                    if (date <= startDate) {
-                        return 'End date must be after the start date.';
+                    if (date < startDate) {
+                        return 'End date must be after the start date or to be the same.';
                     }
                 }
                 break;
@@ -110,8 +114,26 @@ const CreateNewEvent = () => {
     };
 
 
-    const updateField = (e) => {
-        const { name, value } = e.target;
+    // const updateField = (e) => {
+    //     const { name, value } = e.target;
+    //     const errorMessage = validateField(name, value);
+    //     setEventData({ ...eventData, [name]: value });
+    //     setFormErrors({ ...formErrors, [name]: errorMessage });
+    // };
+    const updateField = (e, newValue) => {
+        let name, value;
+
+        // 检查是否是 Autocomplete 调用
+        if (e && e.target && newValue === undefined) {
+            // 处理来自常规输入的调用
+            name = e.target.name;
+            value = e.target.value;
+        } else {
+            // 处理来自 Autocomplete 的调用
+            name = 'eventType'; // Autocomplete 控制的字段名
+            value = newValue; // 这里假设newValue是一个字符串
+        }
+
         const errorMessage = validateField(name, value);
         setEventData({ ...eventData, [name]: value });
         setFormErrors({ ...formErrors, [name]: errorMessage });
@@ -219,6 +241,14 @@ const CreateNewEvent = () => {
         }
     };
 
+    const seatingOptions = [
+        { label: '64', value: '64' },
+        { label: '81', value: '81' },
+        { label: '100', value: '100' },
+        { label: '144', value: '144' },
+        { label: '256', value: '256' },
+    ];
+
     if (identity !== 'host') {
         return <UnauthorizedAccess theme={theme} />;
     }
@@ -312,56 +342,41 @@ const CreateNewEvent = () => {
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <FormControl fullWidth>
-                                        <InputLabel id="event-type-label">Event Type</InputLabel>
-                                        <NativeSelect
-                                            onChange={updateField} // 假设这个函数能够正确处理 NativeSelect 的事件
-                                            value={eventData.eventType} // 使用状态来追踪选中值
-                                            inputProps={{
-                                                name: 'eventType', // 增加 name 属性，以便 updateField 函数可以识别字段
-                                            }}
-                                        >
-                                            <option value="concert">concert</option>
-                                            <option value="conference">conference</option>
-                                            <option value="meeting">meeting</option>
-                                            <option value="webinar">webinar</option>
-                                        </NativeSelect>
+                                    <Autocomplete
+                                        value={eventData.eventType}
+                                        onChange={(event, newValue) => {
+                                            // 直接指定更新 eventType
+                                            setEventData({ ...eventData, eventType: newValue });
+                                        }}
 
-                                    </FormControl>
+                                        options={['concert', 'conference', 'meeting', 'webinar']}
+                                        getOptionLabel={(option) => option}
+                                        isOptionEqualToValue={(option, value) => option === value}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Event Type"
+                                                variant="outlined"
+                                            />
+                                        )}
+                                    />
+
                                 </Grid>
 
-
-                                {/*<Grid item xs={12} sm={6}>*/}
-                                {/*    <TextField*/}
-                                {/*        name="seatingCapacity"*/}
-                                {/*        label="Seating Capacity"*/}
-                                {/*        fullWidth*/}
-                                {/*        value={eventData.seatingCapacity}*/}
-                                {/*        onChange={updateField}*/}
-                                {/*        required*/}
-                                {/*        type="number"*/}
-                                {/*        error={!!formErrors.seatingCapacity}*/}
-                                {/*        helperText={formErrors.seatingCapacity}*/}
-                                {/*    />*/}
-                                {/*</Grid>*/}
                                 <Grid item xs={12} sm={6}>
-                                    <FormControl fullWidth>
-                                        <InputLabel id="seating-capacity-label">Seating Capacity</InputLabel>
-                                        <NativeSelect
-                                            // defaultValue="100"
-                                            onChange={updateField}
-                                            value={eventData.seatingCapacity}
-                                            inputProps={{
-                                                name: 'seatingCapacity', // 增加 name 属性，以便 updateField 函数可以识别字段
-                                            }}
-                                        >
-                                            <option value="64">64</option>
-                                            <option value="81">81</option>
-                                            <option value="100">100</option>
-                                            <option value="144">144</option>
-                                            <option value="256">256</option>
-                                        </NativeSelect>
-                                    </FormControl>
+                                    <Autocomplete
+                                        value={seatingOptions.find(option => option.value === eventData.seatingCapacity) || null}
+                                        onChange={(event, newValue) => {
+                                            setEventData({ ...eventData, seatingCapacity: newValue.value });
+                                        }}
+
+                                        options={seatingOptions}
+                                        getOptionLabel={(option) => option.label}
+                                        renderInput={(params) => (
+                                            <TextField {...params} label="Seating Capacity" variant="outlined" />
+                                        )}
+                                        isOptionEqualToValue={(option, value) => option.value === value.value}
+                                    />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField

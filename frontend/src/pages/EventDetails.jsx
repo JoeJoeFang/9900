@@ -1,17 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
-// import { Card, CardContent, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-//import Logout from '../components/Logout';
-//import CreateNewEvent from '../components/CreateNewEvent';
-//import MyBookings from '../components/MyBookings';
-//import HostProfile from '../components/HostProfile';
 import {useNavigate} from "react-router-dom";
 import NativeSelect from '@mui/material/NativeSelect';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import HeaderLogo from '../components/HeaderLogo';
 import { useParams } from 'react-router-dom';
-import SearchEvents from '../components/SearchEvents'; 
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Box,
@@ -27,8 +21,8 @@ import {
     Link,
 } from '@mui/material';
 import Navbar from '../components/Navbar';
-// import { Box, Button, Typography, Grid, Select, MenuItem } from '@mui/material';
-//import SearchEvents from "../components/SearchEvents";
+import ReviewsPage from './ReviewsPage';
+
 
 const theme = createTheme({
     palette: {
@@ -41,10 +35,6 @@ const theme = createTheme({
     },
 });
 
-const handleSearch = (searchTerm) => {
-    console.log("Search term:", searchTerm);
-    // Implement search logic here, e.g., filter your data or make a new API call
-};
 
 const EventDetails = () => {
     const { eventId } = useParams();
@@ -135,8 +125,6 @@ const EventDetails = () => {
     }, [eventId, token]);
 
 
-
-    console.log(eventsInfo);
     // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -284,10 +272,6 @@ const EventDetails = () => {
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
-                    {/* <CreateNewEvent /> */}
-                    {/* <MyBookings /> */}
-                    {/* <HostProfile /> */}
-                    {/* <Logout /> */}
                     <Navbar></Navbar>
                 </Box>
                 <HeaderLogo theme={theme} />
@@ -300,7 +284,7 @@ const EventDetails = () => {
                 <Container maxWidth="md">
                     <Grid container spacing={3} justifyContent="center">
                         <Grid item xs={12}>
-                            <Typography variant="h4" gutterBottom align="center" color="common.white">
+                            <Typography variant="h4" gutterBottom align="center" color="common.black">
                                 Event Details
                             </Typography>
                         </Grid>
@@ -421,6 +405,7 @@ const EventDetails = () => {
                         />
                     </Box>
                 </Container>
+                <ReviewsPage />
             </Box>
         </ThemeProvider>
     );
