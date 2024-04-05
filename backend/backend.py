@@ -409,10 +409,11 @@ def update_events_bookings():
 
 @app.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
-    print("------------------------------------------")
     print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
+    if cust.order is None or len(cust.order)== 0:
+        return jsonify({'message': 'No events found!'}), 404
     for k,v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
