@@ -28,7 +28,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'Hsj991220.'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -252,12 +252,19 @@ def get_events():
 
 @app.route('/events/search', methods=['GET'])
 def search_events():
-    string = request.args.get('keyWord')
-    events = Events.query.all()
-    print(string, events)
+    keyword = request.args.get('keyWord', '')
+    event_type = request.args.get('eventType', None)
+    query = Events.query
+
+    if event_type and event_type.lower() != 'none':
+        query = query.filter(Events.type == event_type)
+
+    events = query.all()
     event_list = []
+
     for event in events:
-        if string in event.title or string in event.description or string in event.eventType:
+        # Check if the keyword is in any of the relevant fields
+        if keyword.lower() in event.title.lower() or keyword.lower() in event.description.lower() or keyword.lower() in event.type.lower():
             event_data = {
                 'id': event.id,
                 'title': event.title,
@@ -274,8 +281,9 @@ def search_events():
                 'youtubeUrl': event.URL
             }
             event_list.append(event_data)
-    print(event_list)
-    return jsonify(event_list), 201
+
+    return jsonify(event_list), 200
+
 
 @app.route('/events/title', methods=['GET'])
 def get_events_title():
@@ -412,7 +420,12 @@ def get_bookings(userId):
     print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
+<<<<<<< HEAD
     if cust.order is None or len(cust.order)== 0:
+=======
+    print(cust.order)
+    if cust.order is None or len(cust.order) == 0:
+>>>>>>> 4fbbc7cdd4438b1cb10814863919c68846cd186a
         return jsonify({'message': 'No events found!'}), 404
     for k,v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
