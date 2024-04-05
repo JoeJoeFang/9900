@@ -557,7 +557,7 @@ def if_order():
 def cust_comments():
     data = request.get_json()
     c = [data['Date'], data['review'], 'None', 'None', 'None']
-    comment = Comments.query.filter_by(id=int(data['eventId'])).first_or_404()
+    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     comment.comment[data['userId']] = c
     flag_modified(comment, "comment")
     db.session.commit()
@@ -571,7 +571,7 @@ def get_comments(eventId):
 @app.route('/comments/host', methods=['PUT'])
 def host_comments():
     data = request.get_json()
-    comment = Comments.query.filter_by(id=int(data['eventId'])).first_or_404()
+    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     comment.comment[data['userId']][2] = data['Date']
     comment.comment[data['userId']][3] = data['review']
     comment.comment[data['userId']][4] = data['hostId']
