@@ -13,6 +13,7 @@ import io
 from sqlalchemy import JSON
 #from sqlalchemy.dialects.postgresql import JSON
 from flask_wtf import FlaskForm
+from sqlalchemy.testing.pickleable import User
 from wtforms import Form, StringField, RadioField, SubmitField
 from wtforms.validators import DataRequired
 from flask import current_app
@@ -28,7 +29,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = '114514'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -413,6 +414,41 @@ def update_events_bookings():
         # mail.send(message)
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
+
+
+@app.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
+def get_recommendation(userId):
+    # （思路：
+    # 查询用户购买的活动，找到活动类型
+    # 查询所有活动列表
+    # 使用用户购买的活动类型来过滤活动列表
+    # 返回过滤后的活动列表
+    # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
+
+    # 查询用户的订单信息
+    user_orders = Events_order.query.filter_by(userId=userId).all()
+    # 存储每个活动类型的频次
+    event_type_frequency = defaultdict(int)
+    if user_orders:
+        for order in user_orders:
+            event = Events.query.get(order.eventId)
+            event_type_frequency[event.type] += 1
+        # 找到用户最常参加的活动类型
+        favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
+        # 获取推荐活动列表，我们将获取即将来临的活动，按时间排序
+        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.startDate).all()
+
+    else:  # 对于新用户或尚未购买的用户，推荐即将来临的活动
+        recommended_events = Events.query.order_by(Events.startDate).limit(3).all()
+
+    events_json = [{
+        'id': event.id,
+        'title': event.title,
+        'description': event.description,
+        # 添加其他需要的字段
+    } for event in recommended_events]
+
+    return jsonify(events_json)
 
 
 @app.route('/bookings/<int:userId>', methods=['GET'])

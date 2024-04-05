@@ -1,17 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
-// import { Card, CardContent, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-//import Logout from '../components/Logout';
-//import CreateNewEvent from '../components/CreateNewEvent';
-//import MyBookings from '../components/MyBookings';
-//import HostProfile from '../components/HostProfile';
 import {useNavigate} from "react-router-dom";
 import NativeSelect from '@mui/material/NativeSelect';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import HeaderLogo from '../components/HeaderLogo';
 import { useParams } from 'react-router-dom';
-import SearchEvents from '../components/SearchEvents'; 
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Box,
@@ -27,8 +21,9 @@ import {
     Link,
 } from '@mui/material';
 import Navbar from '../components/Navbar';
-// import { Box, Button, Typography, Grid, Select, MenuItem } from '@mui/material';
-//import SearchEvents from "../components/SearchEvents";
+import ReviewsPage from './ReviewsPage';
+import Tooltip from '@mui/material/Tooltip';
+
 
 const theme = createTheme({
     palette: {
@@ -41,10 +36,6 @@ const theme = createTheme({
     },
 });
 
-const handleSearch = (searchTerm) => {
-    console.log("Search term:", searchTerm);
-    // Implement search logic here, e.g., filter your data or make a new API call
-};
 
 const EventDetails = () => {
     const { eventId } = useParams();
@@ -135,8 +126,6 @@ const EventDetails = () => {
     }, [eventId, token]);
 
 
-
-    console.log(eventsInfo);
     // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -153,12 +142,24 @@ const EventDetails = () => {
         setSelectedSeats([]);
     };
 
+    const [alertOpen, setAlertOpen] = useState(false);
+
     const toggleSeatSelection = (seatIndex) => {
-        setSelectedSeats((prevSelectedSeats) =>
-            prevSelectedSeats.includes(seatIndex)
-                ? prevSelectedSeats.filter((index) => index !== seatIndex)
-                : [...prevSelectedSeats, seatIndex]
-        );
+        const identity = localStorage.getItem("identity");
+        if (identity === 'host') {
+            setOpen(true);
+        } else {
+            setSelectedSeats((prevSelectedSeats) =>
+                prevSelectedSeats.includes(seatIndex)
+                    ? prevSelectedSeats.filter((index) => index !== seatIndex)
+                    : [...prevSelectedSeats, seatIndex]
+            );
+
+        }
+    };
+
+    const handleAlertClose = () => {
+        setAlertOpen(false);
     };
 
 
@@ -284,10 +285,6 @@ const EventDetails = () => {
             }}>
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
-                    {/* <CreateNewEvent /> */}
-                    {/* <MyBookings /> */}
-                    {/* <HostProfile /> */}
-                    {/* <Logout /> */}
                     <Navbar></Navbar>
                 </Box>
                 <HeaderLogo theme={theme} />
@@ -300,7 +297,7 @@ const EventDetails = () => {
                 <Container maxWidth="md">
                     <Grid container spacing={3} justifyContent="center">
                         <Grid item xs={12}>
-                            <Typography variant="h4" gutterBottom align="center" color="common.white">
+                            <Typography variant="h4" gutterBottom align="center" color="common.black">
                                 Event Details
                             </Typography>
                         </Grid>
@@ -381,22 +378,30 @@ const EventDetails = () => {
                             {eventsInfo.orderdetails && selectedDate && eventsInfo.orderdetails[selectedDate] ?
                                 eventsInfo.orderdetails[selectedDate].map((seat, index) => (
                                     <Grid item key={index} xs={2} sm={1} md={1}>
-                                        <Button
-                                            variant={selectedSeats.includes(index) ? "contained" : "outlined"}
-                                            sx={{
-                                                minWidth: 35,
-                                                minHeight: 35,
-                                                backgroundColor: selectedSeats.includes(index) ?  "#f76c6c" : "#63fc82", // 绿色为选中，红色为未选中
-                                                color: 'white',
-                                                '&:hover': {
-                                                    backgroundColor: selectedSeats.includes(index) ? "#d32f2f" : "#388e3c", // 深绿色或深红色变体
-                                                },
-                                            }}
-                                            onClick={() => toggleSeatSelection(index)}
-                                            disabled={seat[0] === 1} // 如果座位已预订，则禁用点击
-                                        >
-                                            {index + 1}
-                                        </Button>
+                                        <Tooltip title={seat[0] === 1 ? "This seat has been booked" : ""}>
+                                            <span>
+                                                <Button
+                                                    variant={selectedSeats.includes(index) ? "contained" : "outlined"}
+                                                    sx={{
+                                                        minWidth: 35,
+                                                        minHeight: 35,
+                                                        backgroundColor: selectedSeats.includes(index) ? "#f76c6c" : "#63fc82",
+                                                        color: 'white',
+                                                        '&:hover': {
+                                                            backgroundColor: selectedSeats.includes(index) ? "#d32f2f" : "#388e3c",
+                                                        },
+                                                        '&.Mui-disabled': {
+                                                            backgroundColor: "#f76c6c",
+                                                            color: 'black',
+                                                        },
+                                                    }}
+                                                    onClick={() => toggleSeatSelection(index)}
+                                                    disabled={seat[0] === 1}
+                                                >
+                                                    {index + 1}
+                                                </Button>
+                                            </span>
+                                        </Tooltip>
                                     </Grid>
                                 )) : null
                             }
@@ -419,8 +424,25 @@ const EventDetails = () => {
                             eventId={eventId}
                             email={email}
                         />
+                        <Dialog
+                            open={alertOpen}
+                            onClose={handleAlertClose}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                        >
+                            <DialogTitle id="alert-dialog-title">{"Action Not Allowed"}</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id="alert-dialog-description">
+                                    As a host, you cannot perform ticket booking.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleAlertClose}>Close</Button>
+                            </DialogActions>
+                        </Dialog>
                     </Box>
                 </Container>
+                <ReviewsPage />
             </Box>
         </ThemeProvider>
     );

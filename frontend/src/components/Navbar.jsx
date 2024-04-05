@@ -7,6 +7,8 @@ import Logout from '../components/Logout';
 import MyAccount from '../components/MyAccount'; // Assuming the Navbar is in the same directory level as HostedEvents
 import HostedEvents from '../components/HostedEvents';
 import Login from '../components/Login';
+import BackButton from './BackButton';
+
 
 
 const Navbar = () => {
@@ -33,6 +35,7 @@ const Navbar = () => {
   // 根据用户角色动态决定展示哪些按钮的逻辑
   const renderButtonsBasedOnRole = () => {
     const buttonsForCustomer = [
+      <BackButton key="Back"/>,
       <AllEvents key="allEvents" />,
       <MyBookings key="myBookings" />,
       <MyAccount key="myAccount" />,
@@ -40,6 +43,7 @@ const Navbar = () => {
     ];
 
     const buttonsForHost = [
+      <BackButton key="Back"/>,
       <AllEvents key="allEvents" />,
       // 假设 HostedEvents 是你的一个组件，代表主办的活动 
       <HostedEvents key="HostedEvents" />,
