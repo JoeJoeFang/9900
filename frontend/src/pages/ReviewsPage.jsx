@@ -3,6 +3,11 @@ import { TextField, Button, Box, Grid } from '@mui/material';
 import { List, ListItem, ListItemText, Container, Paper } from '@mui/material';
 import { Typography } from '@mui/material';
 import axios from "axios";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 
 
@@ -25,8 +30,8 @@ export function CommentForm({ cancelForm }) {
 
         // You can now use these variables (eventId and currentDate) along with the comment
         const data = {
-            comment: comment,
-            date: currentDate,
+            review: comment,
+            Date: currentDate,
             eventId: eventId,
             userId: userId,
 
@@ -34,7 +39,7 @@ export function CommentForm({ cancelForm }) {
 
         // Assuming addComment is now prepared to handle this data structure
         try {
-            const response = await axios.put('http://localhost:5005/comments', data, {
+            const response = await axios.put('http://localhost:5005/comments/customer', data, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
@@ -110,6 +115,30 @@ export function CommentList({ comments }) {
 
 function ReviewsPage() {
     const [showForm, setShowForm] = useState(false);
+    const [openDialog, setOpenDialog] = useState(false);
+    const handleJoinDiscussion = async () => {
+        try {
+            // 替换为正确的customerId和eventId
+            const response = await axios.post('/comments/customer', { customerId: 'yourCustomerId', eventId: 'yourEventId' });
+
+            if (response.status === 201) {
+                setShowForm(true);
+            } else {
+                // 由于通常201是成功的状态码，这里的else可能不会被执行
+                throw new Error('Unexpected response code');
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                setOpenDialog(true); // 显示警告对话框
+            } else {
+                console.error('An unexpected error occurred:', error);
+            }
+        }
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
 
     return (
         <Container maxWidth="md" sx={{ p: 2 }}>
@@ -122,7 +151,7 @@ function ReviewsPage() {
                 <Button
                     fullWidth
                     variant="outlined"
-                    onClick={() => setShowForm(true)}
+                    onClick={handleJoinDiscussion}
                     sx={{
                         color: '#9098e4', // 文字颜色
                         '&:hover': {
@@ -137,6 +166,24 @@ function ReviewsPage() {
 
             )}
             {/*<CommentList comments={comments} />*/}
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{"Cannot Join Discussion"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        You did not order this event!
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }
