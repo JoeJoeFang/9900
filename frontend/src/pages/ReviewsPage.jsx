@@ -2,18 +2,58 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Grid } from '@mui/material';
 import { List, ListItem, ListItemText, Container, Paper } from '@mui/material';
 import { Typography } from '@mui/material';
+import axios from "axios";
 
 
 
 
-export function CommentForm({ addComment, cancelForm }) {
+export function CommentForm({ cancelForm }) {
     const [comment, setComment] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!comment.trim()) return;
-        addComment(comment);
-        setComment(''); // Clear the input after submission
+
+        // Extracting event ID from the URL
+        const url = window.location.pathname; // e.g., /all-event/1
+        const eventId = url.substring(url.lastIndexOf('/') + 1);
+
+        // Getting the current date in YYYY-MM-DD format
+        const currentDate = new Date().toISOString().split('T')[0];
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
+
+        // You can now use these variables (eventId and currentDate) along with the comment
+        const data = {
+            comment: comment,
+            date: currentDate,
+            eventId: eventId,
+            userId: userId,
+
+        };
+
+        // Assuming addComment is now prepared to handle this data structure
+        try {
+            const response = await axios.put('http://localhost:5005/comments', data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status === 200 || response.status === 201) {
+                console.log('post comments successfully!');
+                setComment('');
+            }
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 400) {
+                    alert('Invalid input: Event title already exists!');
+                    console.log(error.response.data.message);
+                } else if (error.response.status === 403) {
+                    alert('Invalid Token: ' + error.response.data.message);
+                }
+            }
+        }
     };
 
     return (
@@ -41,10 +81,10 @@ export function CommentForm({ addComment, cancelForm }) {
                             sx={{
                                 color: '#9098e4', // 文字颜色
                                 '&:hover': {
-                                    backgroundColor: 'white', // 悬浮时背景色
-                                    borderColor: '#9098e4', // 悬浮时边框颜色
+                                    backgroundColor: 'white',
+                                    borderColor: '#9098e4',
                                 },
-                                border: '2px solid #9098e4', // 默认边框颜色
+                                border: '2px solid #9098e4',
                             }}
                         >
                         Cancel
@@ -69,12 +109,7 @@ export function CommentList({ comments }) {
 }
 
 function ReviewsPage() {
-    const [comments, setComments] = useState([]);
     const [showForm, setShowForm] = useState(false);
-
-    const addComment = (comment) => {
-        setComments([...comments, comment]);
-    };
 
     return (
         <Container maxWidth="md" sx={{ p: 2 }}>
@@ -82,7 +117,7 @@ function ReviewsPage() {
                 Discussion Board
             </Typography>
             {showForm ? (
-                <CommentForm addComment={addComment} cancelForm={() => setShowForm(false)} />
+                <CommentForm cancelForm={() => setShowForm(false)} />
             ) : (
                 <Button
                     fullWidth
@@ -101,7 +136,7 @@ function ReviewsPage() {
                 </Button>
 
             )}
-            <CommentList comments={comments} />
+            {/*<CommentList comments={comments} />*/}
         </Container>
     );
 }
