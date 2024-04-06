@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar } from '@mui/material';
+import { ThemeProvider,Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents'; // Ensure this is the correct path
 import Navbar from '../components/Navbar';
@@ -85,7 +85,7 @@ const MyAccount = () => {
       
     
     return (
-        
+        <ThemeProvider theme={theme}>  
         <Box sx={{
             minHeight: '100vh',
             display: 'flex',
@@ -145,7 +145,7 @@ const MyAccount = () => {
                 )}
             </div>
         </Box>
-       
+        </ThemeProvider>
     );
 };
 

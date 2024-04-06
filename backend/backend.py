@@ -174,6 +174,9 @@ class Events_order(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     eventtitle = db.Column(db.String(20), nullable=False)
     orderdetails = db.Column(JSON, nullable=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+
 
 class Myevents(db.Model):
     __tablename__ = "myevents"
@@ -416,6 +419,7 @@ def update_events_bookings():
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
+
 @app.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
 def get_recommendation(userId):
     # （思路：
@@ -426,29 +430,35 @@ def get_recommendation(userId):
     # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
 
     # 查询用户的订单信息
-    user_orders = Events_order.query.filter_by(userId=userId).all()
+    user_orders = Events_order.query.filter_by(user_id=userId).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
+    event_ids = [order.event_id for order in user_orders if order.event_id]  # 从订单中提取所有有效的event_id并存储到一个列表event_ids中
+    events = Events.query.filter(Events.id.in_(event_ids)).all()  # 一次查询获取所有事件
+    events_dict = {event.id: event for event in events}  # 将查询到的活动以它们的id作为键，活动对象本身作为值，保存到一个字典events_dict中，这样可以方便后续通过 id 快速获取活动信息。
     if user_orders:
         for order in user_orders:
-            event = Events.query.get(order.eventId)
-            event_type_frequency[event.type] += 1
+            event = events_dict.get(order.event_id)
+            if event:
+                event_type_frequency[event.type] += 1
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
-        # 获取推荐活动列表，我们将获取即将来临的活动，按时间排序
-        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.startDate).all()
+        # 获取推荐活动列表
+        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.id).all()  #这里先按id排序，因为Events表里面日期的数据类型是string，排序需要更复杂的逻辑
 
-    else:  # 对于新用户或尚未购买的用户，推荐即将来临的活动
-        recommended_events = Events.query.order_by(Events.startDate).limit(3).all()
+    else:  # 对于新用户或尚未购买的用户，推荐一些活动
+        recommended_events = Events.query.order_by(Events.id).limit(3).all()
 
     events_json = [{
         'id': event.id,
         'title': event.title,
+        'type': event.type,
         'description': event.description,
         # 添加其他需要的字段
     } for event in recommended_events]
 
     return jsonify(events_json)
+
 
 @app.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
@@ -551,7 +561,11 @@ def if_order():
     if str(data['eventId']) not in cust.order:
         return jsonify({'message': 'You did not order this event!'}), 404
     else:
-        return jsonify({'message': 'You can fill your review now!'}), 201
+        comment = Comments.query.filter_by(eventId=data['eventId']).first()
+        if str(data['customerId']) in comment.comment:
+            return jsonify({'message': 'You already commented this event!'})
+        else:
+            return jsonify({'message': 'You can fill your review now!'}), 201
 
 @app.route('/comments/customer', methods=['PUT'])
 def cust_comments():
@@ -571,13 +585,17 @@ def get_comments(eventId):
 @app.route('/comments/host', methods=['PUT'])
 def host_comments():
     data = request.get_json()
-    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
-    comment.comment[data['userId']][2] = data['Date']
-    comment.comment[data['userId']][3] = data['review']
-    comment.comment[data['userId']][4] = data['hostId']
-    flag_modified(comment, "comment")
-    db.session.commit()
-    return jsonify({'message': 'Add comment successfully!'}), 201
+    event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
+    if event.hostId == int(data['hostId']):
+        comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
+        comment.comment[data['userId']][2] = data['Date']
+        comment.comment[data['userId']][3] = data['review']
+        comment.comment[data['userId']][4] = data['hostId']
+        flag_modified(comment, "comment")
+        db.session.commit()
+        return jsonify({'message': 'Add comment successfully!'}), 201
+    else:
+        return jsonify({'message': 'You did not host this event!'}), 400
 
 
 @app.route('/events/new', methods=['POST'])
