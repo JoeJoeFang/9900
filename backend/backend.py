@@ -570,7 +570,8 @@ def if_order():
 @app.route('/comments/customer', methods=['PUT'])
 def cust_comments():
     data = request.get_json()
-    c = [data['Date'], data['review'], 'None', 'None', 'None']
+    cust = Customer.query.filter_by(id=data['customerId']).first()
+    c = [data['Date'], data['review'], cust.name,'None', 'None', 'None', 'None']
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     comment.comment[data['userId']] = c
     flag_modified(comment, "comment")
@@ -582,20 +583,27 @@ def get_comments(eventId):
     comments = Comments.query.filter_by(eventId=eventId).first_or_404()
     return jsonify(comments.comment), 201
 
-@app.route('/comments/host', methods=['PUT'])
-def host_comments():
+@app.route('/comments/host', methods=['POST'])
+def if_host():
     data = request.get_json()
     event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
     if event.hostId == int(data['hostId']):
-        comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
-        comment.comment[data['userId']][2] = data['Date']
-        comment.comment[data['userId']][3] = data['review']
-        comment.comment[data['userId']][4] = data['hostId']
-        flag_modified(comment, "comment")
-        db.session.commit()
-        return jsonify({'message': 'Add comment successfully!'}), 201
+        return jsonify({'message': 'Reply your review!'}), 201
     else:
         return jsonify({'message': 'You did not host this event!'}), 400
+
+@app.route('/comments/host', methods=['PUT'])
+def host_comments():
+    data = request.get_json()
+    host = Host.query.filter_by(id=int(data['hostId'])).first_or_404()
+    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
+    comment.comment[data['userId']][3] = data['Date']
+    comment.comment[data['userId']][4] = data['review']
+    comment.comment[data['userId']][5] = data['hostId']
+    comment.comment[data['userId']][6] = host.companyName
+    flag_modified(comment, "comment")
+    db.session.commit()
+    return jsonify({'message': 'Add comment successfully!'}), 201
 
 
 @app.route('/events/new', methods=['POST'])
