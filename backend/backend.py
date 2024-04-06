@@ -174,6 +174,9 @@ class Events_order(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     eventtitle = db.Column(db.String(20), nullable=False)
     orderdetails = db.Column(JSON, nullable=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+
 
 class Myevents(db.Model):
     __tablename__ = "myevents"
@@ -416,8 +419,9 @@ def update_events_bookings():
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
+
 @app.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
-def get_recommendation(userId):
+def get_recommendation(user_id):
     # （思路：
     # 查询用户购买的活动，找到活动类型
     # 查询所有活动列表
@@ -426,16 +430,16 @@ def get_recommendation(userId):
     # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
 
     # 查询用户的订单信息
-    user_orders = Events_order.query.filter_by(id=userId).all()
+    user_orders = Events_order.query.filter_by(user_id=user_id).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
     if user_orders:
         for order in user_orders:
-            event = Events.query.get(order.eventId)
+            event = Events.query.get(order.event_id)
             event_type_frequency[event.type] += 1
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
-        # 获取推荐活动列表，我们将获取即将来临的活动，按时间排序
+        # 获取推荐活动列表
         recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.id).all()  #这里先按id排序，因为Events表里面日期的数据类型是string，排序需要更复杂的逻辑
 
     else:  # 对于新用户或尚未购买的用户，推荐一些活动
@@ -444,6 +448,7 @@ def get_recommendation(userId):
     events_json = [{
         'id': event.id,
         'title': event.title,
+        'type': event.type,
         'description': event.description,
         # 添加其他需要的字段
     } for event in recommended_events]
