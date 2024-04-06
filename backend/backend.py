@@ -421,7 +421,7 @@ def update_events_bookings():
 
 
 @app.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
-def get_recommendation(user_id):
+def get_recommendation(userId):
     # （思路：
     # 查询用户购买的活动，找到活动类型
     # 查询所有活动列表
@@ -430,7 +430,7 @@ def get_recommendation(user_id):
     # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
 
     # 查询用户的订单信息
-    user_orders = Events_order.query.filter_by(user_id=user_id).all()
+    user_orders = Events_order.query.filter_by(user_id=userId).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
     if user_orders:
