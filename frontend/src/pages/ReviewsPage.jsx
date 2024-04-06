@@ -116,11 +116,15 @@ export function CommentList({ comments }) {
 function ReviewsPage() {
     const [showForm, setShowForm] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const customerId = localStorage.getItem('userId');
+    const url = window.location.pathname; // e.g., /all-event/1
+    const eventId = url.substring(url.lastIndexOf('/') + 1);
+
     const handleJoinDiscussion = async () => {
         try {
-            // 替换为正确的customerId和eventId
-            const response = await axios.post('/comments/customer', { customerId: 'yourCustomerId', eventId: 'yourEventId' });
+            const response = await axios.post('http://localhost:5005/comments/customer', { customerId: customerId, eventId: eventId });
 
+            console.log(response);
             if (response.status === 201) {
                 setShowForm(true);
             } else {
