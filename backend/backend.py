@@ -436,10 +436,10 @@ def get_recommendation(userId):
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
         # 获取推荐活动列表，我们将获取即将来临的活动，按时间排序
-        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.from_time).all()
+        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.id).all()  #这里先按id排序，因为Events表里面日期的数据类型是string，排序需要更复杂的逻辑
 
-    else:  # 对于新用户或尚未购买的用户，推荐即将来临的活动
-        recommended_events = Events.query.order_by(Events.from_time).limit(3).all()
+    else:  # 对于新用户或尚未购买的用户，推荐一些活动
+        recommended_events = Events.query.order_by(Events.id).limit(3).all()
 
     events_json = [{
         'id': event.id,
@@ -449,6 +449,7 @@ def get_recommendation(userId):
     } for event in recommended_events]
 
     return jsonify(events_json)
+
 
 @app.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
