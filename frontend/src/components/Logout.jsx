@@ -14,7 +14,7 @@ const Logout = () => {
   return (
     <Button
       onClick={logout}
-      color="error" // 使用 error 颜色以突出显示该操作的性质
+      color="inherit" // 使用 error 颜色以突出显示该操作的性质
       variant="contained" // 用实心填充的按钮表示
       sx={{ 
           mr: 1, // 为按钮添加右边距，与其他按钮保持一定间距

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
+import { ThemeProvider,Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 //import SearchEvents from '../components/SearchEvents';
 import { Button } from '@mui/material';
@@ -123,6 +123,7 @@ const MyHostedEventsPage = () => {
 
 
     return (
+        <ThemeProvider theme={theme}>  
         <Box sx={{
             minHeight: '100vh',
             display: 'flex',
@@ -227,6 +228,7 @@ const MyHostedEventsPage = () => {
                 </DialogActions>
             </Dialog>
         </Box>
+        </ThemeProvider>
     );
 
 };
