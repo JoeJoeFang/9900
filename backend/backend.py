@@ -433,10 +433,14 @@ def get_recommendation(userId):
     user_orders = Events_order.query.filter_by(user_id=userId).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
+    event_ids = [order.event_id for order in user_orders if order.event_id]  # 从订单中提取所有有效的event_id并存储到一个列表event_ids中
+    events = Events.query.filter(Events.id.in_(event_ids)).all()  # 一次查询获取所有事件
+    events_dict = {event.id: event for event in events}  # 将查询到的活动以它们的id作为键，活动对象本身作为值，保存到一个字典events_dict中，这样可以方便后续通过 id 快速获取活动信息。
     if user_orders:
         for order in user_orders:
-            event = Events.query.get(order.event_id)
-            event_type_frequency[event.type] += 1
+            event = events_dict.get(order.event_id)
+            if event:
+                event_type_frequency[event.type] += 1
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
         # 获取推荐活动列表
