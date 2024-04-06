@@ -426,7 +426,7 @@ def get_recommendation(userId):
     # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
 
     # 查询用户的订单信息
-    user_orders = Events_order.query.filter_by(userId=userId).all()
+    user_orders = Events_order.query.filter_by(id=userId).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
     if user_orders:
@@ -436,10 +436,10 @@ def get_recommendation(userId):
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
         # 获取推荐活动列表，我们将获取即将来临的活动，按时间排序
-        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.startDate).all()
+        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.from_time).all()
 
     else:  # 对于新用户或尚未购买的用户，推荐即将来临的活动
-        recommended_events = Events.query.order_by(Events.startDate).limit(3).all()
+        recommended_events = Events.query.order_by(Events.from_time).limit(3).all()
 
     events_json = [{
         'id': event.id,
