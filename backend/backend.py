@@ -561,7 +561,11 @@ def if_order():
     if str(data['eventId']) not in cust.order:
         return jsonify({'message': 'You did not order this event!'}), 404
     else:
-        return jsonify({'message': 'You can fill your review now!'}), 201
+        comment = Comments.query.filter_by(eventId=data['eventId']).first()
+        if str(data['customerId']) in comment.comment:
+            return jsonify({'message': 'You already commented this event!'})
+        else:
+            return jsonify({'message': 'You can fill your review now!'}), 201
 
 @app.route('/comments/customer', methods=['PUT'])
 def cust_comments():
@@ -581,13 +585,17 @@ def get_comments(eventId):
 @app.route('/comments/host', methods=['PUT'])
 def host_comments():
     data = request.get_json()
-    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
-    comment.comment[data['userId']][2] = data['Date']
-    comment.comment[data['userId']][3] = data['review']
-    comment.comment[data['userId']][4] = data['hostId']
-    flag_modified(comment, "comment")
-    db.session.commit()
-    return jsonify({'message': 'Add comment successfully!'}), 201
+    event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
+    if event.hostId == int(data['hostId']):
+        comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
+        comment.comment[data['userId']][2] = data['Date']
+        comment.comment[data['userId']][3] = data['review']
+        comment.comment[data['userId']][4] = data['hostId']
+        flag_modified(comment, "comment")
+        db.session.commit()
+        return jsonify({'message': 'Add comment successfully!'}), 201
+    else:
+        return jsonify({'message': 'You did not host this event!'}), 400
 
 
 @app.route('/events/new', methods=['POST'])
