@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
+import { ThemeProvider,Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents';
 import HeaderLogo from '../components/HeaderLogo';
@@ -58,31 +58,25 @@ const EventsList = () => {
         fetchEvents();
     }, []);
     return (
+        <ThemeProvider theme={theme}>
         <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 alignItems: 'center',
                 background: `url(${process.env.PUBLIC_URL}/default_background.jpg), linear-gradient(to right, #e66465, #9198e5)`,
-                backgroundSize: 'cover, cover',
+                backgroundSize: 'cover',
                 backgroundPosition: 'center, center',
                 p: theme.spacing(2),
             }}>
     
                 <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems:'center' }}>
-                <SearchEvents onSearch={handleSearch} searchCallback={searchCallback} />
-                    {/* <AllEvents   />   
-                    <CreateNewEvent /> */}
-                    {/* <MyBookings /> */}
-                    {/* <HostProfile />
-                    <Logout /> */}
-                    <Navbar></Navbar>
-                
+                <Navbar></Navbar>         
                 </Box>
-                <HeaderLogo theme={theme} />
-                {isLoading ? (
+                <HeaderLogo theme={theme} /><SearchEvents onSearch={handleSearch} searchCallback={searchCallback} />
+                     {isLoading ? (
                     <CircularProgress />
                 ) : error ? (
                     <Typography color="error">{error}</Typography>
@@ -139,6 +133,7 @@ const EventsList = () => {
                     <Typography variant="subtitle1">No events found.</Typography>
                 )}
             </Box>
+            </ThemeProvider>     
     );
 
 };

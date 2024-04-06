@@ -9,9 +9,10 @@ const AllEvents = () => {
 
     return (
         <Button 
-            color="secondary" 
+            color="inherit" 
+           
             variant="contained" 
-            sx={{ mr: 1 }} 
+            sx={{ mr: 1  ,fontWeight: 'bold',}} 
             onClick={handleAllEventsClick} // 绑定处理函数到按钮的点击事件
         >
             All events

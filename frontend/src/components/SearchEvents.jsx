@@ -1,100 +1,92 @@
 import React, { useState } from 'react';
-import { Box,TextField, IconButton, FormControl, InputLabel, Snackbar, Alert } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {useNavigate} from "react-router-dom";
-import { NativeSelect } from '@mui/material';
+import { Box, Paper, TextField, FormControl, InputLabel, Select, MenuItem, IconButton, Snackbar, Alert } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+
 const SearchEvents = (props) => {
   const [searchTitle, setSearchTitle] = useState('');
   const [eventType, setEventType] = useState('');
   const [searchDescription, setSearchDescription] = useState('');
-  const [error, setError] = useState('');
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
-  const [events, setEvents] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); 
-  // 假设的静态选项数据，这里仅以事件类型为例
   const eventTypes = [
-    { id: 'None', title: 'All Types' }, 
+    { id: 'None', title: '' },
+    { id: 'all types', title: 'All types' },
     { id: 'concert', title: 'Concert' },
     { id: 'conference', title: 'Conference' },
     { id: 'meeting', title: 'Meeting' },
     { id: 'webinar', title: 'Webinar' },
-    // 添加更多类型...
+    // Add more event types as needed...
   ];
-  
+
   const handleSearch = async () => {
-    const keyword = `${searchTitle} ${searchDescription} `.trim();
-  
+    const keyword = `${searchTitle} ${searchDescription}`.trim();
     try {
       const response = await axios.get('http://localhost:5005/events/search', {
-        params: { // 使用params属性来传递查询参数
-          keyWord: keyword, 
-          eventType: eventType === 'None' ? null : eventType,// 确保这个参数名称与你后端期望的一致
+        params: {
+          keyWord: keyword,
+          eventType: eventType === 'None' ? null : eventType,
         },
       });
-      const data = response.data; // 这是事件列表
-      props.searchCallback(data)
-      setEvents(data); // 更新状态以存储事件数据
-      setSnackbarOpen(data.length === 0); 
-      setErrorMessage('No events found.');// 如果没有搜索到事件，显示Snackbar
+      const data = response.data;
+      props.searchCallback(data);
+      setSnackbarOpen(data.length === 0);
+      setErrorMessage(data.length === 0 ? 'No events found.' : '');
     } catch (error) {
       console.error("There was an error fetching the events:", error);
-      setError("Failed to load events. Please try again later.");
-      setSnackbarOpen(true); // 出现错误时显示Snackbar
+      setErrorMessage("Failed to load events. Please try again later.");
+      setSnackbarOpen(true);
     }
   };
-  
+
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
 
   return (
-    <div>
-      <div>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
-      <Snackbar open={isSnackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar }message={errorMessage}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', mt: 4 }}>
+      <Snackbar open={isSnackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
           {errorMessage}
         </Alert>
       </Snackbar>
-
-      <TextField
-        label="Title"
-        variant="outlined"
-        size="small"
-        value={searchTitle}
-        onChange={(e) => setSearchTitle(e.target.value)}
-      />
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel htmlFor="event-type-selector">Event Type</InputLabel>
-            <NativeSelect
-                value={eventType}
-                onChange={(e) => setEventType(e.target.value)}
-                inputProps={{
-                  name: 'event-type',
-                  id: 'event-type-selector',
-                }}
-            >
-              {eventTypes.map((type) => (
-                  <option key={type.id} value={type.id}>{type.title}</option>
-              ))}
-            </NativeSelect>
-          </FormControl>
-      <TextField
-        label="Description"
-        variant="outlined"
-        size="small"
-        value={searchDescription}
-        onChange={(e) => setSearchDescription(e.target.value)}
-      />
-      <IconButton onClick={handleSearch} size="large">
-        <SearchIcon />
-      </IconButton>
-      </Box>
-    </div> 
-</div>
+      
+      <Paper elevation={6} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', borderRadius: '24px', boxShadow: '1', maxWidth: '800px', width: '100%', p: 2, mb: 2, bgcolor: 'background.paper' }}>
+        <TextField
+          sx={{ m: 1, flexGrow: 1 }}
+          label="Title"
+          variant="outlined"
+          size="small"
+          value={searchTitle}
+          onChange={(e) => setSearchTitle(e.target.value)}
+        />
+        <FormControl size="small" sx={{ m: 1, minWidth: 120 }}>
+          <InputLabel>Event Type</InputLabel>
+          <Select
+            value={eventType}
+            label="Event Type"
+            onChange={(e) => setEventType(e.target.value)}
+          >
+            {eventTypes.map((type) => (
+              <MenuItem key={type.id} value={type.id}>{type.title}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          sx={{ m: 1, flexGrow: 2 }}
+          label="Description"
+          variant="outlined"
+          size="small"
+          value={searchDescription}
+          onChange={(e) => setSearchDescription(e.target.value)}
+        />
+        <IconButton sx={{ m: 1, bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, color: 'white', borderRadius: '50%' }} onClick={handleSearch}>
+          <SearchIcon />
+        </IconButton>
+      </Paper>
+    </Box>
   );
 };
 

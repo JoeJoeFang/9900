@@ -9,7 +9,7 @@ const Login = () => {
 
     return (
         <Button 
-            color="secondary" 
+            color="info" 
             variant="contained" 
             sx={{ mr: 80 }} 
             onClick={handleLoginClick} // 绑定处理函数到按钮的点击事件

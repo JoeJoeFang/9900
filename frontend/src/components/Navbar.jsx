@@ -52,8 +52,12 @@ const Navbar = () => {
       <Logout key="logout" />
     ];
     console.log(identity)
+    const loginButtonStyle = {
+      marginLeft: '99px',
+    };
     const buttonsForVisitor = [
-      <Login key="login" /> // Replace with your actual Login component
+    
+      <Login key="login" style={loginButtonStyle}/> 
     ];
 
     // Determine what buttons to render based on the identity
@@ -66,7 +70,7 @@ const Navbar = () => {
         return buttonsForVisitor; // Assume any other identity is a visitor
     }
   };
-  // JSX 返回语句，这里实际调用了渲染按钮的函数
+
   return (
     <div style={{ display: 'flex', justifyContent: 'space-around', padding: '20px 0' }}>
       {renderButtonsBasedOnRole()}
