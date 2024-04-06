@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { TextField, Button, Box, Grid } from '@mui/material';
 import { List, ListItem, ListItemText, Container, Paper } from '@mui/material';
 import { Typography } from '@mui/material';
@@ -8,11 +8,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Divider } from '@mui/material';
 
 
 
 
-export function CommentForm({ cancelForm }) {
+
+export function CommentForm({ cancelForm, fetchComments }) {
     const [comment, setComment] = useState('');
 
     const handleSubmit = async (e) => {
@@ -48,6 +50,7 @@ export function CommentForm({ cancelForm }) {
             if (response.status === 200 || response.status === 201) {
                 console.log('post comments successfully!');
                 setComment('');
+                fetchComments();
             }
         } catch (error) {
             if (error.response) {
@@ -99,19 +102,7 @@ export function CommentForm({ cancelForm }) {
         </Box>
     );
 }
-export function CommentList({ comments }) {
-    return (
-        <Paper style={{ maxHeight: 400, overflow: 'auto', border: '2px solid #9098e4', marginTop: '16px', padding: '8px' }}>
-            <List>
-                {comments.slice(0, 6).map((comment, index) => (
-                    <ListItem key={index} alignItems="flex-start">
-                        <ListItemText primary={comment} />
-                    </ListItem>
-                ))}
-            </List>
-        </Paper>
-    );
-}
+
 
 function ReviewsPage() {
     const [showForm, setShowForm] = useState(false);
@@ -119,6 +110,38 @@ function ReviewsPage() {
     const customerId = localStorage.getItem('userId');
     const url = window.location.pathname; // e.g., /all-event/1
     const eventId = url.substring(url.lastIndexOf('/') + 1);
+    const token = localStorage.getItem('token');
+
+    const [comments, setComments] = useState([]);
+    const fetchComments = useCallback(async () => {
+        try {
+            // 定义请求配置对象，包括请求头
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            const response = await axios.get(`http://localhost:5005/comments/${eventId}`, config);
+            if (response.status === 200 || response.status === 201) {
+                console.log(response.data);
+                const loadedComments = Object.values(response.data).map(commentArray => ({
+                    date: commentArray[0],
+                    text: commentArray[1]
+                }));
+                console.log("loadedComments", loadedComments);
+                setComments(loadedComments);
+            }
+
+        } catch (error) {
+            console.error("There was an error fetching the events:", error);
+        }
+    }, [eventId, token, comments]);
+
+    useEffect(() => {
+        fetchComments().then(r => console.log("event comments fetching successfully"));
+    }, [eventId]);
 
     const handleJoinDiscussion = async () => {
         try {
@@ -128,7 +151,6 @@ function ReviewsPage() {
             if (response.status === 201) {
                 setShowForm(true);
             } else {
-                // 由于通常201是成功的状态码，这里的else可能不会被执行
                 throw new Error('Unexpected response code');
             }
         } catch (error) {
@@ -150,7 +172,9 @@ function ReviewsPage() {
                 Discussion Board
             </Typography>
             {showForm ? (
-                <CommentForm cancelForm={() => setShowForm(false)} />
+                <CommentForm cancelForm={() => setShowForm(false)}
+                             fetchComments={fetchComments}
+                />
             ) : (
                 <Button
                     fullWidth
@@ -169,7 +193,29 @@ function ReviewsPage() {
                 </Button>
 
             )}
-            {/*<CommentList comments={comments} />*/}
+            <Paper style={{ maxHeight: 400, overflow: 'auto', border: '2px solid #9098e4', marginTop: '16px', padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
+                <List>
+                    {comments.map((comment, index) => (
+                        <React.Fragment key={index}>
+                            <ListItem alignItems="flex-start">
+                                <ListItemText
+                                    primary={
+                                        <Typography variant="h6" component="p" style={{ fontWeight: 'bold' }}>
+                                            {comment.text}
+                                        </Typography>
+                                    }
+                                    secondary={
+                                        <Typography component="span" variant="body2" color="text.secondary">
+                                            {comment.date}
+                                        </Typography>
+                                    }
+                                />
+                            </ListItem>
+                            {index < comments.length - 1 && <Divider variant="inset" component="li" />}
+                        </React.Fragment>
+                    ))}
+                </List>
+            </Paper>
             <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
