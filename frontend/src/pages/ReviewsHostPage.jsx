@@ -12,99 +12,6 @@ import { Divider } from '@mui/material';
 import { Avatar } from '@mui/material';
 
 
-
-
-
-export function CommentForm({ cancelForm, fetchComments }) {
-    const [comment, setComment] = useState('');
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!comment.trim()) return;
-
-        // Extracting event ID from the URL
-        const url = window.location.pathname; // e.g., /all-event/1
-        const eventId = url.substring(url.lastIndexOf('/') + 1);
-
-        // Getting the current date in YYYY-MM-DD format
-        const currentDate = new Date().toISOString().split('T')[0];
-        const userId = localStorage.getItem('userId');
-        const token = localStorage.getItem('token');
-
-        // You can now use these variables (eventId and currentDate) along with the comment
-        const data = {
-            review: comment,
-            Date: currentDate,
-            eventId: eventId,
-            userId: userId,
-
-        };
-
-        // Assuming addComment is now prepared to handle this data structure
-        try {
-            const response = await axios.put('http://localhost:5005/comments/customer', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            if (response.status === 200 || response.status === 201) {
-                console.log('post comments successfully!');
-                setComment('');
-                fetchComments();
-            }
-        } catch (error) {
-            if (error.response) {
-                if (error.response.status === 400) {
-                    alert('Invalid input: Event title already exists!');
-                    console.log(error.response.data.message);
-                } else if (error.response.status === 403) {
-                    alert('Invalid Token: ' + error.response.data.message);
-                }
-            }
-        }
-    };
-
-    return (
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
-                multiline
-                fullWidth
-                variant="outlined"
-                placeholder="Write your comment..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={4}
-                sx={{ mb: 2 }}
-            />
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <Button fullWidth variant="contained" color="primary" type="submit">
-                        Post Comment
-                    </Button>
-                </Grid>
-                <Grid item xs={6}>
-                    <Button fullWidth
-                            variant="outlined"
-                            onClick={cancelForm}
-                            sx={{
-                                color: '#9098e4', // 文字颜色
-                                '&:hover': {
-                                    backgroundColor: 'white',
-                                    borderColor: '#9098e4',
-                                },
-                                border: '2px solid #9098e4',
-                            }}
-                    >
-                        Cancel
-                    </Button>
-                </Grid>
-            </Grid>
-        </Box>
-    );
-}
-
-
 function ReviewsHostPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const hostId = localStorage.getItem('userId');
@@ -180,7 +87,7 @@ function ReviewsHostPage() {
                 await fetchComments();
 
             } else {
-                throw new Error('Unexpected response code');
+                console.error('Unexpected response code:', response.status);
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {
