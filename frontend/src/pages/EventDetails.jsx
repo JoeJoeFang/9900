@@ -21,8 +21,9 @@ import {
     Link,
 } from '@mui/material';
 import Navbar from '../components/Navbar';
-import ReviewsPage from './ReviewsPage';
+import ReviewsCustomerPage from './ReviewsCustomerPage';
 import Tooltip from '@mui/material/Tooltip';
+import ReviewsHostPage from "./ReviewsHostPage";
 
 
 const theme = createTheme({
@@ -62,6 +63,7 @@ const EventDetails = () => {
     const token = localStorage.getItem('token');
     //const userId = localStorage.getItem('userId');
     const email = localStorage.getItem('userEmail');
+    const identity = localStorage.getItem('identity');
 
 
     const fetchEvents = useCallback(async () => {
@@ -442,7 +444,11 @@ const EventDetails = () => {
                         </Dialog>
                     </Box>
                 </Container>
-                <ReviewsPage />
+                    {identity === 'host' ? (
+                        <ReviewsHostPage />
+                    ) : (
+                        <ReviewsCustomerPage />
+                    )}
             </Box>
         </ThemeProvider>
     );

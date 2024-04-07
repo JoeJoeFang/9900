@@ -9,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Divider } from '@mui/material';
+import { Avatar } from '@mui/material';
 
 
 
@@ -104,7 +105,7 @@ export function CommentForm({ cancelForm, fetchComments }) {
 }
 
 
-function ReviewsPage() {
+function ReviewsCustomerPage() {
     const [showForm, setShowForm] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const customerId = localStorage.getItem('userId');
@@ -126,9 +127,15 @@ function ReviewsPage() {
             const response = await axios.get(`http://localhost:5005/comments/${eventId}`, config);
             if (response.status === 200 || response.status === 201) {
                 console.log(response.data);
-                const loadedComments = Object.values(response.data).map(commentArray => ({
+                const loadedComments = Object.entries(response.data).map(([key, commentArray]) => ({
+                    customerId: key,
                     date: commentArray[0],
-                    text: commentArray[1]
+                    text: commentArray[1],
+                    name: commentArray[2],
+                    hostReplyDate: commentArray[3],
+                    hostReplyText: commentArray[4],
+                    hostId: commentArray[5],
+                    companyName: commentArray[6]
                 }));
                 console.log("loadedComments", loadedComments);
                 setComments(loadedComments);
@@ -148,10 +155,10 @@ function ReviewsPage() {
             const response = await axios.post('http://localhost:5005/comments/customer', { customerId: customerId, eventId: eventId });
 
             console.log(response);
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
                 setShowForm(true);
             } else {
-                throw new Error('Unexpected response code');
+                console.error('Unexpected response code:', response.status);
             }
         } catch (error) {
             if (error.response && error.response.status === 404) {
@@ -168,6 +175,7 @@ function ReviewsPage() {
 
     return (
         <Container maxWidth="md" sx={{ p: 2 }}>
+            <Divider sx={{ mb: 2 }} /> {/* sx={{ mb: 2 }} adds margin bottom for spacing */}
             <Typography variant="h4" gutterBottom align="left">
                 Discussion Board
             </Typography>
@@ -193,23 +201,41 @@ function ReviewsPage() {
                 </Button>
 
             )}
-            <Paper style={{ maxHeight: 400, overflow: 'auto', border: '2px solid #9098e4', marginTop: '16px', padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.25)' }}>
+            <Paper style={{ maxHeight: 400, overflow: 'auto', border: '2px solid #9098e4', marginTop: '16px', padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
                 <List>
                     {comments.map((comment, index) => (
                         <React.Fragment key={index}>
                             <ListItem alignItems="flex-start">
-                                <ListItemText
-                                    primary={
-                                        <Typography variant="h6" component="p" style={{ fontWeight: 'bold' }}>
-                                            {comment.text}
-                                        </Typography>
-                                    }
-                                    secondary={
-                                        <Typography component="span" variant="body2" color="text.secondary">
-                                            {comment.date}
-                                        </Typography>
-                                    }
-                                />
+                                <Grid container spacing={2}>
+                                    <Grid item>
+                                        <Avatar>{comment.name.charAt(0)}</Avatar>
+                                    </Grid>
+                                    <Grid item xs={10}>
+                                        <ListItemText
+                                            primary={
+                                                <Typography variant="h6" component="p" style={{ fontWeight: 'bold' }}>
+                                                    {comment.text}
+                                                </Typography>
+                                            }
+                                            secondary={
+                                                <Typography component="span" variant="body2" color="text.secondary" style={{ display: 'block' }}>
+                                                    {`${comment.name} posted at ${comment.date}`}
+                                                </Typography>
+                                            }
+                                        />
+                                        {/* Check if there's a host reply and display it */}
+                                        {comment.hostReplyText && comment.hostReplyText !== 'None' && (
+                                            <Box mt={2} pl={4} style={{ borderLeft: '2px solid #9098e4' }}>
+                                                <Typography variant="subtitle2" color="text.primary" component="p">
+                                                    Reply from {comment.companyName}:
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary" component="p" style={{ marginTop: '4px' }}>
+                                                    {comment.hostReplyText} <span style={{ fontStyle: 'italic', display: 'block' }}>— {comment.hostReplyDate}</span>
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Grid>
+                                </Grid>
                             </ListItem>
                             {index < comments.length - 1 && <Divider variant="inset" component="li" />}
                         </React.Fragment>
@@ -238,5 +264,5 @@ function ReviewsPage() {
     );
 }
 
-export default ReviewsPage;
+export default ReviewsCustomerPage;
 
