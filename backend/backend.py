@@ -30,7 +30,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '114514'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -573,6 +573,7 @@ def cancel_events(userId):
 def if_order():
     data = request.get_json()
     cust = Customer.query.filter_by(id=data['customerId']).first()
+    print(data['eventId'], cust.order)
     if str(data['eventId']) not in cust.order:
         return jsonify({'message': 'You did not order this event!'}), 404
     else:
@@ -585,7 +586,8 @@ def if_order():
 @app.route('/comments/customer', methods=['PUT'])
 def cust_comments():
     data = request.get_json()
-    cust = Customer.query.filter_by(id=data['customerId']).first()
+    print(data)
+    cust = Customer.query.filter_by(id=data['userId']).first()
     c = [data['Date'], data['review'], cust.name,'None', 'None', 'None', 'None']
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     comment.comment[data['userId']] = c
@@ -697,7 +699,7 @@ def cust_register():
         return jsonify({'message': 'Customer email already exists!'}), 400
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
-                        duedate=data['cardExpirationDate'], wallet=0, cardNumber=data['cardNumber'])
+                        duedate=data['cardExpirationDate'], wallet=0, cardNumber=data['cardNumber'], order={})
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
