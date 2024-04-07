@@ -22,7 +22,7 @@ from flask import render_template, request, session, redirect, url_for
 from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
 from collections import defaultdict
-
+import logging
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -30,7 +30,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = '114514'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -176,7 +176,6 @@ class Events_order(db.Model):
     orderdetails = db.Column(JSON, nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-
 
 class Myevents(db.Model):
     __tablename__ = "myevents"
@@ -425,29 +424,45 @@ def get_recommendation(userId):
     # （思路：
     # 查询用户购买的活动，找到活动类型
     # 查询所有活动列表
-    # 使用用户购买的活动类型来过滤活动列表
+    # 使用用户购买过的活动的类型来过滤活动列表
     # 返回过滤后的活动列表
-    # 如果用户之前没有购买过任何活动，则显示最近的未开始活动）
-
+    # 如果用户之前没有购买过任何活动，则显示两个未开始活动）
+    # 最后的获取结果应该除开已经购买的活动
+    # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
+    # 现在的问题是：前端功能显示返回了所有的活动，后端代码中的过滤不起作用
+    app.logger.info(f"Fetching recommendations for user: {userId}")
     # 查询用户的订单信息
     user_orders = Events_order.query.filter_by(user_id=userId).all()
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
-    event_ids = [order.event_id for order in user_orders if order.event_id]  # 从订单中提取所有有效的event_id并存储到一个列表event_ids中
-    events = Events.query.filter(Events.id.in_(event_ids)).all()  # 一次查询获取所有事件
-    events_dict = {event.id: event for event in events}  # 将查询到的活动以它们的id作为键，活动对象本身作为值，保存到一个字典events_dict中，这样可以方便后续通过 id 快速获取活动信息。
+    # 从用户订单中排除已购买的活动ID
+    purchased_event_ids = {order.event_id for order in user_orders}
     if user_orders:
+        # 统计每种类型活动的购买次数
         for order in user_orders:
-            event = events_dict.get(order.event_id)
-            if event:
+            event = Events.query.get(order.event_id)
+            if event:  # 确保找到了对应的活动
                 event_type_frequency[event.type] += 1
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
         # 获取推荐活动列表
-        recommended_events = Events.query.filter_by(type=favorite_event_type).order_by(Events.id).all()  #这里先按id排序，因为Events表里面日期的数据类型是string，排序需要更复杂的逻辑
-
-    else:  # 对于新用户或尚未购买的用户，推荐一些活动
-        recommended_events = Events.query.order_by(Events.id).limit(3).all()
+        recommended_events = Events.query.filter(
+            Events.type == favorite_event_type,
+            Events.id.notin_(purchased_event_ids),
+            Events.from_time > datetime.now()
+        ).order_by(Events.from_time).all()
+        if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
+            app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
+            return jsonify([])
+    else:
+        # 对于没有购买记录的用户，推荐即将举行且未购买的活动
+        recommended_events = Events.query.filter(
+            Events.id.notin_(purchased_event_ids),
+            Events.from_time > datetime.now()
+        ).order_by(Events.from_time).limit(2).all()
+        if not recommended_events:  # 如果没有活动可以推荐，则返回空列表
+            app.logger.info(f"No upcoming events to recommend for new or inactive user: {userId}")
+            return jsonify([])
 
     events_json = [{
         'id': event.id,
@@ -801,3 +816,4 @@ if __name__ == '__main__':
         db.create_all()
         #create_default_user()
     app.run(host='127.0.0.1', port=5005, debug=True)
+    app.logger.setLevel(logging.DEBUG)
