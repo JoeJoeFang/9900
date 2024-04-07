@@ -30,7 +30,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = '924082621'
+PASSWORD = 'Hsj991220.'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -469,7 +469,17 @@ def get_recommendation(userId):
         'title': event.title,
         'type': event.type,
         'description': event.description,
-        # 添加其他需要的字段
+        'address': event.address,
+        'price': event.price,
+        'thumbnail': event.thumbnail,
+        'organizerName': event.organizername,
+        'eventType': event.type,
+        'seatingCapacity': event.seats,
+        'duration': event.duration,
+        'startDate': event.from_time,
+        'endDate': event.to_time,
+        'description': event.description,
+        'youtubeUrl': event.URL
     } for event in recommended_events]
 
     return jsonify(events_json)

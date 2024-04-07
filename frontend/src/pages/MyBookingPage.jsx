@@ -228,25 +228,55 @@ const BookingList = () => {
                     ) : (
                         <Typography variant="subtitle1">No events found.</Typography>
                     )}
-                    {recommendedEvents.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                        <Typography variant="h4" gutterBottom>Your Recommended Events</Typography>
-                        {recommendedEvents.map((event, index) => (
-                            <Card key={index} sx={{ display: 'flex', mb: 2, width: '100%', background: 'rgba(255, 255, 255, 0.8)' }}>
-                                <CardMedia component="img" sx={{ width: 240, objectFit: 'cover' }} image={`${process.env.PUBLIC_URL}/${event.thumbnail}`} alt={event.title} />
+                        {recommendedEvents.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
+                            <Typography variant="h4" gutterBottom>Your Recommended Events</Typography>
+                            {recommendedEvents.map((event, index) => (
+                            <Card
+                                key={index}
+                                sx={{
+                                    display: 'flex',
+                                    mb: 2,
+                                    width: '100%',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                    transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
+                                    ':hover': {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 改变背景颜色
+                                        transform: 'scale(1.03)', // 轻微放大
+                                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
+                                    },
+                                }}
+                                onClick={() => navigate(`/all-event/${event.id}`)}
+                            >
+                                {event.thumbnail && (
+                                    <CardMedia
+                                        component="img"
+                                        sx={{ width: 240, objectFit: 'cover' }}
+                                        image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                        alt={event.title}
+                                    />
+                                )}
                                 <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                     <Typography gutterBottom variant="h5" component="div">
                                         {event.title}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Event type: {event.type}<br />
-                                        Description: {event.description}
-
+                                        Event ID: {event.id}<br />
+                                        Organizer: {event.organizerName}<br />
+                                        Type: {event.eventType}<br />
+                                        Seats: {event.seatingCapacity}<br />
+                                        {/*Duration: {event.duration} hours<br />*/}
+                                        From: {new Date(event.startDate).toLocaleDateString()}<br />
+                                        To: {new Date(event.endDate).toLocaleDateString()}<br />
+                                        Address: {event.address}<br />
+                                        Price: ${parseFloat(event.price).toFixed(2)}<br />
+                                        Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
+                                        {event.youtubeUrl && <a href={event.youtubeUrl}>Event Video</a>}
                                     </Typography>
                                 </CardContent>
                             </Card>
                         ))}
-                    </div>
+                        </div>
                 )}
                     <Dialog
                         open={openConfirmDialog}
