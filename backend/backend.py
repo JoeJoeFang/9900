@@ -376,12 +376,12 @@ def update_events_bookings():
     if not event:
         return jsonify({'message': 'Event not found!'}), 404
     if not cust:
-        return jsonify({'message': 'Customer not found!'}), 404
+        return jsonify({'message': 'Customer not found!'}), 405
     if cust.order is None:
         cust.order = {}
     price = events.price * len(seat_number)
     if cust.wallet < price:
-        return jsonify({'message': 'You do not have enough money!'}), 400
+        return jsonify({'message': 'You do not have enough money!'}), 401
     flag = 0
     s = 0
     for i in seat_number:
@@ -390,7 +390,7 @@ def update_events_bookings():
             s = int(i) + 1
             break
     if flag == 1:
-        return jsonify({'message': f'Seats {s} are not available!'}), 400
+        return jsonify({'message': f'Seats {s} are not available!'}), 402
     cust.order[event.id] = date_
     print(events)
     flag_modified(cust, "order")
