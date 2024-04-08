@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, IconButton } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
@@ -48,7 +47,8 @@ const BackButton = () => {
                     boxShadow: 3,
                 }}
             >
-                <ArrowBackIcon sx={{ fontSize: 28 }} />
+                {/*<ArrowBackIcon sx={{ fontSize: 28 }} />*/}
+                <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 80, height: 'auto' }} />
             </IconButton>
         </ThemeProvider>
     );

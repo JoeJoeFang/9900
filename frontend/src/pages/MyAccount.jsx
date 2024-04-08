@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ThemeProvider,Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import SearchEvents from '../components/SearchEvents'; // Ensure this is the correct path
 import Navbar from '../components/Navbar';
-import HeaderLogo from '../components/HeaderLogo';
 
 const theme = createTheme({
     palette: {
@@ -102,7 +100,7 @@ const MyAccount = () => {
                 <Navbar></Navbar>
             </Box>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', padding: '20px' }}>
-                <HeaderLogo theme={theme} />
+                {/*<HeaderLogo theme={theme} />*/}
                 {isLoading ? (
                     <CircularProgress color="secondary" style={{ marginTop: '20px' }} />
                 ) : error ? (

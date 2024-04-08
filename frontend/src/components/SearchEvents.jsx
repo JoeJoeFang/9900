@@ -46,7 +46,7 @@ const SearchEvents = (props) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', mt: 4 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', mt: 4, marginTop: '100px', }}>
       <Snackbar open={isSnackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
           {errorMessage}

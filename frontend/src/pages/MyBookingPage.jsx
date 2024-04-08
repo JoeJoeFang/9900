@@ -5,7 +5,6 @@ import { createTheme } from '@mui/material/styles';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
-import HeaderLogo from '../components/HeaderLogo';
 import Navbar from '../components/Navbar';
 const theme = createTheme({
     palette: {
@@ -159,7 +158,7 @@ const BookingList = () => {
                     <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center' }}>
                         <Navbar></Navbar>
                     </Box>
-                    <HeaderLogo theme={theme} />
+                    {/*<HeaderLogo theme={theme} />*/}
                     {isLoading ? (
                         <CircularProgress />
                     ) : error ? (
@@ -170,8 +169,24 @@ const BookingList = () => {
                             </Typography>
                         </Box>
                     ) : events.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                            <Typography variant="h4" gutterBottom>Your booked Events</Typography>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '120px', width: '90%' }}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '100%',
+                                mb: theme.spacing(3),
+                                gap: theme.spacing(2),
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                '& img': {
+                                    opacity: 0.9,
+                                }
+                            }}>
+                                <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 80, height: 'auto' }} />
+                                <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
+                                    Your Booked Events
+                                </Typography>
+                            </Box>
                             {events.map((event, index) => (
                                 <Card
                                     key={index}

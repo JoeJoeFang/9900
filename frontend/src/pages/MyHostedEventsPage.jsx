@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ThemeProvider,Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-//import SearchEvents from '../components/SearchEvents';
 import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import HeaderLogo from '../components/HeaderLogo';
 import Navbar from '../components/Navbar';
 import UnauthorizedAccess from "../components/UnauthorizedAccess";
 
@@ -143,14 +141,30 @@ const MyHostedEventsPage = () => {
                 <Navbar></Navbar>
 
             </Box>
-            <HeaderLogo theme={theme} />
             {isLoading ? (
                 <CircularProgress />
             ) : error ? (
                 <Typography color="error">{error}</Typography>
             ) : events.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                    <Typography variant="h4" gutterBottom>My Hosted Events</Typography>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        mt: theme.spacing(4),
+                        mb: theme.spacing(3),
+                        gap: theme.spacing(2),
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        '& img': {
+                            opacity: 0.9,
+                        }
+                    }}>
+                        <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 80, height: 'auto' }} />
+                        <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
+                            My Hosted Events
+                        </Typography>
+                    </Box>
                     {events.map((event, index) => (
                         <Card
                             key={event.id}

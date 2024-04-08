@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ThemeProvider,Card, CardContent, Typography, CardMedia, CircularProgress, Box } from '@mui/material';
+import {ThemeProvider, Card, CardContent, Typography, CardMedia, CircularProgress, Box, Divider} from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 import SearchEvents from '../components/SearchEvents';
-import HeaderLogo from '../components/HeaderLogo';
 import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
 
@@ -70,19 +69,21 @@ const EventsList = () => {
                 backgroundPosition: 'center, center',
                 p: theme.spacing(2),
             }}>
-    
-                <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems:'center' }}>
-                <Navbar></Navbar>         
+                <Navbar></Navbar>
                 </Box>
-                <HeaderLogo theme={theme} /><SearchEvents onSearch={handleSearch} searchCallback={searchCallback} />
+                {/*<HeaderLogo theme={theme} />*/}
+
+                <SearchEvents onSearch={handleSearch} searchCallback={searchCallback} />
                      {isLoading ? (
                     <CircularProgress />
                 ) : error ? (
                     <Typography color="error">{error}</Typography>
                 ) : events.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px', width: '90%' }}>
-                        <Typography variant="h4" gutterBottom>Upcoming Events</Typography>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '36px', width: '90%' }}>
+                        <Divider sx={{ width: '100%', mb: 2 }}>
+                            <Typography color="textSecondary">Upcoming Events</Typography>
+                        </Divider>
                         {events.map((event, index) => (
                             <Card
                                 key={index}
@@ -128,6 +129,10 @@ const EventsList = () => {
                                 </CardContent>
                             </Card>
                         ))}
+                        {/* Divider for the end of events */}
+                        <Divider sx={{ width: '100%', mt: 2 }}>
+                            <Typography color="textSecondary">End of Events</Typography>
+                        </Divider>
                     </div>
                 ) : (
                     <Typography variant="subtitle1">No events found.</Typography>

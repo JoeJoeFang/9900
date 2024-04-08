@@ -1,10 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 import { createTheme } from '@mui/material/styles';
-import {useNavigate} from "react-router-dom";
 import NativeSelect from '@mui/material/NativeSelect';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import HeaderLogo from '../components/HeaderLogo';
 import { useParams } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -41,7 +39,6 @@ const theme = createTheme({
 
 const EventDetails = () => {
     const { eventId } = useParams();
-    // const [events, setEvents] = useState([]);
     const [eventsInfo, setEventsInfo] = useState({
         id: 'id',
         title: 'Title',
@@ -60,9 +57,7 @@ const EventDetails = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    //const userId = localStorage.getItem('userId');
     const email = localStorage.getItem('userEmail');
     const identity = localStorage.getItem('identity');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -74,14 +69,12 @@ const EventDetails = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // 定义请求配置对象，包括请求头
             const config = {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             };
-            // 使用配置对象发起请求
             const response = await axios.get(`http://localhost:5005/events/${eventId}`, config);
             if (response.status === 200) {
                 const event = response.data;
@@ -112,7 +105,7 @@ const EventDetails = () => {
                         return {
                             ...prevEventsInfo,
                             ...event,
-                            duration: duration + 1, // 计算持续时间
+                            duration: duration + 1,
                         };
                     }
                     return prevEventsInfo;
@@ -132,7 +125,6 @@ const EventDetails = () => {
     }, [eventId, token]);
 
 
-    // const [selectedDate, setSelectedDate] = useState(Object.keys(eventsInfo.orderdetails)[0]);
     const [selectedDate, setSelectedDate] = useState('');
 
     const [selectedSeats, setSelectedSeats] = useState([]);
@@ -226,7 +218,6 @@ const EventDetails = () => {
     const BookingConfirmationDialog = ({ open, onClose, selectedSeats, selectedDate, eventId, email }) => {
         const identity = localStorage.getItem('identity');
         if (identity === 'host') {
-            // 如果是 host，返回一个提示对话框
             return (
                 <Dialog open={open} onClose={onClose}>
                     <DialogTitle>Unavailable Action</DialogTitle>
@@ -265,11 +256,10 @@ const EventDetails = () => {
                                 submitbooking(selectedSeats, selectedDate, eventId, email)
                                     .then(() => {
                                         console.log('Booking confirmed:', { eventId, selectedDate, selectedSeats, email });
-                                        onClose(); // 关闭对话框
+                                        onClose();
                                     })
                                     .catch((error) => {
                                         console.error('Failed to confirm booking:', error);
-                                        // 可以在这里处理错误，比如显示一个错误消息给用户
                                     });
                             } } color="primary">
                                 Confirm
@@ -310,7 +300,6 @@ const EventDetails = () => {
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
                     <Navbar></Navbar>
                 </Box>
-                <HeaderLogo theme={theme} />
                 <Backdrop
                     sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={isLoading}
@@ -319,11 +308,24 @@ const EventDetails = () => {
                 </Backdrop>
                 <Container maxWidth="md">
                     <Grid container spacing={3} justifyContent="center">
-                        <Grid item xs={12}>
-                            <Typography variant="h4" gutterBottom align="center" color="common.black">
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            mt: theme.spacing(15),
+                            mb: theme.spacing(1),
+                            gap: theme.spacing(2),
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            '& img': {
+                                opacity: 0.9,
+                            }
+                        }}>
+                            <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 80, height: 'auto' }} />
+                            <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
                                 Event Details
                             </Typography>
-                        </Grid>
+                        </Box>
                         {error ? (
                             <Typography variant="h6" color="error" align="center">
                                 {error}
