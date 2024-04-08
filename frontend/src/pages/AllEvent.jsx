@@ -104,7 +104,7 @@ const EventsList = () => {
                                     <CardMedia
                                         component="img"
                                         sx={{ width: 240, objectFit: 'cover' }}
-                                        image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                        image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                         alt={event.title}
                                     />
                                 )}

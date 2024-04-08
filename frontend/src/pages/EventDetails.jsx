@@ -19,6 +19,7 @@ import {
     Backdrop,
     Container,
     Link,
+    Snackbar, Alert
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import ReviewsCustomerPage from './ReviewsCustomerPage';
@@ -64,6 +65,9 @@ const EventDetails = () => {
     //const userId = localStorage.getItem('userId');
     const email = localStorage.getItem('userEmail');
     const identity = localStorage.getItem('identity');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
 
 
     const fetchEvents = useCallback(async () => {
@@ -132,6 +136,9 @@ const EventDetails = () => {
     const [selectedDate, setSelectedDate] = useState('');
 
     const [selectedSeats, setSelectedSeats] = useState([]);
+    const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+
 
     useEffect(() => {
         const dates = Object.keys(eventsInfo.orderdetails ?? {});
@@ -186,18 +193,32 @@ const EventDetails = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            if (response.status === 200) {
-                // listingId
+            if (response.status === 200 || response.status === 201) {
                 console.log('booking successfully!');
-                navigate(0);
+                setSuccessMessage('Booking successfully completed!');
+                setSuccessSnackbarOpen(true);
+
             }
         } catch (error) {
+            setSelectedSeats([]);
             if (error.response) {
-                if (error.response.status === 400) {
-                    alert('Invalid input: ' + error.response.error);
-                } else if (error.response.status === 403) {
-                    alert('Invalid Token: ' + error.response.error);
+                let errorMessage = '';
+                switch (error.response.status) {
+                    case 401:
+                        errorMessage = 'You do not have enough money! Please go to My Account Page';
+                        break;
+                    case 402:
+                        errorMessage = 'Seats have been booked!';
+                        break;
+                    case 404:
+                        errorMessage = 'Event does not exist, please refresh your page';
+                        break;
+                    default:
+                        errorMessage = 'An unexpected error occurred';
+                        break;
                 }
+                setSnackbarMessage(errorMessage);
+                setSnackbarOpen(true);
             }
         }
     };
@@ -313,7 +334,7 @@ const EventDetails = () => {
                                     <CardMedia
                                         component="img"
                                         height="250"
-                                        image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                        image={eventsInfo.thumbnail.trim() ? eventsInfo.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                         alt="event"
                                     />
                                     <CardContent>
@@ -442,6 +463,18 @@ const EventDetails = () => {
                                 <Button onClick={handleAlertClose}>Close</Button>
                             </DialogActions>
                         </Dialog>
+                        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                            <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                                {snackbarMessage}
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar open={successSnackbarOpen} autoHideDuration={6000} onClose={() => setSuccessSnackbarOpen(false)}>
+                            <Alert onClose={() => setSuccessSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+                                {successMessage}
+                            </Alert>
+                        </Snackbar>
+
+
                     </Box>
                 </Container>
                     {identity === 'host' ? (

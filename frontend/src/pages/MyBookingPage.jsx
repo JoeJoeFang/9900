@@ -192,12 +192,12 @@ const BookingList = () => {
                                         <CardMedia
                                             component="img"
                                             sx={{ width: 240, objectFit: 'cover' }}
-                                            image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                            image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                             alt={event.eventId} />
                                     )}
                                     <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <Typography gutterBottom variant="h5" component="div">
-                                            {event.title}
+                                            {event.eventtitle}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
                                             Event ID: {event.eventId}<br />
@@ -252,7 +252,7 @@ const BookingList = () => {
                                     <CardMedia
                                         component="img"
                                         sx={{ width: 240, objectFit: 'cover' }}
-                                        image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                        image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                         alt={event.title}
                                     />
                                 )}
