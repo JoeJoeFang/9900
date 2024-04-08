@@ -18,6 +18,7 @@ from wtforms import Form, StringField, RadioField, SubmitField
 from wtforms.validators import DataRequired
 from flask import current_app
 from sqlalchemy import or_, and_
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from flask import render_template, request, session, redirect, url_for
 from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
@@ -30,7 +31,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 HOSTNAME = '127.0.0.1'
 PORT = 3306
 USERNAME = 'root'
-PASSWORD = 'Hsj991220.'
+PASSWORD = '924082621'
 DATABASE = '9900_learn'
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
@@ -102,7 +103,7 @@ class Events(db.Model):
     to_time = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(100), nullable=True)
     URL = db.Column(db.String(100), nullable=True)
-    thumbnail = db.Column(db.String(5000), nullable=True)
+    thumbnail = db.Column(MEDIUMTEXT, nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
     @staticmethod
@@ -297,19 +298,7 @@ def get_events_title():
     event_list = []
     for event in events:
         event_data = {
-            # 'id': event.id,
             'title': event.title,
-            # 'address': event.address,
-            # 'price': event.price,
-            # 'thumbnail': event.thumbnail,
-            # 'organizerName': event.organizername,
-            # 'eventType' : event.type,
-            # 'seatingCapacity' :event.seats,
-            # 'duration' : event.duration,
-            # 'startDate': event.from_time,
-            # 'endDate': event.to_time,
-            # 'description': event.description,
-            # 'youtubeUrl':event.URL
         }
         event_list.append(event_data)
     #print("fanhui", event_list)
@@ -390,6 +379,18 @@ def update_events_bookings():
         return jsonify({'message': 'Customer not found!'}), 404
     if cust.order is None:
         cust.order = {}
+    price = events.price * len(seat_number)
+    if cust.wallet < price:
+        return jsonify({'message': 'You do not have enough money!'}), 400
+    flag = 0
+    s = 0
+    for i in seat_number:
+        if event.orderdetails[date_][int(i)][0] == 1:
+            flag = 1
+            s = int(i) + 1
+            break
+    if flag == 1:
+        return jsonify({'message': f'Seats {s} are not available!'}), 400
     cust.order[event.id] = date_
     print(events)
     flag_modified(cust, "order")
@@ -490,12 +491,10 @@ def get_bookings(userId):
     print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
-# <<<<<<< HEAD
-    if cust.order is None or len(cust.order)== 0:
-# =======
+
+    if cust.order is None or len(cust.order) == 0:
         print(cust.order)
     if cust.order is None or len(cust.order) == 0:
-# >>>>>>> 4fbbc7cdd4438b1cb10814863919c68846cd186a
         return jsonify({'message': 'No events found!'}), 404
     for k,v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
@@ -644,14 +643,14 @@ def register_event():
     if existing_event:
         return jsonify({'message': 'Event title already exists!'}), 400
     image_str = data['thumbnail']
-    image_data = base64.b64decode(image_str.split(",")[1])
+    # image_data = base64.b64decode(image_str.split(",")[1])
 
-    if not os.path.exists(pic_folder):
-        os.makedirs(pic_folder)
-    filename = str(data['title']) + '.jpg'
-    file_path = os.path.join(pic_folder, filename)
-    with open(file_path, "wb") as f:
-        f.write(image_data)
+    # if not os.path.exists(pic_folder):
+    #     os.makedirs(pic_folder)
+    # filename = str(data['title']) + '.jpg'
+    # file_path = os.path.join(pic_folder, filename)
+    # with open(file_path, "wb") as f:
+    #     f.write(image_data)
     seats = data['seatingCapacity']
     start_date_str = data['startDate']
     end_date_str = data['endDate']
@@ -676,7 +675,7 @@ def register_event():
     db.session.add(new_comment)
     db.session.commit()
 
-    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'], thumbnail=file_path,
+    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'], thumbnail=image_str,
                        type=data['eventType'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
