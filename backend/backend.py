@@ -504,9 +504,10 @@ def get_bookings(userId):
 
         seat_list = []
         for i in range(len(orderdetails)):
-            if orderdetails[i][0] == userId:
-                # print(1)
+            print(orderdetails[i], userId)
+            if orderdetails[i][1] == str(userId):
                 seat_list.append(i)
+                #print(i, '1111111111111111')
         event1 = {
             'eventId': event_order.id,
             'userId': cust.id,
