@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ThemeProvider,Card, CardContent, Typography, CardMedia, CircularProgress, Box, Link } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import {
+    ThemeProvider,
+    Card,
+    CardContent,
+    Typography,
+    CardMedia,
+    CircularProgress,
+    Box,
+    Link,
+    useTheme
+} from '@mui/material';
 import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import UnauthorizedAccess from "../components/UnauthorizedAccess";
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
 
 const MyHostedEventsPage = () => {
     const [events, setEvents] = useState([]);
@@ -28,15 +27,7 @@ const MyHostedEventsPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [currentEventId, setCurrentEventId] = useState(null);
     const navigate = useNavigate();
-    // const handleSearch = (searchTerm) => {
-    //     // Implement the logic to filter your events based on the search term
-    //     // For example, you can set the events state to a filtered list of events
-    //     // that match the search term.
-    //     const filteredEvents = events.filter((event) =>
-    //         event.title.toLowerCase().includes(searchTerm.toLowerCase())
-    //     );
-    //     setEvents(filteredEvents);
-    // };
+    const theme = useTheme();
 
     const fetchEvents = async () => {
         setIsLoading(true);

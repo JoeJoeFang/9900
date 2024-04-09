@@ -1,22 +1,14 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ThemeProvider, IconButton } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import {ThemeProvider, IconButton, useTheme} from '@mui/material';
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
+
+
 
 const BackButton = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const theme = useTheme();
 
     const handleBack = () => {
         navigate(-1);

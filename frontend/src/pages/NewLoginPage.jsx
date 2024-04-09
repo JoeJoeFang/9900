@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Button, TextField, Typography, Container, Paper, Tab, Tabs, IconButton, useTheme } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, Paper, Tab, Tabs, IconButton, useTheme, Snackbar, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeaderLogo from '../components/HeaderLogo';
+
+
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -39,6 +41,9 @@ export const CombinedLogin = () => {
         password: '',
     });
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
     const handleBack = () => {
         navigate(-1);
     };
@@ -53,7 +58,7 @@ export const CombinedLogin = () => {
     const loginUser = async (e) => {
         e.preventDefault();
 
-        const endpoint = activeTab === 0 ? 'customer' : 'host';
+        // const endpoint = activeTab === 0 ? 'customer' : 'host';
         const identity = activeTab === 0 ? 'customer' : 'host';
 
         try {
@@ -66,15 +71,33 @@ export const CombinedLogin = () => {
                 },
             });
 
-            if (response.status === 200) {
+            if (response.status === 200 || response.status === 201) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('userEmail', loginData.email);
                 localStorage.setItem('userId', response.data.id);
                 localStorage.setItem('identity', identity);
                 navigate('/all-event');
             }
-        } catch (errorResponse) {
-            alert(errorResponse.response.data.error);
+        } catch (error) {
+            if (error.response) {
+                let errorMessage = '';
+                switch (error.response.status) {
+                    case 401:
+                        errorMessage = 'Email does not exist';
+                        break;
+                    case 402:
+                        errorMessage = 'Seats have been booked!';
+                        break;
+                    case 404:
+                        errorMessage = 'Event does not exist, please refresh your page';
+                        break;
+                    default:
+                        errorMessage = 'An unexpected error occurred';
+                        break;
+                }
+                setSnackbarMessage(errorMessage);
+                setSnackbarOpen(true);
+            }
         }
     };
 
@@ -83,7 +106,8 @@ export const CombinedLogin = () => {
     };
 
     return (
-        <Container component="main" sx={{
+        <Container theme={theme}
+                   component="main" sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -176,6 +200,11 @@ export const CombinedLogin = () => {
                     </Button>
                 </Box>
             </Paper>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

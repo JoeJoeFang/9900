@@ -1,8 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
-import { createTheme } from '@mui/material/styles';
 import NativeSelect from '@mui/material/NativeSelect';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme} from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -25,19 +24,9 @@ import Tooltip from '@mui/material/Tooltip';
 import ReviewsHostPage from "./ReviewsHostPage";
 
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
-
 
 const EventDetails = () => {
+    const theme = useTheme();
     const { eventId } = useParams();
     const [eventsInfo, setEventsInfo] = useState({
         id: 'id',

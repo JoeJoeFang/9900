@@ -12,7 +12,7 @@ import {
     Grid,
     TextField,
     Button,
-    IconButton,
+    IconButton, useTheme,
 } from '@mui/material';
 import axios from 'axios';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
@@ -23,20 +23,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 
 
-
-
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
-
 const CreateNewEvent = () => {
+    const theme = useTheme();
     const identity = localStorage.getItem('identity');
     const navigate = useNavigate();
     const [formErrors, setFormErrors] = useState({});

@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, Typography, CardMedia, CircularProgress, Box,ThemeProvider } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import {
+    Card,
+    CardContent,
+    Typography,
+    CardMedia,
+    CircularProgress,
+    Box,
+    ThemeProvider,
+    useTheme,
+    Alert, Snackbar
+} from '@mui/material';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
+
 
 
 const BookingList = () => {
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const theme = useTheme();
     console.log('fetch.....');
     // const userId = localStorage.getItem('userId');
     const [events, setEvents] = useState([]);
@@ -123,11 +126,23 @@ const BookingList = () => {
                 }
             } catch (error) {
                 if (error.response) {
-                    if (error.response.status === 400) {
-                        alert('Invalid input: ' + error.response.error);
-                    } else if (error.response.status === 403) {
-                        alert('Invalid Token: ' + error.response.error);
+                    let errorMessage = '';
+                    switch (error.response.status) {
+                        case 400:
+                            errorMessage = 'Event does not exist, please fresh your page';
+                            break;
+                        case 402:
+                            errorMessage = 'Seats have been booked!';
+                            break;
+                        case 404:
+                            errorMessage = 'Event does not exist, please refresh your page';
+                            break;
+                        default:
+                            errorMessage = 'An unexpected error occurred';
+                            break;
                     }
+                    setSnackbarMessage(errorMessage);
+                    setSnackbarOpen(true);
                 }
             }
         }
@@ -306,6 +321,11 @@ const BookingList = () => {
                             <Button onClick={handleCancelBooking} autoFocus>Yes</Button>
                         </DialogActions>
                     </Dialog>
+                    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                        <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                            {snackbarMessage}
+                        </Alert>
+                    </Snackbar>
                 </Box>
             </ThemeProvider>
     );

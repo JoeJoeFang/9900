@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ThemeProvider,Box, Button, TextField,Typography, CircularProgress, Card, CardContent, Avatar } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import {
+    ThemeProvider,
+    Box,
+    Button,
+    TextField,
+    Typography,
+    CircularProgress,
+    Card,
+    CardContent,
+    Avatar,
+    useTheme
+} from '@mui/material';
 import Navbar from '../components/Navbar';
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
 
 const MyAccount = () => {
+    const theme = useTheme();
     const [custDetail, setCustDetail] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');

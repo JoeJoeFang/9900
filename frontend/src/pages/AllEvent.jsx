@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {ThemeProvider, Card, CardContent, Typography, CardMedia, CircularProgress, Box, Divider} from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import {
+    ThemeProvider,
+    Card,
+    CardContent,
+    Typography,
+    CardMedia,
+    CircularProgress,
+    Box,
+    Divider,
+    useTheme
+} from '@mui/material';
 import SearchEvents from '../components/SearchEvents';
 import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
 import Tooltip from "@mui/material/Tooltip";
 
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#e66465',
-        },
-        secondary: {
-            main: '#9198e5',
-        },
-    },
-});
-
 const EventsList = () => {
+    const theme = useTheme();
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
