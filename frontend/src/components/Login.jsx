@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 const Login = () => {
     const handleLoginClick = () => {
         console.log('Login clicked');
-        window.location.href = '/register-customer'; // 触发跳转到我的事件的页面
+        window.location.href = '/combined-login'; // 触发跳转到我的事件的页面
     };
 
     return (
@@ -14,7 +14,7 @@ const Login = () => {
             sx={{ mr: 1 ,fontWeight: 'bold', }} 
             onClick={handleLoginClick} // 绑定处理函数到按钮的点击事件
         >
-            Register as Customer
+            Login To Explore More
         </Button>
     );
 };

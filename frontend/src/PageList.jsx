@@ -15,6 +15,7 @@ import EventDetails from "./pages/EventDetails";
 import BookingList from "./pages/MyBookingPage";
 import MyHostedEventsPage from "./pages/MyHostedEventsPage";
 import MyAccount from "./pages/MyAccount";
+import CombinedLogin from "./pages/NewLoginPage";
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -53,20 +54,16 @@ const DefaultPage = () => {
             <HeaderLogo theme={theme} />
 
             {/* 内容容器 */}
-            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
-                {/* 标语 */}
-                <Box sx={{ color: 'white', width: '40%', p: 3, background: 'rgba(0, 0, 0, 0.5)', borderRadius: theme.shape.borderRadius }}>
-                    <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
-                        The best way to book an event and know all about
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: 'white', fontWeight: 'medium' }}>
-                        Start your booking with us and join our community!
-                    </Typography>
-                </Box>
-
-                {/* 按钮容器 */}
+            <Box sx={{ display: 'flex',
+                flexDirection: 'row',
+                width: '90%',
+                maxWidth: 1200,
+                justifyContent: 'center',
+                alignItems: 'center',
+                mt: theme.spacing(4),
+            }}>
                 <Box sx={{
-                    width: '40%',
+                    width: '60%',
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: theme.shape.borderRadius,
                     p: theme.spacing(4),
@@ -104,7 +101,7 @@ const PageList = () => {
     return (
         <>
             <Routes>
-                <Route path='/' element={<DefaultPage />} />
+                <Route path='/' element={<AllEventPage />} />
                 <Route path='/login-host' element={<LoginHost token={token} />} />
                 <Route path='/login-customer' element={<LoginCustomer token={token} />} />
                 <Route path='/register-host' element={<RegisterHost />} />
@@ -116,7 +113,7 @@ const PageList = () => {
                 <Route path='/all-event/:eventId' element={<EventDetails />} />
                 <Route path='/my-booking' element={<BookingList />} />
                 <Route path='/my-hosted-event' element={<MyHostedEventsPage />} />
-                {/*<Route path='/view-listings/:listingId' element={<ViewListingPage />} />*/}
+                <Route path='/combined-login' element={<CombinedLogin />} />
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
                 {/*<Route path='/my-hosted-list/publish/:listingId' element={<ListingPublishScreen />} />*/}
                 {/*<Route path='/my-hosted-list/booking-request/:listingId' element={<BookingRequestPage />} />*/}
