@@ -56,7 +56,7 @@ const Navbar = () => {
       marginLeft: '99px',
     };
     const buttonsForVisitor = [
-    
+      <BackButton key="Back"/>,
       <Login key="login" style={loginButtonStyle}/> 
     ];
 

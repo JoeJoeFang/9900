@@ -14,7 +14,7 @@ const Login = () => {
             sx={{ mr: 1 ,fontWeight: 'bold', }} 
             onClick={handleLoginClick} // 绑定处理函数到按钮的点击事件
         >
-            Login
+            Register as Customer
         </Button>
     );
 };

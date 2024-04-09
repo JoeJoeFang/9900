@@ -10,3 +10,6 @@ backend/PIC/*
 *.pack
 frontend/node_modules/.cache/.eslintcache
 /frontend/node_modules
+*.db
+*.xml
+/.idea
