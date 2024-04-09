@@ -28,12 +28,17 @@ import logging
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 #db = SQLAlchemy(app)
-HOSTNAME = '127.0.0.1'
-PORT = 3306
-USERNAME = 'root'
-PASSWORD = '924082621'
-DATABASE = '9900_learn'
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
+
+# HOSTNAME = '127.0.0.1'
+# PORT = 3306
+# USERNAME = 'root'
+# PASSWORD = '924082621'
+# DATABASE = '9900_learn'
+# app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(basedir, "test.db")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -103,7 +108,7 @@ class Events(db.Model):
     to_time = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(100), nullable=True)
     URL = db.Column(db.String(100), nullable=True)
-    thumbnail = db.Column(MEDIUMTEXT, nullable=True)
+    thumbnail = db.Column(db.Text, nullable=True)
     #last_update = db.Column(db.DateTime, default=datetime.now)
 
     @staticmethod
@@ -226,50 +231,17 @@ def image_to_base64(image_path):
 def get_events():
     # 查询数据库以获取事件列表
     events = Events.query.all()
+    current_date = datetime.now().date()
 
     # 将查询到的事件列表转换为 JSON 格式
     event_list = []
     for event in events:
-        event_data = {
-            'id': event.id,
-            'title': event.title,
-            'address': event.address,
-            'price': event.price,
-            'thumbnail': event.thumbnail,
-            'organizerName': event.organizername,
-            'eventType': event.type,
-            'seatingCapacity': event.seats,
-            'duration': event.duration,
-            'startDate': event.from_time,
-            'endDate': event.to_time,
-            'description': event.description,
-            'youtubeUrl':event.URL
-        }
-        #image_path = event.thumbnail
-        #base64_str = image_to_base64(image_path)
-        #event_data['thumbnail'] = base64_str
-        event_list.append(event_data)
-    #print("fanhui", event_list)
-    # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
-    return jsonify(event_list), 201
-
-
-
-@app.route('/events/search', methods=['GET'])
-def search_events():
-    keyword = request.args.get('keyWord', '')
-    event_type = request.args.get('eventType', None)
-    query = Events.query
-
-    if event_type and event_type.lower() != 'none':
-        query = query.filter(Events.type == event_type)
-
-    events = query.all()
-    event_list = []
-
-    for event in events:
-        # Check if the keyword is in any of the relevant fields
-        if keyword.lower() in event.title.lower() or keyword.lower() in event.description.lower() or keyword.lower() in event.type.lower():
+        event_date = datetime.strptime(event.from_time, "%Y-%m-%d").date()
+        end_date = datetime.strptime(event.to_time, "%Y-%m-%d").date()
+        gap = event_date - current_date
+        gap2 = end_date - current_date
+        print(gap.days)
+        if gap.days <= 30 and gap2.days >= 0:
             event_data = {
                 'id': event.id,
                 'title': event.title,
@@ -283,10 +255,71 @@ def search_events():
                 'startDate': event.from_time,
                 'endDate': event.to_time,
                 'description': event.description,
-                'youtubeUrl': event.URL
+                'youtubeUrl':event.URL
             }
+        #image_path = event.thumbnail
+        #base64_str = image_to_base64(image_path)
+        #event_data['thumbnail'] = base64_str
             event_list.append(event_data)
+    #print("fanhui", event_list)
+    # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
+    return jsonify(event_list), 201
 
+
+
+@app.route('/events/search', methods=['GET'])
+def search_events():
+    event_description = request.args.get('description', '')
+    keyword = request.args.get('keyWord', '')
+    event_type = request.args.get('eventType', '')
+
+    print(keyword, event_type, event_description)
+    query = Events.query
+
+    events = Events.query.all()
+    event_list = []
+
+    for event in events:
+        # Check if the keyword is in any of the relevant fields
+        print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
+        print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
+        if event_type != '':
+            if keyword.lower() in event.title.lower() or event.type.lower() in event_type.lower():
+                print(event_type.lower() in event.type.lower())
+                event_data = {
+                    'id': event.id,
+                    'title': event.title,
+                    'address': event.address,
+                    'price': event.price,
+                    'thumbnail': event.thumbnail,
+                    'organizerName': event.organizername,
+                    'eventType': event.type,
+                    'seatingCapacity': event.seats,
+                    'duration': event.duration,
+                    'startDate': event.from_time,
+                    'endDate': event.to_time,
+                    'description': event.description,
+                    'youtubeUrl': event.URL
+                }
+                event_list.append(event_data)
+        if event_description != '':
+            if event_description in event.description:
+                event_data = {
+                    'id': event.id,
+                    'title': event.title,
+                    'address': event.address,
+                    'price': event.price,
+                    'thumbnail': event.thumbnail,
+                    'organizerName': event.organizername,
+                    'eventType': event.type,
+                    'seatingCapacity': event.seats,
+                    'duration': event.duration,
+                    'startDate': event.from_time,
+                    'endDate': event.to_time,
+                    'description': event.description,
+                    'youtubeUrl': event.URL
+                }
+                event_list.append(event_data)
     return jsonify(event_list), 200
 
 
@@ -371,6 +404,7 @@ def update_events_bookings():
     seat_number = data['seat']
     eventid = data['eventId']
     cust = Customer.query.filter_by(id=cust_id).first()
+    print(cust_id, cust)
     event = Events_order.query.filter_by(id=eventid).first()
     events = Events.query.filter_by(id=eventid).first()
     if not event:
@@ -527,9 +561,9 @@ def cancel_bookings(userId):
     print(data)
     cust = Customer.query.filter_by(id=int(userId)).first()
     events = Events.query.filter_by(id=int(data['eventId'])).first()
-    price = events.price
     event_id = str(data['eventId'])
     if event_id in cust.order:
+        price = events.price
         del cust.order[event_id]
         flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
