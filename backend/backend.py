@@ -181,7 +181,7 @@ class Events_order(db.Model):
     eventtitle = db.Column(db.String(20), nullable=False)
     orderdetails = db.Column(JSON, nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    # user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
 
 class Myevents(db.Model):
     __tablename__ = "myevents"
@@ -466,33 +466,35 @@ def get_recommendation(userId):
     # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
     # 现在的问题是：前端功能显示返回了所有的活动，后端代码中的过滤不起作用
     app.logger.info(f"Fetching recommendations for user: {userId}")
-    # 查询用户的订单信息
-    user_orders = Events_order.query.filter_by(user_id=userId).all()
+    # 从customer表中取出所有已购买的订单信息
+    cust = Customer.query.filter_by(id=int(userId)).first()
+    user_events_ids = list(cust.order.keys())
     # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
-    # 从用户订单中排除已购买的活动ID
-    purchased_event_ids = {order.event_id for order in user_orders}
-    if user_orders:
+
+    if user_events_ids:
         # 统计每种类型活动的购买次数
-        for order in user_orders:
-            event = Events.query.get(order.event_id)
+        for event_id in user_events_ids:
+            event = Events.query.get(event_id)
             if event:  # 确保找到了对应的活动
                 event_type_frequency[event.type] += 1
         # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
-        # 获取推荐活动列表
+
+        # 获取推荐活动列表  从用户订单中排除已购买的活动ID
         recommended_events = Events.query.filter(
             Events.type == favorite_event_type,
-            Events.id.notin_(purchased_event_ids),
+            Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
         ).order_by(Events.from_time).all()
+
         if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
             app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
             return jsonify([])
     else:
         # 对于没有购买记录的用户，推荐即将举行且未购买的活动
         recommended_events = Events.query.filter(
-            Events.id.notin_(purchased_event_ids),
+            Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
         ).order_by(Events.from_time).limit(2).all()
         if not recommended_events:  # 如果没有活动可以推荐，则返回空列表
@@ -513,7 +515,6 @@ def get_recommendation(userId):
         'duration': event.duration,
         'startDate': event.from_time,
         'endDate': event.to_time,
-        'description': event.description,
         'youtubeUrl': event.URL
     } for event in recommended_events]
 
