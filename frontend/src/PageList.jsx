@@ -16,6 +16,7 @@ import BookingList from "./pages/MyBookingPage";
 import MyHostedEventsPage from "./pages/MyHostedEventsPage";
 import MyAccount from "./pages/MyAccount";
 import CombinedLogin from "./pages/NewLoginPage";
+import { ForgotPassword } from './pages/ForgetPassword.jsx';
 
 const DefaultPage = () => {
     const navigate = useNavigate();
@@ -114,6 +115,7 @@ const PageList = () => {
                 <Route path='/my-booking' element={<BookingList />} />
                 <Route path='/my-hosted-event' element={<MyHostedEventsPage />} />
                 <Route path='/combined-login' element={<CombinedLogin />} />
+                <Route path='/forgot-password' element={<ForgotPassword />} />
                 {/*<Route path='/edit-listing/:listingId' element={<EditListingPage />} />*/}
                 {/*<Route path='/my-hosted-list/publish/:listingId' element={<ListingPublishScreen />} />*/}
                 {/*<Route path='/my-hosted-list/booking-request/:listingId' element={<BookingRequestPage />} />*/}

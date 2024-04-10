@@ -22,14 +22,23 @@ const SearchEvents = (props) => {
   ];
 
   const handleSearch = async () => {
-    const keyword = `${searchTitle} ${searchDescription}`.trim();
+    // 检查eventType，如果是'None'，则不发送这个参数或发送空字符串
+    const eventTypeParam = eventType === 'None' ? '' : eventType;
     try {
+      console.log('Request parameters:', {
+        description: searchDescription,
+        keyWord: searchTitle,
+        eventType: eventTypeParam,
+      });
+      
       const response = await axios.get('http://localhost:5005/events/search', {
         params: {
-          keyWord: keyword,
-          eventType: eventType === 'None' ? null : eventType,
+          description: searchDescription, 
+          keyWord: searchTitle, 
+          eventType: eventTypeParam, 
         },
       });
+      
       const data = response.data;
       props.searchCallback(data);
       setSnackbarOpen(data.length === 0);
@@ -39,7 +48,8 @@ const SearchEvents = (props) => {
       setErrorMessage("Failed to load events. Please try again later.");
       setSnackbarOpen(true);
     }
-  };
+};
+
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);

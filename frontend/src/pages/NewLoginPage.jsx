@@ -104,7 +104,9 @@ export const CombinedLogin = () => {
     const handleChangeTab = (event, newValue) => {
         setActiveTab(newValue);
     };
-
+    const handleForgotPassword = () => {
+        navigate('/forgot-password'); // Redirect to the forgot-password page
+    };
     return (
         <Container theme={theme}
                    component="main" sx={{
@@ -198,6 +200,14 @@ export const CombinedLogin = () => {
                     <Button fullWidth variant="text" onClick={() => navigate(`/${activeTab === 0 ? 'register-customer' : 'register-host'}`)}>
                         Don't have an account? Register
                     </Button>
+                    <Button
+                            fullWidth
+                            variant="text"
+                            sx={{ mt: 2 }}
+                            onClick={handleForgotPassword}
+                        >
+                            Forgot Password?
+                        </Button>
                 </Box>
             </Paper>
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
