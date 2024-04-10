@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import jwt
@@ -24,6 +24,10 @@ from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
 from collections import defaultdict
 import logging
+from flask_login import LoginManager
+from flask_login import reset_password
+from flask_login import validate_reset_token
+import uuid
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -56,6 +60,10 @@ db = SQLAlchemy(app)
 mail = Mail(app)
 bcrypt = Bcrypt(app)
 mail.init_app(app)
+
+# 设置Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 class Host(db.Model):
     __tablename__ = "host"
@@ -430,7 +438,6 @@ def update_events_bookings():
     flag_modified(cust, "order")
     db.session.commit()
 
-
     event_d = event.orderdetails
     if date_ in event_d:
         for i in seat_number:
@@ -464,7 +471,6 @@ def get_recommendation(userId):
     # 如果用户之前没有购买过任何活动，则显示两个未开始活动）
     # 最后的获取结果应该除开已经购买的活动
     # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
-    # 现在的问题是：前端功能显示返回了所有的活动，后端代码中的过滤不起作用
     app.logger.info(f"Fetching recommendations for user: {userId}")
     # 从customer表中取出所有已购买的订单信息
     cust = Customer.query.filter_by(id=int(userId)).first()
@@ -846,16 +852,119 @@ def logout():
         return jsonify({'message': 'Invalid token!'}), 401
     return jsonify({'message': 'Logout successful!'}), 200
 
+
 @app.route('/view_users')
 def view_users():
     users = Host.query.all()
     user_list = [{'id': user.id, 'email': user.email, 'password': user.password} for user in users]
     return jsonify(user_list)
 
+
 @app.route('/protected')
 @token_required
 def protected():
     return jsonify({'message': 'This is a protected endpoint!'})
+
+
+# 密码重置流程：
+# 1. 用户请求密码重置
+# 2. 应用程序生成一个唯一的密码重置令牌（验证码），并将其与用户关联
+# 3. 生成的令牌通过电子邮件或短信发送给用户
+# 4. 用户使用令牌访问密码重置页面
+# 5. 用户提交新密码
+# 6. 应用程序验证令牌并更新用户的密码
+
+# 用户重置密码:
+@app.route('/user/auth/cust_reset_password', methods=['GET', 'POST'])
+def cust_reset_password():
+    email = request.json.get('email')
+    cust = Customer.query.filter_by(email=email).first()
+    if cust:
+        token = cust_generate_reset_token()
+        cust_send_reset_email(cust, token)
+        response = {'message': 'Reset email sent, please check your email.'}
+        return jsonify(response), 200
+    else:
+        response = {'message': 'Invalid email.'}
+        return jsonify(response), 404
+
+
+def cust_generate_reset_token():
+    token = str(uuid.uuid4())
+    return token
+
+
+def cust_send_reset_email(cust, token):
+    msg = Message('Please reset your password', recipients=[cust.email])
+    msg.body = f"Please click here to reset your password：{url_for('reset_password', token=token, _external=True)}"
+    mail.send(msg)
+
+
+@app.route('/user/auth/cust_reset_password/<token>', methods=['GET', 'POST'])
+def cust_reset_password(token):
+    user = validate_reset_token(token)
+    if user:
+        password = request.json.get('password')
+        confirm_password = request.json.get('confirm_password')
+        if password == confirm_password:
+            # 更新用户密码
+            user.password = password
+            db.commit()
+            response = {'message': 'User password set successfully'}
+            return jsonify(response), 200
+        else:
+            response = {'message': 'Password and confirm password are not matched'}
+            return jsonify(response), 400
+    else:
+        response = {'message': 'Invalid or expired token'}
+        return jsonify(response), 404
+
+
+# Host重置密码:
+@app.route('/user/auth/host_reset_password', methods=['GET', 'POST'])
+def host_reset_password():
+    email = request.json.get('email')
+    host = Host.query.filter_by(email=email).first()
+    if host:
+        token = host_generate_reset_token()
+        host_send_reset_email(host, token)
+        response = {'message': 'Reset email sent, please check your email.'}
+        return jsonify(response), 200
+    else:
+        response = {'message': 'Invalid email.'}
+        return jsonify(response), 404
+
+
+def host_generate_reset_token():
+    token = str(uuid.uuid4())
+    return token
+
+
+def host_send_reset_email(host, token):
+    msg = Message('Please reset your password', recipients=[host.email])
+    msg.body = f"Please click here to reset your password：{url_for('reset_password', token=token, _external=True)}"
+    mail.send(msg)
+
+
+@app.route('/user/auth/host_reset_password/<token>', methods=['GET', 'POST'])
+def host_reset_password(token):
+    user = validate_reset_token(token)
+    if user:
+        password = request.json.get('password')
+        confirm_password = request.json.get('confirm_password')
+        if password == confirm_password:
+            # 更新用户密码
+            user.password = password
+            db.commit()
+            response = {'message': 'User password set successfully'}
+            return jsonify(response), 200
+        else:
+            response = {'message': 'Password and confirm password are not matched'}
+            return jsonify(response), 400
+    else:
+        response = {'message': 'Invalid or expired token'}
+        return jsonify(response), 404
+
 
 if __name__ == '__main__':
     with app.app_context():
