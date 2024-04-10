@@ -24,10 +24,10 @@ from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
 from collections import defaultdict
 import logging
-from flask_login import LoginManager
-from flask_login import reset_password
-from flask_login import validate_reset_token
-import uuid
+#from flask_login import LoginManager
+#from flask_login import reset_password
+#from flask_login import validate_reset_token
+#import uuid
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -62,8 +62,8 @@ bcrypt = Bcrypt(app)
 mail.init_app(app)
 
 # 设置Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
+#login_manager = LoginManager()
+#login_manager.init_app(app)
 
 class Host(db.Model):
     __tablename__ = "host"
@@ -875,95 +875,7 @@ def protected():
 # 6. 应用程序验证令牌并更新用户的密码
 
 # 用户重置密码:
-@app.route('/user/auth/cust_reset_password', methods=['GET', 'POST'])
-def cust_reset_password():
-    email = request.json.get('email')
-    cust = Customer.query.filter_by(email=email).first()
-    if cust:
-        token = cust_generate_reset_token()
-        cust_send_reset_email(cust, token)
-        response = {'message': 'Reset email sent, please check your email.'}
-        return jsonify(response), 200
-    else:
-        response = {'message': 'Invalid email.'}
-        return jsonify(response), 404
-
-
-def cust_generate_reset_token():
-    token = str(uuid.uuid4())
-    return token
-
-
-def cust_send_reset_email(cust, token):
-    msg = Message('Please reset your password', recipients=[cust.email])
-    msg.body = f"Please click here to reset your password：{url_for('reset_password', token=token, _external=True)}"
-    mail.send(msg)
-
-
-@app.route('/user/auth/cust_reset_password/<token>', methods=['GET', 'POST'])
-def cust_reset_password(token):
-    user = validate_reset_token(token)
-    if user:
-        password = request.json.get('password')
-        confirm_password = request.json.get('confirm_password')
-        if password == confirm_password:
-            # 更新用户密码
-            user.password = password
-            db.commit()
-            response = {'message': 'User password set successfully'}
-            return jsonify(response), 200
-        else:
-            response = {'message': 'Password and confirm password are not matched'}
-            return jsonify(response), 400
-    else:
-        response = {'message': 'Invalid or expired token'}
-        return jsonify(response), 404
-
-
-# Host重置密码:
-@app.route('/user/auth/host_reset_password', methods=['GET', 'POST'])
-def host_reset_password():
-    email = request.json.get('email')
-    host = Host.query.filter_by(email=email).first()
-    if host:
-        token = host_generate_reset_token()
-        host_send_reset_email(host, token)
-        response = {'message': 'Reset email sent, please check your email.'}
-        return jsonify(response), 200
-    else:
-        response = {'message': 'Invalid email.'}
-        return jsonify(response), 404
-
-
-def host_generate_reset_token():
-    token = str(uuid.uuid4())
-    return token
-
-
-def host_send_reset_email(host, token):
-    msg = Message('Please reset your password', recipients=[host.email])
-    msg.body = f"Please click here to reset your password：{url_for('reset_password', token=token, _external=True)}"
-    mail.send(msg)
-
-
-@app.route('/user/auth/host_reset_password/<token>', methods=['GET', 'POST'])
-def host_reset_password(token):
-    user = validate_reset_token(token)
-    if user:
-        password = request.json.get('password')
-        confirm_password = request.json.get('confirm_password')
-        if password == confirm_password:
-            # 更新用户密码
-            user.password = password
-            db.commit()
-            response = {'message': 'User password set successfully'}
-            return jsonify(response), 200
-        else:
-            response = {'message': 'Password and confirm password are not matched'}
-            return jsonify(response), 400
-    else:
-        response = {'message': 'Invalid or expired token'}
-        return jsonify(response), 404
+#
 
 
 if __name__ == '__main__':
