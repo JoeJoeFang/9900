@@ -812,14 +812,14 @@ def login():
             return jsonify({'message': 'User not found'}), 401
         if not bcrypt.check_password_hash(customer.password, password):
             print('message: Invalid email or password')
-            return jsonify({'message': 'Invalid email or password'}), 401
+            return jsonify({'message': 'Invalid email or password'}), 402
 
         token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                            app.config['SECRET_KEY'])
         return jsonify({'token': token, 'id': customer.id})
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
-        return jsonify({'message': 'Invalid email or password'}), 401
+        return jsonify({'message': 'Invalid email or password'}), 403
     #print("package token")
     #print(app.config['SECRET_KEY'])
     token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)}, app.config['SECRET_KEY'])
@@ -834,7 +834,7 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
-            return jsonify({'message': 'Token is invalid!'}), 401
+            return jsonify({'message': 'Token is invalid!'}), 402
         return f(*args, **kwargs)
     return decorated
 
@@ -847,9 +847,9 @@ def logout():
     try:
         jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
     except jwt.ExpiredSignatureError:
-        return jsonify({'message': 'Token has expired!'}), 401
+        return jsonify({'message': 'Token has expired!'}), 402
     except jwt.InvalidTokenError:
-        return jsonify({'message': 'Invalid token!'}), 401
+        return jsonify({'message': 'Invalid token!'}), 403
     return jsonify({'message': 'Logout successful!'}), 200
 
 
