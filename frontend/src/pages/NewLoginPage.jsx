@@ -83,13 +83,13 @@ export const CombinedLogin = () => {
                 let errorMessage = '';
                 switch (error.response.status) {
                     case 401:
-                        errorMessage = 'Email does not exist';
+                        errorMessage = 'User not found!';
                         break;
                     case 402:
-                        errorMessage = 'Seats have been booked!';
+                        errorMessage = 'Invalid email or password!';
                         break;
-                    case 404:
-                        errorMessage = 'Event does not exist, please refresh your page';
+                    case 403:
+                        errorMessage = 'Invalid email or password!';
                         break;
                     default:
                         errorMessage = 'An unexpected error occurred';
