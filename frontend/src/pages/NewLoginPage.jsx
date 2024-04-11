@@ -108,8 +108,7 @@ export const CombinedLogin = () => {
         navigate('/forgot-password'); // Redirect to the forgot-password page
     };
     return (
-        <Container theme={theme}
-                   component="main" sx={{
+        <Box sx={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -141,7 +140,8 @@ export const CombinedLogin = () => {
             <HeaderLogo theme={theme}/>
 
             <Paper elevation={6} sx={{
-                width: '60%',
+                width: '50%',
+                maxWidth: '700px',
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
                 borderRadius: theme.shape.borderRadius,
                 p: theme.spacing(4),
@@ -215,7 +215,7 @@ export const CombinedLogin = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
-        </Container>
+        </Box>
     );
 };
 
