@@ -485,8 +485,8 @@ def get_recommendation(userId):
     # 查询用户购买的活动，找到活动类型
     # 查询所有活动列表
     # 使用用户购买过的活动的类型来过滤活动列表
-    # 返回过滤后的活动列表
-    # 如果用户之前没有购买过任何活动，则显示两个未开始活动）
+    # 返回过滤后的活动列表（显示三个）
+    # 如果用户之前没有购买过任何活动，则显示三个未开始活动）
     # 最后的获取结果应该除开已经购买的活动
     # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
     app.logger.info(f"Fetching recommendations for user: {userId}")
@@ -510,7 +510,7 @@ def get_recommendation(userId):
             Events.type == favorite_event_type,
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
-        ).order_by(Events.from_time).all()
+        ).order_by(Events.from_time).limit(3).all()
 
         if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
             app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
@@ -520,7 +520,7 @@ def get_recommendation(userId):
         recommended_events = Events.query.filter(
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
-        ).order_by(Events.from_time).limit(2).all()
+        ).order_by(Events.from_time).limit(3).all()
         if not recommended_events:  # 如果没有活动可以推荐，则返回空列表
             app.logger.info(f"No upcoming events to recommend for new or inactive user: {userId}")
             return jsonify([])
