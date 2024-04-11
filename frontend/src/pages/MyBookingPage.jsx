@@ -1,27 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-    Card,
-    CardContent,
-    Typography,
-    CardMedia,
-    CircularProgress,
-    Box,
-    ThemeProvider,
-    useTheme,
-    Alert, Snackbar
-} from '@mui/material';
+import { Card, CardContent, Typography, CardMedia, CircularProgress, Box,ThemeProvider } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
+import HeaderLogo from '../components/HeaderLogo';
 import Navbar from '../components/Navbar';
-
+import { SentimentDissatisfied } from '@mui/icons-material'; 
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#e66465',
+        },
+        secondary: {
+            main: '#9198e5',
+        },
+    },
+});
 
 
 const BookingList = () => {
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const theme = useTheme();
     console.log('fetch.....');
     // const userId = localStorage.getItem('userId');
     const [events, setEvents] = useState([]);
@@ -58,7 +57,7 @@ const BookingList = () => {
         } catch (error) {
             console.error("There was an error fetching the events:", error);
             if (error.response && error.response.status === 404) {
-                setError("You haven't booked your tickets yet");
+                setError("You haven't booked your tickets yet,we will automatically recommend activities for you");
             } else {
                 setError("Failed to load events. Please try again later.");
             }
@@ -126,23 +125,11 @@ const BookingList = () => {
                 }
             } catch (error) {
                 if (error.response) {
-                    let errorMessage = '';
-                    switch (error.response.status) {
-                        case 400:
-                            errorMessage = 'Event does not exist, please fresh your page';
-                            break;
-                        case 402:
-                            errorMessage = 'Seats have been booked!';
-                            break;
-                        case 404:
-                            errorMessage = 'Event does not exist, please refresh your page';
-                            break;
-                        default:
-                            errorMessage = 'An unexpected error occurred';
-                            break;
+                    if (error.response.status === 400) {
+                        alert('Invalid input: ' + error.response.error);
+                    } else if (error.response.status === 403) {
+                        alert('Invalid Token: ' + error.response.error);
                     }
-                    setSnackbarMessage(errorMessage);
-                    setSnackbarOpen(true);
                 }
             }
         }
@@ -156,6 +143,7 @@ const BookingList = () => {
     };
 
     const navigate = useNavigate();
+
     return (
     <ThemeProvider theme={theme}>
                 <Box sx={{
@@ -173,35 +161,21 @@ const BookingList = () => {
                     <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center' }}>
                         <Navbar></Navbar>
                     </Box>
-                    {/*<HeaderLogo theme={theme} />*/}
+                    <HeaderLogo theme={theme} />
                     {isLoading ? (
                         <CircularProgress />
                     ) : error ? (
+
                         <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" marginTop={2}>
                             <ErrorIcon color="error" style={{ fontSize: 40, marginBottom: 8 }} />
                             <Typography variant="h6" color="error" align="center">
                                 {error}
                             </Typography>
                         </Box>
-                    ) : events.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '120px', width: '90%' }}>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '100%',
-                                mb: theme.spacing(3),
-                                gap: theme.spacing(2),
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                '& img': {
-                                    opacity: 0.9,
-                                }
-                            }}>
-                                <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 80, height: 'auto' }} />
-                                <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
-                                    Your Booked Events
-                                </Typography>
-                            </Box>
+                    ) : events.length > 0 ? 
+                    (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
+                            <Typography variant="h4" gutterBottom>Your booked Events</Typography>
                             {events.map((event, index) => (
                                 <Card
                                     key={index}
@@ -222,12 +196,12 @@ const BookingList = () => {
                                         <CardMedia
                                             component="img"
                                             sx={{ width: 240, objectFit: 'cover' }}
-                                            image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                            image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                             alt={event.eventId} />
                                     )}
                                     <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <Typography gutterBottom variant="h5" component="div">
-                                            {event.eventtitle}
+                                            {event.title}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
                                             Event ID: {event.eventId}<br />
@@ -256,11 +230,22 @@ const BookingList = () => {
                             ))}
                         </div>
                     ) : (
-                        <Typography variant="subtitle1">No events found.</Typography>
-                    )}
-                        {recommendedEvents.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                            <Typography variant="h4" gutterBottom>Your Recommended Events</Typography>
+                        </div>       
+                       )}
+                        {recommendedEvents.length === 0 ? (
+                            <div style={{display: 'flex',flexDirection: 'column',alignItems: 'center',justifyContent: 'center',  marginTop: '20px',width: '90%'}}>
+                                <SentimentDissatisfied style={{ fontSize: 60, color: '#1976d2' }} />
+                                <Typography variant="h6" gutterBottom align="center" 
+                                style={{marginTop: '40px', color: '#555',backgroundColor: 'rgba(255, 255, 255, 0.8)',  padding: '20px 40px',  borderRadius: '6px',  
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', maxWidth: 'calc(100% - 80px)', boxSizing: 'border-box', margin: 'auto', display: 'block',  }}
+                                >
+                                    We couldn't find any recommended events for you.  Feel free to browse all events to find something you might like.
+                                </Typography>
+                            </div>
+                        ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
+                            <Typography variant="h4" gutterBottom>Look at we recommend events for you</Typography>
                             {recommendedEvents.map((event, index) => (
                             <Card
                                 key={index}
@@ -282,7 +267,7 @@ const BookingList = () => {
                                     <CardMedia
                                         component="img"
                                         sx={{ width: 240, objectFit: 'cover' }}
-                                        image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                        image={`${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                         alt={event.title}
                                     />
                                 )}
@@ -321,11 +306,6 @@ const BookingList = () => {
                             <Button onClick={handleCancelBooking} autoFocus>Yes</Button>
                         </DialogActions>
                     </Dialog>
-                    <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
-                        <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
-                            {snackbarMessage}
-                        </Alert>
-                    </Snackbar>
                 </Box>
             </ThemeProvider>
     );
