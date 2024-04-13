@@ -11,7 +11,7 @@ import base64
 from PIL import Image
 import io
 from sqlalchemy import JSON
-#from sqlalchemy.dialects.postgresql import JSON
+# from sqlalchemy.dialects.postgresql import JSON
 from flask_wtf import FlaskForm
 from sqlalchemy.testing.pickleable import User
 from wtforms import Form, StringField, RadioField, SubmitField
@@ -28,7 +28,7 @@ import uuid
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-#db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
 # HOSTNAME = '127.0.0.1'
 # PORT = 3306
@@ -42,16 +42,26 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(basedir, "te
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭追踪修改，提升性能\
 app.config['SECRET_KEY'] = 'your_secret_key_here'
+
 current_directory = os.path.dirname(os.path.abspath(__file__))
 pic_folder = os.path.join(current_directory, 'PIC')
-#app.config['PIC_FLODER'] = pic_folder
+# app.config['PIC_FLODER'] = pic_folder
 
 app.config['MAIL_SERVER'] = "smtp.qq.com"
 app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "924082621@qq.com"
-app.config['MAIL_PASSWORD'] = "" #vyiubszzwbojbdic
+app.config['MAIL_PASSWORD'] = "vyiubszzwbojbdic"  # vyiubszzwbojbdic
 app.config['MAIL_DEFAULT_SENDER'] = "924082621@qq.com"
+
+# app.config['MAIL_SERVER'] = "smtp.qq.com"
+# app.config['MAIL_USE_SSL'] = True
+# app.config['MAIL_USE_TLS'] = False
+# app.config['MAIL_PORT'] = 465
+# app.config['MAIL_USERNAME'] = "851257040@163.com"
+# app.config['MAIL_PASSWORD'] = "xxxxxxx"
+# app.config['MAIL_DEFAULT_SENDER'] = "851257040@163.com"
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -59,20 +69,11 @@ bcrypt = Bcrypt(app)
 mail.init_app(app)
 
 
-class Email(db.Model):
-    __tablename__ = "email"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(80), nullable=False)
-    role = db.Column(db.String(20), nullable=False)
-    token = db.Column(db.String(50), nullable=False)
-    expires = db.Column(db.DateTime, nullable=True)
-
-
 class Host(db.Model):
     __tablename__ = "host"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(80), nullable=False)
-    password = db.Column(db.String(80),nullable=False)
+    password = db.Column(db.String(80), nullable=False)
     companyName = db.Column(db.String(20), nullable=False)
     from_time = db.Column(db.String(10), nullable=True)
     to_time = db.Column(db.String(10), nullable=True)
@@ -82,13 +83,14 @@ class Host(db.Model):
     state = db.Column(db.String(100), nullable=True)
     post_code = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(1000), nullable=True)
-    #last_update = db.Column(db.DateTime, default=datetime.now)
+    # last_update = db.Column(db.DateTime, default=datetime.now)
+
 
 class Customer(db.Model):
     __tablename__ = "customer"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(80), nullable=False)
-    password = db.Column(db.String(160),nullable=False)
+    password = db.Column(db.String(160), nullable=False)
     name = db.Column(db.String(20), nullable=False)
     cvc = db.Column(db.String(20), nullable=False)
     duedate = db.Column(db.String(20), nullable=True)
@@ -102,7 +104,17 @@ class Customer(db.Model):
     cardNumber = db.Column(db.String(100), nullable=True)
     wallet = db.Column(db.Integer, nullable=True)
     order = db.Column(JSON, nullable=True)
-    #last_update = db.Column(db.DateTime, default=datetime.now)
+    # last_update = db.Column(db.DateTime, default=datetime.now)
+
+
+class Email(db.Model):
+    __tablename__ = "email"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(80), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
+    token = db.Column(db.String(50), nullable=False)
+    expires = db.Column(db.DateTime, nullable=True)
+
 
 class Events(db.Model):
     __tablename__ = "events"
@@ -120,7 +132,8 @@ class Events(db.Model):
     description = db.Column(db.String(100), nullable=True)
     URL = db.Column(db.String(100), nullable=True)
     thumbnail = db.Column(db.Text, nullable=True)
-    #last_update = db.Column(db.DateTime, default=datetime.now)
+
+    # last_update = db.Column(db.DateTime, default=datetime.now)
 
     @staticmethod
     def get_events_search(keyword, type, page=1):
@@ -133,10 +146,11 @@ class Events(db.Model):
                 events = events.filter(Events.title.like('%' + k + '%'))
         return events.paginate(page=page, per_page=30, error_out=False)  # 把query构建好了，用paginate分页取回活动
 
-class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
-    keyword = StringField('Keyword')        # 关键词输入
-    type = RadioField('Event Type')         # 活动类型
-    submit = SubmitField('Search')          # 搜索
+
+class EventSearchForm(Form):  # 表单类创建了需要的field并赋值
+    keyword = StringField('Keyword')  # 关键词输入
+    type = RadioField('Event Type')  # 活动类型
+    submit = SubmitField('Search')  # 搜索
 
     def __init__(self, *args, **kwargs):
         super(EventSearchForm, self).__init__(*args, **kwargs)
@@ -145,7 +159,40 @@ class EventSearchForm(Form):        # 表单类创建了需要的field并赋值
         self.type.choices = [(event.id, event.title, event.description) for event in events]
 
 
-@app.route('/user/search', methods=['GET', 'POST']) # 在View里面添加处理逻辑
+class Events_order(db.Model):
+    __tablename__ = "events_order"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    eventtitle = db.Column(db.String(20), nullable=False)
+    orderdetails = db.Column(JSON, nullable=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    # user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+
+
+class Myevents(db.Model):
+    __tablename__ = "myevents"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event = db.Column(db.String(50), nullable=False)
+    host = db.Column(db.String(50), nullable=False)
+
+
+class Comments(db.Model):
+    __tablename__ = "comments"
+    eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    comment = db.Column(JSON, nullable=True)
+
+
+def image_to_base64(image_path):
+    # 使用 Pillow 打开图片
+    with Image.open(image_path) as image:
+        # 将图片转换为二进制数据
+        buffered = io.BytesIO()
+        image.save(buffered, format=image.format)
+        # 将二进制数据编码为 Base64 字符串
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
+
+
+@app.route('/user/search', methods=['GET', 'POST'])  # 在View里面添加处理逻辑
 def events_search():
     form = EventSearchForm()
     page = request.args.get('page', 1, type=int)
@@ -186,24 +233,6 @@ def events_search():
     }
     return jsonify(response)
 
-class Events_order(db.Model):
-    __tablename__ = "events_order"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    eventtitle = db.Column(db.String(20), nullable=False)
-    orderdetails = db.Column(JSON, nullable=True)
-    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
-    # user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-
-class Myevents(db.Model):
-    __tablename__ = "myevents"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    event = db.Column(db.String(50), nullable=False)
-    host = db.Column(db.String(50), nullable=False)
-
-class Comments(db.Model):
-    __tablename__ = "comments"
-    eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    comment = db.Column(JSON, nullable=True)
 
 @app.route("/user/list")
 def delete():
@@ -215,6 +244,7 @@ def delete():
     db.session.commit()
     return f"message: The user with id {id} was removed from the database!"
 
+
 @app.route("/user/add")
 def add_user():
     user1 = Host(email="刘畅", password="924082621")
@@ -222,21 +252,6 @@ def add_user():
     db.session.commit()
     return "用户创建成功！"
 
-def add_users():
-    user1 = Host(email="刘畅", password="924082621")
-    db.session.add(user1)
-    db.session.commit()
-    return user1
-
-def image_to_base64(image_path):
-    # 使用 Pillow 打开图片
-    with Image.open(image_path) as image:
-        # 将图片转换为二进制数据
-        buffered = io.BytesIO()
-        image.save(buffered, format=image.format)
-        # 将二进制数据编码为 Base64 字符串
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-    return img_str
 
 @app.route('/events', methods=['GET'])
 def get_events():
@@ -266,16 +281,15 @@ def get_events():
                 'startDate': event.from_time,
                 'endDate': event.to_time,
                 'description': event.description,
-                'youtubeUrl':event.URL
+                'youtubeUrl': event.URL
             }
-        #image_path = event.thumbnail
-        #base64_str = image_to_base64(image_path)
-        #event_data['thumbnail'] = base64_str
+            # image_path = event.thumbnail
+            # base64_str = image_to_base64(image_path)
+            # event_data['thumbnail'] = base64_str
             event_list.append(event_data)
-    #print("fanhui", event_list)
+    # print("fanhui", event_list)
     # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list), 201
-
 
 
 @app.route('/events/search', methods=['GET'])
@@ -284,71 +298,53 @@ def search_events():
     keyword = request.args.get('keyWord', '')
     event_type = request.args.get('eventType', '')
 
-    print('k: ',keyword, 't: ', event_type, 'd: ', event_description)
+    print(keyword, event_type, event_description)
     query = Events.query
 
     events = Events.query.all()
     event_list = []
 
     for event in events:
-        flag_print = 0
         # Check if the keyword is in any of the relevant fields
-        #print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
-        #print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
-        if event_type == 'all types':
-            if keyword.lower() == '':
-                if event_description.lower() in event.description.lower():
-                    flag_print = 1
-            elif event_description.lower() == '':
-                if keyword.lower() in event.title.lower():
-                    flag_print = 1
-            elif keyword.lower() == '' and event_description.lower() == '':
-                flag_print = 1
-            else:
-                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower():
-                    flag_print = 1
-        else:
-            if event_description.lower() == '' and event_type.lower() == '' and keyword.lower() == '':
-                return jsonify([]), 200
-            elif keyword.lower() == '':
-                if event_description.lower() in event.description.lower() and event_type.lower() in event.type.lower():
-                    flag_print = 1
-            elif event_description.lower() == '':
-                if keyword.lower() in event.title.lower() and event_type.lower() in event.type.lower():
-                    flag_print = 1
-            elif event_type.lower() == '':
-                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower():
-                    flag_print = 1
-            elif keyword.lower() == '' and event_description.lower() == '':
-                if event_type.lower() in event.type.lower():
-                    flag_print = 1
-            elif keyword.lower() == '' and event_type.lower() == '':
-                if event_description.lower() in event.description.lower():
-                    flag_print = 1
-            elif event_description.lower() == '' and event_type.lower() == '':
-                if keyword.lower() in event.title.lower():
-                    flag_print = 1
-            else:
-                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower() and event_type.lower() in event.type.lower():
-                    flag_print = 1
-        if flag_print == 1:
-            event_data = {
-                'id': event.id,
-                'title': event.title,
-                'address': event.address,
-                'price': event.price,
-                'thumbnail': event.thumbnail,
-                'organizerName': event.organizername,
-                'eventType': event.type,
-                'seatingCapacity': event.seats,
-                'duration': event.duration,
-                'startDate': event.from_time,
-                'endDate': event.to_time,
-                'description': event.description,
-                'youtubeUrl': event.URL
-            }
-            event_list.append(event_data)
-
+        print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
+        print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
+        if event_type != '':
+            if keyword.lower() in event.title.lower() or event.type.lower() in event_type.lower():
+                print(event_type.lower() in event.type.lower())
+                event_data = {
+                    'id': event.id,
+                    'title': event.title,
+                    'address': event.address,
+                    'price': event.price,
+                    'thumbnail': event.thumbnail,
+                    'organizerName': event.organizername,
+                    'eventType': event.type,
+                    'seatingCapacity': event.seats,
+                    'duration': event.duration,
+                    'startDate': event.from_time,
+                    'endDate': event.to_time,
+                    'description': event.description,
+                    'youtubeUrl': event.URL
+                }
+                event_list.append(event_data)
+        if event_description != '':
+            if event_description in event.description:
+                event_data = {
+                    'id': event.id,
+                    'title': event.title,
+                    'address': event.address,
+                    'price': event.price,
+                    'thumbnail': event.thumbnail,
+                    'organizerName': event.organizername,
+                    'eventType': event.type,
+                    'seatingCapacity': event.seats,
+                    'duration': event.duration,
+                    'startDate': event.from_time,
+                    'endDate': event.to_time,
+                    'description': event.description,
+                    'youtubeUrl': event.URL
+                }
+                event_list.append(event_data)
     return jsonify(event_list), 200
 
 
@@ -363,8 +359,9 @@ def get_events_title():
             'title': event.title,
         }
         event_list.append(event_data)
-    #print("fanhui", event_list)
+    # print("fanhui", event_list)
     return jsonify(event_list)
+
 
 @app.route('/events/host/<int:userId>', methods=['GET'])
 def get_host_events(userId):
@@ -394,7 +391,7 @@ def get_host_events(userId):
 @app.route('/events/<int:eventId>', methods=['GET'])
 def get_events_details(eventId):
     # 查询数据库以获取事件列表
-    #print(1111111111)
+    # print(1111111111)
     print(eventId)
     event = Events.query.filter_by(id=eventId).first()
     event_order = Events_order.query.filter_by(id=eventId).first()
@@ -411,23 +408,24 @@ def get_events_details(eventId):
         'price': event.price,
         'thumbnail': event.thumbnail,
         'organizerName': event.organizername,
-        'eventType' : event.type,
-        'seatingCapacity' :event.seats,
-        'duration' : event.duration,
+        'eventType': event.type,
+        'seatingCapacity': event.seats,
+        'duration': event.duration,
         'startDate': event.from_time,
         'endDate': event.to_time,
         'description': event.description,
-        'youtubeUrl':event.URL,
+        'youtubeUrl': event.URL,
         'orderdetails': event_order.orderdetails
     }
     print("finish", event_data)
     return jsonify(event_data)
 
+
 @app.route('/bookings', methods=['PUT'])
 def update_events_bookings():
     # 查询数据库以获取事件列表s
     data = request.get_json()
-    #print(data)
+    # print(data)
     cust_id = data['userId']
     date_ = data['Date']
     seat_number = data['seat']
@@ -488,8 +486,8 @@ def get_recommendation(userId):
     # 查询用户购买的活动，找到活动类型
     # 查询所有活动列表
     # 使用用户购买过的活动的类型来过滤活动列表
-    # 返回过滤后的活动列表（显示三个）
-    # 如果用户之前没有购买过任何活动，则显示三个未开始活动）
+    # 返回过滤后的活动列表
+    # 如果用户之前没有购买过任何活动，则显示两个未开始活动）
     # 最后的获取结果应该除开已经购买的活动
     # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
     app.logger.info(f"Fetching recommendations for user: {userId}")
@@ -513,7 +511,7 @@ def get_recommendation(userId):
             Events.type == favorite_event_type,
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
-        ).order_by(Events.from_time).limit(3).all()
+        ).order_by(Events.from_time).all()
 
         if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
             app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
@@ -523,7 +521,7 @@ def get_recommendation(userId):
         recommended_events = Events.query.filter(
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
-        ).order_by(Events.from_time).limit(3).all()
+        ).order_by(Events.from_time).limit(2).all()
         if not recommended_events:  # 如果没有活动可以推荐，则返回空列表
             app.logger.info(f"No upcoming events to recommend for new or inactive user: {userId}")
             return jsonify([])
@@ -558,7 +556,7 @@ def get_bookings(userId):
         print(cust.order)
     if cust.order is None or len(cust.order) == 0:
         return jsonify({'message': 'No events found!'}), 404
-    for k,v in cust.order.items():
+    for k, v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         orderdetails = event_order.orderdetails[v]
@@ -569,7 +567,7 @@ def get_bookings(userId):
             print(orderdetails[i], userId)
             if orderdetails[i][1] == str(userId):
                 seat_list.append(i)
-                #print(i, '1111111111111111')
+                # print(i, '1111111111111111')
         event1 = {
             'eventId': event_order.id,
             'userId': cust.id,
@@ -582,6 +580,7 @@ def get_bookings(userId):
         events_list.append(event1)
     print(events_list)
     return jsonify(events_list), 200
+
 
 @app.route('/bookings/cancel/<int:userId>', methods=['PUT'])
 def cancel_bookings(userId):
@@ -596,7 +595,7 @@ def cancel_bookings(userId):
         flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
         for i in range(len(event_order.orderdetails[data['Date']])):
-            #print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
+            # print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
             if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
                 event_order.orderdetails[data['Date']][i] = [0, 0]
                 cust.wallet += price
@@ -610,6 +609,7 @@ def cancel_bookings(userId):
         return jsonify({'message': 'Refund successfully!'}), 201
     else:
         return jsonify({'message': 'Event not Found!!!'}), 400
+
 
 @app.route('/bookings/cancel_event/<int:userId>', methods=['PUT'])
 def cancel_events(userId):
@@ -628,7 +628,7 @@ def cancel_events(userId):
     for i, j in user_list.items():
         user = Customer.query.filter_by(id=int(i)).first()
         print(data['eventId'], user.order)
-        user.wallet += price*(int(j))
+        user.wallet += price * (int(j))
         del user.order[str(data['eventId'])]
         flag_modified(user, "order")
         flag_modified(user, "wallet")
@@ -640,6 +640,7 @@ def cancel_events(userId):
     db.session.delete(comment)
     db.session.commit()
     return jsonify({'message': 'Event has been canceled!'}), 201
+
 
 @app.route('/comments/customer', methods=['POST'])
 def if_order():
@@ -655,22 +656,25 @@ def if_order():
         else:
             return jsonify({'message': 'You can fill your review now!'}), 201
 
+
 @app.route('/comments/customer', methods=['PUT'])
 def cust_comments():
     data = request.get_json()
     print(data)
     cust = Customer.query.filter_by(id=data['userId']).first()
-    c = [data['Date'], data['review'], cust.name,'None', 'None', 'None', 'None']
+    c = [data['Date'], data['review'], cust.name, 'None', 'None', 'None', 'None']
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     comment.comment[data['userId']] = c
     flag_modified(comment, "comment")
     db.session.commit()
     return jsonify({'message': 'Add comment successfully!'}), 201
 
+
 @app.route('/comments/<int:eventId>', methods=['GET'])
 def get_comments(eventId):
     comments = Comments.query.filter_by(eventId=eventId).first_or_404()
     return jsonify(comments.comment), 201
+
 
 @app.route('/comments/host', methods=['POST'])
 def if_host():
@@ -680,6 +684,7 @@ def if_host():
         return jsonify({'message': 'Reply your review!'}), 201
     else:
         return jsonify({'message': 'You did not host this event!'}), 400
+
 
 @app.route('/comments/host', methods=['PUT'])
 def host_comments():
@@ -698,9 +703,9 @@ def host_comments():
 @app.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    #print(data)
-    #thumbnail_data = base64.b64decode(data['thumbnail'])
-    #print(data)
+    # print(data)
+    # thumbnail_data = base64.b64decode(data['thumbnail'])
+    # print(data)
     event_title = data['title']
     existing_event = Events.query.filter_by(title=event_title).first()
     if existing_event:
@@ -733,12 +738,13 @@ def register_event():
     new_order = Events_order(eventtitle=data['title'], orderdetails=seats_c)
     db.session.add(new_order)
     db.session.commit()
-    #print(type(new_order.id))
+    # print(type(new_order.id))
     new_comment = Comments(eventId=new_order.id, comment={})
     db.session.add(new_comment)
     db.session.commit()
 
-    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'], thumbnail=image_str,
+    new_event = Events(hostId=data['hostId'], title=data['title'], address=data['address'], price=data['price'],
+                       thumbnail=image_str,
                        type=data['eventType'], seats=data['seatingCapacity'],
                        from_time=data['startDate'], to_time=data['endDate'], URL=data['youtubeUrl'],
                        organizername=data['organizerName'], description=data['description'])
@@ -746,6 +752,7 @@ def register_event():
     db.session.commit()
 
     return jsonify({'message': 'Event created successfully!'}), 201
+
 
 @app.route('/user/auth/host_register', methods=['POST'])
 def host_register():
@@ -761,6 +768,7 @@ def host_register():
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
 
+
 @app.route('/user/auth/customer_register', methods=['POST'])
 def cust_register():
     data = request.get_json()
@@ -775,6 +783,7 @@ def cust_register():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully!'}), 201
+
 
 # Flask后端示例
 @app.route('/user/auth/customer', methods=['GET'])
@@ -801,6 +810,7 @@ def get_customer():
         'cardNumber': cust.cardNumber
     }
     return jsonify(cust_detail)
+
 
 @app.route('/user/auth/customer/recharge', methods=['PUT'])
 def top_up():
@@ -840,11 +850,13 @@ def login():
         return jsonify({'token': token, 'id': customer.id})
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
-        return jsonify({'message': 'Invalid email or password'}), 403
-    #print("package token")
-    #print(app.config['SECRET_KEY'])
-    token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        return jsonify({'message': 'Invalid email or password'}), 402
+    # print("package token")
+    # print(app.config['SECRET_KEY'])
+    token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
+                       app.config['SECRET_KEY'])
     return jsonify({'token': token, 'id': host.id})
+
 
 def token_required(f):
     @wraps(f)
@@ -855,9 +867,11 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
         except:
-            return jsonify({'message': 'Token is invalid!'}), 402
+            return jsonify({'message': 'Token is invalid!'}), 401
         return f(*args, **kwargs)
+
     return decorated
+
 
 @app.route('/user/auth/logout', methods=['POST'])
 def logout():
@@ -868,9 +882,9 @@ def logout():
     try:
         jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
     except jwt.ExpiredSignatureError:
-        return jsonify({'message': 'Token has expired!'}), 402
+        return jsonify({'message': 'Token has expired!'}), 401
     except jwt.InvalidTokenError:
-        return jsonify({'message': 'Invalid token!'}), 403
+        return jsonify({'message': 'Invalid token!'}), 401
     return jsonify({'message': 'Logout successful!'}), 200
 
 
@@ -885,6 +899,7 @@ def view_users():
 @token_required
 def protected():
     return jsonify({'message': 'This is a protected endpoint!'})
+
 
 def cust_generate_reset_token():
     token = str(uuid.uuid4())
@@ -911,13 +926,13 @@ def verify_reset_token(email, role, token):
 
 # 密码重置流程：
 # 1. 用户请求密码重置
-# 2. 应用程序生成一个唯一的密码重置令牌（验证码），并将其与用户关联
+# 2. 应用程序生成一个唯一的密码重置验证码（限时1分钟），并将其与用户关联
 # 3. 生成的令牌通过电子邮件或短信发送给用户
 # 4. 用户使用令牌访问密码重置页面
 # 5. 用户提交新密码
 # 6. 应用程序验证令牌并更新用户的密码
 
-# 重置密码:
+# 用户重置密码:
 @app.route('/user/auth/send_email', methods=['GET', 'POST'])
 def send_email():
     role = request.json.get('role')
@@ -1009,8 +1024,9 @@ def reset_password():
 
 if __name__ == '__main__':
     with app.app_context():
-        #db.drop_all()
+        # db.drop_all()
         db.create_all()
-        #create_default_user()
+        # create_default_user()
+    mail.init_app(app)
     app.run(host='127.0.0.1', port=5005, debug=True)
     app.logger.setLevel(logging.DEBUG)
