@@ -24,10 +24,7 @@ from flask_mail import Mail, Message
 from sqlalchemy.orm.attributes import flag_modified
 from collections import defaultdict
 import logging
-#from flask_login import LoginManager
-#from flask_login import reset_password
-#from flask_login import validate_reset_token
-#import uuid
+import uuid
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -61,9 +58,15 @@ mail = Mail(app)
 bcrypt = Bcrypt(app)
 mail.init_app(app)
 
-# 设置Flask-Login
-#login_manager = LoginManager()
-#login_manager.init_app(app)
+
+class Email(db.Model):
+    __tablename__ = "email"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(80), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
+    token = db.Column(db.String(50), nullable=False)
+    expires = db.Column(db.DateTime, nullable=True)
+
 
 class Host(db.Model):
     __tablename__ = "host"
@@ -883,6 +886,28 @@ def view_users():
 def protected():
     return jsonify({'message': 'This is a protected endpoint!'})
 
+def cust_generate_reset_token():
+    token = str(uuid.uuid4())
+    return token
+
+
+def cust_send_reset_email(cust, token):
+    msg = Message('Reset your password', recipients=[cust.email])
+    msg.body = f"Your account is trying to reset the password, the verification code is：\n{token}"
+    mail.send(msg)
+
+
+def verify_reset_token(email, role, token):
+    # 从email中查询 当前尚未过期的token信息 验证token
+    # 当前时间要小于expire_time
+    res = Email.query.filter(
+        Email.email == email,
+        Email.role == role,
+        Email.token == token,
+        Email.expires > datetime.now()
+    ).first()
+    return res
+
 
 # 密码重置流程：
 # 1. 用户请求密码重置
@@ -892,8 +917,94 @@ def protected():
 # 5. 用户提交新密码
 # 6. 应用程序验证令牌并更新用户的密码
 
-# 用户重置密码:
-#
+# 重置密码:
+@app.route('/user/auth/send_email', methods=['GET', 'POST'])
+def send_email():
+    role = request.json.get('role')
+    email = request.json.get('email')
+    if role == 'Host':
+        user = Host.query.filter_by(email=email).first()
+    elif role == 'Customer':
+        user = Customer.query.filter_by(email=email).first()
+    else:
+        return jsonify({'message': 'Invalid role.'}), 400
+
+    if user:
+        token = cust_generate_reset_token()
+        cust_send_reset_email(user, token)
+
+        # 保存token到db中 设置有效期1分钟
+        expire_time = datetime.now() + timedelta(minutes=1)
+        new_email = Email(email=email, role=role, token=token, expires=expire_time)
+        db.session.add(new_email)
+        db.session.commit()
+
+        response = {'message': 'Reset email sent, please check your email.'}
+        return jsonify(response), 200
+    else:
+        response = {'message': 'Invalid email.'}
+        return jsonify(response), 404
+
+
+@app.route('/user/auth/check_token', methods=['GET', 'POST'])
+def check_token():
+    email = request.json.get('email')
+    role = request.json.get('role')
+    token = request.json.get('token')
+
+    app.logger.info("Validating token: %s", token)
+
+    email_code = verify_reset_token(email, role, token)
+
+    if not email_code:
+        return jsonify({'message': 'Invalid email or expiration token.'}), 404
+
+    app.logger.info("Token info: %s", email_code.token)
+
+    if email_code.token != token:
+        response = {'message': 'Invalid or expired token'}
+        return jsonify(response), 404
+
+    response = {'message': 'Verification successfully'}
+    return jsonify(response), 200
+
+
+@app.route('/user/auth/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    email = request.json.get('email')
+    role = request.json.get('role')
+    token = request.json.get('token')
+
+    app.logger.info("Validating token: %s", token)
+
+    email_code = verify_reset_token(email, role, token)
+
+    if not email_code:
+        return jsonify({'message': 'Invalid email or expiration token.'}), 404
+
+    if email_code.token != token:
+        response = {'message': 'Invalid or expired token'}
+        return jsonify(response), 404
+
+    password = request.json.get('password')
+    confirm_password = request.json.get('confirm_password')
+
+    if password != confirm_password:
+        response = {'message': 'Password and confirm password are not matched'}
+        return jsonify(response), 404
+
+    if role == 'Customer':
+        user = Customer.query.filter_by(email=email).first()
+    elif role == 'Host':
+        user = Host.query.filter_by(email=email).first()
+    else:
+        return jsonify({'message': 'Invalid role.'}), 404
+
+    # 更新用户密码
+    user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+    db.session.commit()
+    response = {'message': 'User password set successfully'}
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
