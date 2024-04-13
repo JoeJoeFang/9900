@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Stack } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React, {useState, useEffect} from 'react';
+import {useTheme,IconButton,Box, TextField, Button, Typography, Stack, Select, MenuItem, InputLabel} from '@mui/material';
+import {useNavigate} from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import axios from "axios";
 
 export const ForgotPassword = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState('');
     const [code, setCode] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [timer, setTimer] = useState(null);
     const [isCodeSent, setIsCodeSent] = useState(false);
     const [isCodeVerified, setIsCodeVerified] = useState(false);
-
+    const theme = useTheme();
+    const handleBack = () => {
+        navigate(-1); // Go back to the previous page
+    };
     useEffect(() => {
         let interval;
         if (timer > 0) {
@@ -25,34 +31,83 @@ export const ForgotPassword = () => {
         return () => clearInterval(interval);
     }, [timer]);
 
-    const handleSendCode = () => {
+    const handleSendCode = async () => {
         console.log('Send verification code to:', email);
-        setIsCodeSent(true);
-        setTimer(60);
+        try {
+            const response = await axios.post('http://localhost:5005/user/auth/send_email', {
+                email: email,
+                role: role
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(response)
+            if (response.status === 200) {
+                setIsCodeSent(true);
+                setTimer(60);
+            }
+        } catch (errorResponse) {
+            alert(errorResponse.response.data.message);
+        }
     };
 
-    const handleVerifyCode = () => {
-        if (code === '123456') {
-            console.log('Code verified:', code);
-            setIsCodeVerified(true);
-        } else {
-            alert('Verification failed. Please try again.');
+    const handleVerifyCode = async () => {
+        console.log('Verification code:', email);
+        try {
+            const response = await axios.post('http://localhost:5005/user/auth/check_token', {
+                email: email,
+                role: role,
+                token: code
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(response)
+            if (response.status === 200) {
+                console.log('Code verified:', code);
+                setIsCodeVerified(true);
+            } else {
+                alert('Verification failed. Please try again.');
+            }
+        } catch (errorResponse) {
+            alert(errorResponse.response.data.message);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (newPassword !== confirmPassword) {
             alert('The passwords do not match. Please try again.');
             return;
         }
 
         console.log('Reset password for:', email);
-        alert('Your password has been reset successfully!');
-        navigate('/login');
+        try {
+            const response = await axios.post('http://localhost:5005/user/auth/reset_password', {
+                email: email,
+                role: role,
+                token: code,
+                password: newPassword,
+                confirm_password: confirmPassword
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(response)
+            if (response.status === 200) {
+                alert('Your password has been reset successfully!');
+                navigate('/combined-login');
+            } else {
+                alert('Update password failed. Please try again.');
+            }
+        } catch (errorResponse) {
+            alert(errorResponse.response.data.message);
+        }
     };
-
     return (
         <Box sx={{
             display: 'flex',
@@ -65,6 +120,24 @@ export const ForgotPassword = () => {
             backgroundPosition: 'center',
             p: 4,
         }}>
+            <IconButton
+                onClick={handleBack}
+                size="large"
+                sx={{
+                    position: 'absolute',
+                    left: theme.spacing(2),
+                    top: theme.spacing(2),
+                    backgroundColor: 'white',
+                    color: 'primary.main',
+                    '&:hover': {
+                        backgroundColor: 'primary.light',
+                        color: 'white',
+                    },
+                    boxShadow: 3,
+                }}
+            >
+                <ArrowBackIcon sx={{ fontSize: 28 }} />
+            </IconButton>
             <Box
                 component="form"
                 onSubmit={handleSubmit}
@@ -92,6 +165,21 @@ export const ForgotPassword = () => {
                 </Typography>
                 {!isCodeVerified && (
                     <>
+                        <InputLabel>Role</InputLabel>
+                        <Select
+                            required
+                            fullWidth
+                            sx={{mb: 2}}
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                        >
+                            <MenuItem value="" disabled>
+                                Select Role
+                            </MenuItem>
+                            <MenuItem value={'Host'}>Host</MenuItem>
+                            <MenuItem value={'Customer'}>Customer</MenuItem>
+                        </Select>
+
                         <TextField
                             label="Email Address"
                             type="email"
@@ -99,17 +187,17 @@ export const ForgotPassword = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             fullWidth
-                            sx={{ mb: 2 }}
+                            sx={{mb: 2}}
                         />
                         {isCodeSent ? (
-                            <Stack direction="row" spacing={2} alignItems="center" mb={2} sx={{ width: '100%' }}>
+                            <Stack direction="row" spacing={2} alignItems="center" mb={2} sx={{width: '100%'}}>
                                 <TextField
                                     label="Verification Code"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
                                     required
                                     fullWidth
-                                    sx={{ flex: 1 }}
+                                    sx={{flex: 1}}
                                 />
                                 <Button
                                     onClick={handleVerifyCode}
@@ -119,7 +207,7 @@ export const ForgotPassword = () => {
                                     Verify
                                 </Button>
                                 {timer && (
-                                    <Typography variant="body2" sx={{ ml: 2 }}>
+                                    <Typography variant="body2" sx={{ml: 2}}>
                                         {timer}s
                                     </Typography>
                                 )}
@@ -130,7 +218,7 @@ export const ForgotPassword = () => {
                                 variant="contained"
                                 color="primary"
                                 fullWidth
-                                sx={{ mb: 2 }}
+                                sx={{mb: 2}}
                                 disabled={isCodeSent}
                             >
                                 Send Code
@@ -147,7 +235,7 @@ export const ForgotPassword = () => {
                             onChange={(e) => setNewPassword(e.target.value)}
                             required
                             fullWidth
-                            sx={{ mb: 2 }}
+                            sx={{mb: 2}}
                         />
                         <TextField
                             label="Confirm New Password"
@@ -156,13 +244,14 @@ export const ForgotPassword = () => {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             fullWidth
-                            sx={{ mb: 2 }}
+                            sx={{mb: 2}}
                         />
                         <Button
                             type="submit"
                             variant="contained"
                             color="primary"
                             fullWidth
+                            onClick={handleSubmit}
                         >
                             Reset Password
                         </Button>
