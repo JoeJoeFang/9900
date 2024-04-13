@@ -7,6 +7,9 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Create a theme instance.
 const theme = createTheme({
+    shape: {
+        borderRadius: 10,
+    },
     palette: {
         primary: {
             main: '#e66465',
