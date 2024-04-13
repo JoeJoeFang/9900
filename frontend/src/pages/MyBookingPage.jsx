@@ -9,16 +9,18 @@ import {
     Box,
     ThemeProvider,
     useTheme,
-    Alert, Snackbar
+    Alert, Snackbar, Link, Grid, Divider
 } from '@mui/material';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
+import Slider from 'react-slick';
 
 
 
 const BookingList = () => {
+    const [hoveredId, setHoveredId] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const theme = useTheme();
@@ -32,6 +34,18 @@ const BookingList = () => {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
+
+    const settings = {
+        className: "center",
+        centerMode: true,
+        infinite: true,
+        centerPadding: "60px", // 可增加此值来增加间隙
+        slidesToShow: 2,
+        slidesToScroll: 1, // 每次滑动一个卡片
+        speed: 500,
+        dots: true // 启用底部小圆点指示器
+    };
+
 
     const handleOpenConfirmDialog = (eventId, eventDate) => {
         console.log("handleOpenConfirmDialog clicked");
@@ -184,7 +198,17 @@ const BookingList = () => {
                         </Typography>
                     </Box>
                 ) : events.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '120px', width: '90%' }}>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        marginTop: '120px',
+                        width: '90%',
+                        height: '70vh', // 设置固定高度
+                        overflowY: 'auto', // 允许垂直滚动
+                        padding: theme.spacing(1),
+                    }}>
+
                         <Box sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -202,7 +226,11 @@ const BookingList = () => {
                                 Your Booked Events
                             </Typography>
                         </Box>
+                        <Divider sx={{ width: '100%', mb: 2 }}>
+                            <Typography color="textSecondary">start</Typography>
+                        </Divider>
                         {events.map((event, index) => (
+
                             <Card
                                 key={index}
                                 sx={{
@@ -254,59 +282,106 @@ const BookingList = () => {
                                 </CardContent>
                             </Card>
                         ))}
+                        <Divider sx={{ width: '100%', mb: 2 }}>
+                            <Typography color="textSecondary">end</Typography>
+                        </Divider>
                     </div>
                 ) : (
                     <Typography variant="subtitle1">No events found.</Typography>
                 )}
+
+                <Divider variant="middle" sx={{ my: 4 }} />
+
+
                 {recommendedEvents.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
-                        <Typography variant="h4" gutterBottom>Your Recommended Events</Typography>
-                        {recommendedEvents.map((event, index) => (
-                            <Card
-                                key={index}
-                                sx={{
-                                    display: 'flex',
-                                    mb: 2,
-                                    width: '100%',
-                                    background: 'rgba(255, 255, 255, 0.8)',
-                                    transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
-                                    ':hover': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 改变背景颜色
-                                        transform: 'scale(1.03)', // 轻微放大
-                                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
-                                    },
-                                }}
-                                onClick={() => navigate(`/all-event/${event.id}`)}
-                            >
-                                {event.thumbnail && (
-                                    <CardMedia
-                                        component="img"
-                                        sx={{ width: 240, objectFit: 'cover' }}
-                                        image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
-                                        alt={event.title}
-                                    />
-                                )}
-                                <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {event.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Event ID: {event.id}<br />
-                                        Organizer: {event.organizerName}<br />
-                                        Type: {event.eventType}<br />
-                                        Seats: {event.seatingCapacity}<br />
-                                        {/*Duration: {event.duration} hours<br />*/}
-                                        From: {new Date(event.startDate).toLocaleDateString()}<br />
-                                        To: {new Date(event.endDate).toLocaleDateString()}<br />
-                                        Address: {event.address}<br />
-                                        Price: ${parseFloat(event.price).toFixed(2)}<br />
-                                        Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
-                                        {event.youtubeUrl && <a href={event.youtubeUrl}>Event Video</a>}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <Box sx={{ position: 'relative', width: '80%', margin: 'auto' }}>
+                        <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
+                            Your Recommended Events
+                        </Typography>
+                        <Slider {...settings}>
+                            {recommendedEvents.map((eventsInfo, index) => (
+                                <Grid
+                                    item
+                                    key={eventsInfo.id}
+                                    xs={12} sm={10} md={8} lg={6}
+                                    sx={{ position: 'relative', px: 2, py: 2 }}
+                                    onMouseEnter={() => setHoveredId(eventsInfo.id)}
+                                    onMouseLeave={() => setHoveredId(null)}
+                                >
+                                    <Card raised sx={{
+                                        maxWidth: 600,
+                                        mx: "auto",
+                                        my: theme.spacing(2),
+                                        boxShadow: theme.shadows[3],
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        transition: "opacity 0.3s",
+                                        opacity: hoveredId === eventsInfo.id ? 0.3 : 1,
+                                    }}>
+                                        <CardMedia
+                                            component="img"
+                                            height="250"
+                                            image={eventsInfo.thumbnail.trim() ? eventsInfo.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                            alt="event"
+                                        />
+                                        <CardContent>
+                                            <Typography gutterBottom variant="h5" component="div">
+                                                {eventsInfo.title}
+                                            </Typography>
+                                            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                                {eventsInfo.description}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Organizer:</strong> {eventsInfo.organizerName}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Address:</strong> {eventsInfo.address}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Price:</strong> ${eventsInfo.price}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Event Type:</strong> {eventsInfo.eventType}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Seating Capacity:</strong> {eventsInfo.seatingCapacity}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Start Date:</strong> {new Date(eventsInfo.startDate).toLocaleDateString()}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>End Date:</strong> {new Date(eventsInfo.endDate).toLocaleDateString()}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.primary">
+                                                <strong>Duration:</strong> {eventsInfo.duration} Days
+                                            </Typography>
+                                            {eventsInfo.youtubeUrl && (
+                                                <Typography variant="body2" color="text.primary" sx={{ mt: 2 }}>
+                                                    <Link href={eventsInfo.youtubeUrl} target="_blank" rel="noopener">
+                                                        Watch Event Trailer
+                                                    </Link>
+                                                </Typography>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                    {hoveredId === eventsInfo.id && (
+                                        <Button
+                                            variant="contained"
+                                            sx={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                left: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                zIndex: 2
+                                            }}
+                                            onClick={() => navigate(`/all-event/${eventsInfo.id}`)}
+                                        >
+                                            View More
+                                        </Button>
+                                    )}
+                                </Grid>
+                            ))}
+                        </Slider>
+                    </Box>
                 )}
                 <Dialog
                     open={openConfirmDialog}
