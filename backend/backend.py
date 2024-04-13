@@ -298,53 +298,70 @@ def search_events():
     keyword = request.args.get('keyWord', '')
     event_type = request.args.get('eventType', '')
 
-    print(keyword, event_type, event_description)
+    print('k: ',keyword, 't: ', event_type, 'd: ', event_description)
     query = Events.query
 
     events = Events.query.all()
     event_list = []
 
     for event in events:
+        flag_print = 0
         # Check if the keyword is in any of the relevant fields
-        print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
-        print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
-        if event_type != '':
-            if keyword.lower() in event.title.lower() or event.type.lower() in event_type.lower():
-                print(event_type.lower() in event.type.lower())
-                event_data = {
-                    'id': event.id,
-                    'title': event.title,
-                    'address': event.address,
-                    'price': event.price,
-                    'thumbnail': event.thumbnail,
-                    'organizerName': event.organizername,
-                    'eventType': event.type,
-                    'seatingCapacity': event.seats,
-                    'duration': event.duration,
-                    'startDate': event.from_time,
-                    'endDate': event.to_time,
-                    'description': event.description,
-                    'youtubeUrl': event.URL
-                }
-                event_list.append(event_data)
-        if event_description != '':
-            if event_description in event.description:
-                event_data = {
-                    'id': event.id,
-                    'title': event.title,
-                    'address': event.address,
-                    'price': event.price,
-                    'thumbnail': event.thumbnail,
-                    'organizerName': event.organizername,
-                    'eventType': event.type,
-                    'seatingCapacity': event.seats,
-                    'duration': event.duration,
-                    'startDate': event.from_time,
-                    'endDate': event.to_time,
-                    'description': event.description,
-                    'youtubeUrl': event.URL
-                }
-                event_list.append(event_data)
+        #print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
+        #print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
+        if event_type == 'all types':
+            if keyword.lower() == '':
+                if event_description.lower() in event.description.lower():
+                    flag_print = 1
+            elif event_description.lower() == '':
+                if keyword.lower() in event.title.lower():
+                    flag_print = 1
+            elif keyword.lower() == '' and event_description.lower() == '':
+                flag_print = 1
+            else:
+                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower():
+                    flag_print = 1
+        else:
+            if event_description.lower() == '' and event_type.lower() == '' and keyword.lower() == '':
+                return jsonify([]), 200
+            elif keyword.lower() == '':
+                if event_description.lower() in event.description.lower() and event_type.lower() in event.type.lower():
+                    flag_print = 1
+            elif event_description.lower() == '':
+                if keyword.lower() in event.title.lower() and event_type.lower() in event.type.lower():
+                    flag_print = 1
+            elif event_type.lower() == '':
+                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower():
+                    flag_print = 1
+            elif keyword.lower() == '' and event_description.lower() == '':
+                if event_type.lower() in event.type.lower():
+                    flag_print = 1
+            elif keyword.lower() == '' and event_type.lower() == '':
+                if event_description.lower() in event.description.lower():
+                    flag_print = 1
+            elif event_description.lower() == '' and event_type.lower() == '':
+                if keyword.lower() in event.title.lower():
+                    flag_print = 1
+            else:
+                if keyword.lower() in event.title.lower() and event_description.lower() in event.description.lower() and event_type.lower() in event.type.lower():
+                    flag_print = 1
+        if flag_print == 1:
+            event_data = {
+                'id': event.id,
+                'title': event.title,
+                'address': event.address,
+                'price': event.price,
+                'thumbnail': event.thumbnail,
+                'organizerName': event.organizername,
+                'eventType': event.type,
+                'seatingCapacity': event.seats,
+                'duration': event.duration,
+                'startDate': event.from_time,
+                'endDate': event.to_time,
+                'description': event.description,
+                'youtubeUrl': event.URL
+            }
+            event_list.append(event_data)
     return jsonify(event_list), 200
 
 
