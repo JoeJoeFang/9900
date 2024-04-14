@@ -690,7 +690,7 @@ def login():
             return jsonify({'message': 'Invalid email or password'}), 402
 
         token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
-                           current_app.config['SECRET_KEY']['SECRET_KEY'])
+                           current_app.config['SECRET_KEY'])
         return jsonify({'token': token, 'id': customer.id})
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
