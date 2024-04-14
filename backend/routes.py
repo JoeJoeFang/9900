@@ -349,7 +349,7 @@ def get_recommendation(userId):
             Events.type == favorite_event_type,
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
-        ).order_by(Events.from_time).limit(3).all()
+        ).order_by(Events.from_time).limit(6).all()
 
         if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
             current_app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
