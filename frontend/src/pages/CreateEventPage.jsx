@@ -49,19 +49,24 @@ const CreateNewEvent = () => {
     const validateField = (name, value) => {
         const trimmedValue = typeof value === 'string' ? value.trim() : '';
 
+        // General check for any non-empty value
+        if (!trimmedValue && name !== 'seatingCapacity' && name !== 'youtubeUrl') { // Seating capacity will be handled separately since it's a number.
+            return 'This field cannot be empty.';
+        }
+
         switch (name) {
             case 'title':
-                if (!trimmedValue || trimmedValue.length < 3 || trimmedValue.length > 100) {
+                if (trimmedValue.length < 3 || trimmedValue.length > 100) {
                     return 'Title must be between 3 and 100 characters.';
                 }
                 break;
             case 'address':
-                if (!trimmedValue || trimmedValue.length < 10 || trimmedValue.length > 200) {
+                if (trimmedValue.length < 10 || trimmedValue.length > 200) {
                     return 'Address must be between 10 and 200 characters.';
                 }
                 break;
             case 'price':
-                if (!trimmedValue || isNaN(trimmedValue) || trimmedValue <= 0 || trimmedValue > 1000000) {
+                if (isNaN(trimmedValue) || Number(trimmedValue) <= 0 || Number(trimmedValue) > 1000000) {
                     return 'Price must be a positive number less than 1,000,000.';
                 }
                 break;
@@ -70,8 +75,17 @@ const CreateNewEvent = () => {
                     return 'Seating capacity must be a positive number and no more than 10,000.';
                 }
                 break;
+            case 'thumbnail':
+                if (!trimmedValue) {
+                    return 'A thumbnail image must be uploaded.';
+                }
+                // Optionally, check if the thumbnail data starts with the correct Base64 prefix
+                if (!trimmedValue.startsWith('data:image/')) {
+                    return 'Invalid file format. Please upload an image.';
+                }
+                break;
             case 'youtubeUrl':
-                if (value && !/^https:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/.test(value)) {
+                if (trimmedValue && !/^https:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]{11}$/.test(trimmedValue)) {
                     return 'Invalid YouTube URL. URL should be in the format https://www.youtube.com/watch?v=VIDEO_ID';
                 }
                 break;
@@ -92,7 +106,7 @@ const CreateNewEvent = () => {
                 if (name === 'endDate') {
                     const startDate = new Date(eventData.startDate.replace(new RegExp('/', 'g'), '-'));
                     if (date < startDate) {
-                        return 'End date must be after the start date or to be the same.';
+                        return 'End date must be after the start date or the same.';
                     }
                 }
                 break;
@@ -102,12 +116,6 @@ const CreateNewEvent = () => {
     };
 
 
-    // const updateField = (e) => {
-    //     const { name, value } = e.target;
-    //     const errorMessage = validateField(name, value);
-    //     setEventData({ ...eventData, [name]: value });
-    //     setFormErrors({ ...formErrors, [name]: errorMessage });
-    // };
     const updateField = (e, newValue) => {
         let name, value;
 
@@ -169,9 +177,14 @@ const CreateNewEvent = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setEventData({ ...eventData, thumbnail: reader.result });
+                const base64String = reader.result;
+                setEventData({ ...eventData, thumbnail: base64String });
+                const error = validateField('thumbnail', base64String);
+                setFormErrors({ ...formErrors, thumbnail: error });
             };
             reader.readAsDataURL(file);
+        } else {
+            setFormErrors({ ...formErrors, thumbnail: 'A thumbnail image must be uploaded.' });
         }
     };
 
@@ -186,6 +199,11 @@ const CreateNewEvent = () => {
         }, {});
 
         setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            console.log('Form errors detected, submission blocked.');
+            return;
+        }
 
         const token = localStorage.getItem('token');
         const hostId = localStorage.getItem('userId');
@@ -429,7 +447,13 @@ const CreateNewEvent = () => {
                                             <img src={eventData.thumbnail} alt="Thumbnail" style={{ maxWidth: '100%', maxHeight: '200px' }} />
                                         </Box>
                                     )}
+                                    {formErrors.thumbnail && (
+                                        <Typography color="error" variant="body2">
+                                            {formErrors.thumbnail}
+                                        </Typography>
+                                    )}
                                 </Grid>
+
                                 <Grid item xs={12}>
                                     <TextField
                                         name="youtubeUrl"

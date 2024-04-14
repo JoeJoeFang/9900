@@ -112,7 +112,7 @@ const RegisterCustomer = () => {
                 setSnackbarMessage("Registration successful!");
                 setSnackbarType('success');
                 setOpenSnackbar(true);
-                setTimeout(() => navigate('/combined-login'), 500);
+                setTimeout(() => navigate('/combined-login?role=customer'), 500);
             }
         } catch (errorResponse) {
             const errorMessage = errorResponse.response?.data?.message || 'An unexpected error occurred during registration.';
@@ -299,7 +299,7 @@ const RegisterCustomer = () => {
                 <Button
                     fullWidth
                     variant="text"
-                    onClick={() => navigate('/combined-login')}
+                    onClick={() => navigate('/combined-login?role=customer')}
                 >
                     Already have an account? Login
                 </Button>

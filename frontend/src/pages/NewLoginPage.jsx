@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Button, TextField, Typography, Container, Paper, Tab, Tabs, IconButton, useTheme, Snackbar, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -43,6 +43,14 @@ export const CombinedLogin = () => {
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const location = useLocation();
+
+    // 读取查询参数并调整选项卡
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const role = searchParams.get('role');
+        setActiveTab(role === 'host' ? 1 : 0);
+    }, [location.search]);
 
     const handleBack = () => {
         navigate(-1);

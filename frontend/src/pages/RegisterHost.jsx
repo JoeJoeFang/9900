@@ -5,6 +5,7 @@ import axios from 'axios';
 import { TextField, Button, Typography, Box, useTheme, Snackbar, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
+import HeaderLogo from "../components/HeaderLogo";
 
 
 const RegisterHost = () => {
@@ -70,7 +71,7 @@ const RegisterHost = () => {
                 setOpenDialog(true); 
 
                 setTimeout(() => {
-                    navigate('/combined-login'); // Redirect to the all events page
+                    navigate('/combined-login?role=host'); // Redirect to the all events page
                 }, 500); // Adjust delay as necessary
     
                 console.log('Register successfully');
@@ -108,23 +109,12 @@ const RegisterHost = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
-            {/* Content similar to the login page, adjusted for registration */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mb: theme.spacing(4) }}>
-                <Box component="img" src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} sx={{ width: 150, height: 'auto', mb: 2 }} />
-                <Typography variant="h3" color="white" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                    Join Our Amazing Ticket Platform
-                </Typography>
-            </Box>
+            <HeaderLogo theme={theme} />
 
-            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '90%', maxWidth: 1200 }}>
-                <Box sx={{ color: 'white', width: '40%', p: 3, borderRadius: theme.shape.borderRadius }}>
-                    <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'white', fontWeight: 'medium' }}>
-                        Sign up to discover the best events near you
-                    </Typography>
-                </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '90%', maxWidth: 1200 }}>
 
                 <Box sx={{
-                    width: '40%',
+                    width: '50%',
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     borderRadius: theme.shape.borderRadius,
                     p: theme.spacing(4),
@@ -246,7 +236,7 @@ const RegisterHost = () => {
                             fullWidth
                             variant="text"
                             sx={{ mt: 2 }}
-                            onClick={() => navigate('/combined-login')}
+                            onClick={() => navigate('/combined-login?role=host')}
                         >
                             Already have an account? Login
                         </Button>

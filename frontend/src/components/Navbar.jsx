@@ -1,81 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import AllEvents from '../components/AllEvents';
-import MyBookings from '../components/MyBookings';
-import CreateNewEvent from '../components/CreateNewEvent';
-import HostProfile from '../components/HostProfile';
-import Logout from '../components/Logout';
-import MyAccount from '../components/MyAccount'; // Assuming the Navbar is in the same directory level as HostedEvents
-import HostedEvents from '../components/HostedEvents';
-import Login from '../components/Login';
-import BackButton from './BackButton';
-
-
-
+import Toolbar from '@mui/material/Toolbar';
+import React, {useState, useContext, useEffect} from 'react';
+import { useNavigate } from 'react-router-dom';
+import {BottomNavigation, BottomNavigationAction, AppBar, IconButton} from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EventIcon from '@mui/icons-material/Event';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import LogoutIcon from '@mui/icons-material/ExitToApp';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 const Navbar = () => {
-  // 使用 useState 钩子来创建 identity 状态
+  const [value, setValue] = useState(0);
+  const navigate = useNavigate();
   const [identity, setIdentity] = useState(localStorage.getItem('identity'));
-  // 使用 useEffect 钩子来监听 localStorage 的变化
+  const logout = () => {
+    console.log('Logout clicked');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('identity');
+    navigate('/', { replace: true });
+    window.location.reload();
+  };
+
+
+  const handleLogoClick = () => {
+    navigate('/all-event');
+  };
   useEffect(() => {
-    const handleStorageChange = (event) => {
-      // 如果发生变化的是 identity 键，更新组件状态
-      if (event.key === 'identity') {
-        setIdentity(localStorage.getItem('identity'));
-      }
+    const handleStorageChange = () => {
+      setIdentity(localStorage.getItem('identity'));
     };
 
-    // 添加事件监听器
     window.addEventListener('storage', handleStorageChange);
 
-    // 清理函数，组件卸载时移除事件监听器
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  // 根据用户角色动态决定展示哪些按钮的逻辑
-  const renderButtonsBasedOnRole = () => {
-    const buttonsForCustomer = [
-      <BackButton key="Back"/>,
-      <AllEvents key="allEvents" />,
-      <MyBookings key="myBookings" />,
-      <MyAccount key="myAccount" />,
-      <Logout key="logout" />
-    ];
-
-    const buttonsForHost = [
-      <BackButton key="Back"/>,
-      <AllEvents key="allEvents" />,
-      // 假设 HostedEvents 是你的一个组件，代表主办的活动 
-      <HostedEvents key="HostedEvents" />,
-      <CreateNewEvent key="createNewEvent" />,
-      <HostProfile key="hostProfile" />,
-      <Logout key="logout" />
-    ];
-    console.log(identity)
-    const loginButtonStyle = {
-      marginLeft: '99px',
-    };
-    const buttonsForVisitor = [
-      <BackButton key="Back"/>,
-      <Login key="login" style={loginButtonStyle}/> 
-    ];
-
-    // Determine what buttons to render based on the identity
-    switch (identity) {
-      case 'customer':
-        return buttonsForCustomer;
-      case 'host':
-        return buttonsForHost;
-      default:
-        return buttonsForVisitor; // Assume any other identity is a visitor
-    }
+  const navigationItems = {
+    'customer': [
+      { label: 'Back', icon: <ArrowBackIcon />, path: () => navigate(-1) },
+      { label: 'All Events', icon: <HomeIcon />, path: () => navigate('/all-event') },
+      { label: 'My Account', icon: <AccountCircleIcon />, path: () => navigate('/my-account') },
+      { label: 'Logout', icon: <LogoutIcon />, action: logout },
+      { label: 'My Bookings', icon: <FavoriteIcon />, path: () => navigate('/my-booking') },
+    ],
+    'host': [
+      { label: 'Back', icon: <ArrowBackIcon />, path: () => navigate(-1) },
+      { label: 'All Events', icon: <HomeIcon />, path: () => navigate('/all-event') },
+      { label: 'Hosted Events', icon: <EventIcon />, path: () => navigate('/my-hosted-event') },
+      { label: 'Create Event', icon: <AddCircleOutlineIcon />, path: () => navigate('/create-new-event') },
+      { label: 'Logout', icon: <LogoutIcon />, action: logout },
+    ],
+    'visitor': [
+      { label: 'Back', icon: <ArrowBackIcon />, path: () => navigate(-1) },
+      { label: 'Login To Explore More', icon: <AccountCircleIcon />, path: () => navigate('/combined-login') },
+    ]
   };
 
+  const items = navigationItems[identity] || navigationItems['visitor'];
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-around', padding: '20px 0' }}>
-      {renderButtonsBasedOnRole()}
-    </div>
+      <AppBar position="fixed" sx={{ backgroundColor: '#ffffff', color: '#333' }}>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="logo" onClick={handleLogoClick}>
+            <img src={`${process.env.PUBLIC_URL}/LogoImage.jpg`} alt="Logo" style={{ width: 40, height: 'auto' }} />
+          </IconButton>
+          <BottomNavigation
+              showLabels
+              value={value}
+              onChange={(event, newValue) => {
+                setValue(newValue);
+                const item = items[newValue];
+                if (item.path) {
+                  item.path();
+                } else if (item.action) {
+                  item.action();
+                }
+              }}
+              sx={{ width: '100%' }}
+          >
+            {items.map((item, index) => (
+                <BottomNavigationAction key={index} label={item.label} icon={item.icon} />
+            ))}
+          </BottomNavigation>
+        </Toolbar>
+      </AppBar>
   );
 };
+
 
 export default Navbar;
