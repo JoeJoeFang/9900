@@ -1,10 +1,9 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ThemeProvider, IconButton, useTheme, Tooltip } from '@mui/material';
 
 const BackButton = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const theme = useTheme();
 
     const handleBack = () => {

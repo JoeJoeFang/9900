@@ -1,9 +1,6 @@
 //wenyima
 import React from 'react';
-// import { Container, Button, Typography, Box, Stack } from '@mui/material';
-import { Button, Typography, Box, Stack, useTheme } from '@mui/material';
-import { useNavigate, Route, Routes } from 'react-router-dom';
-import HeaderLogo from './components/HeaderLogo';
+import { Route, Routes } from 'react-router-dom';
 import RegisterHost from './pages/RegisterHost.jsx';
 import RegisterCustomer from './pages/RegisterCustomer.jsx';
 import CreateNewEvent from "./pages/CreateEventPage.jsx";
