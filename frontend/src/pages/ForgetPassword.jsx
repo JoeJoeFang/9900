@@ -189,7 +189,8 @@ export const ForgotPassword = () => {
                             fullWidth
                             sx={{mb: 2}}
                         />
-                        {isCodeSent ? (
+
+                        {/* {isCodeSent ? (
                             <Stack direction="row" spacing={2} alignItems="center" mb={2} sx={{width: '100%'}}>
                                 <TextField
                                     label="Verification Code"
@@ -225,7 +226,50 @@ export const ForgotPassword = () => {
                             </Button>
                         )}
                     </>
-                )}
+                )} */}
+                        <Button
+                                    onClick={handleSendCode}
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    sx={{ mb: 2 }}
+                                    disabled={isCodeSent && timer !== null} // Disable button when the timer is active
+                                >
+                                    {isCodeSent && timer !== null ? `Resend Code (${timer}s)` : 'Send Code'} 
+                                </Button>
+
+                                {/* Verification code input and button are always visible */}
+                                <Stack direction="row" spacing={2} alignItems="center" mb={2} sx={{ width: '100%' }}>
+                                    <TextField
+                                        label="Verification Code"
+                                        value={code}
+                                        onChange={(e) => setCode(e.target.value)}
+                                        required
+                                        fullWidth
+                                        sx={{ flex: 1 }}
+                                        disabled={isCodeVerified}
+                                    />
+                                    <Button
+                                        onClick={handleVerifyCode}
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={isCodeVerified}
+                                    >
+                                        Verify
+                                    </Button>
+                                </Stack>
+                                {isCodeSent && timer !== null && (
+                                    <Typography variant="body2" sx={{ ml: 2 }}>
+                                        Please enter the code sent to your email. {timer}s left to verify.
+                                    </Typography>
+                                )}
+                                {isCodeSent && timer === null && (
+                                    <Typography variant="body2" sx={{ ml: 2, color: 'error.main' }}>
+                                        The verification code has expired. Please send a new code.
+                                    </Typography>
+                                )}
+                            </>
+                        )}
                 {isCodeVerified && (
                     <>
                         <TextField

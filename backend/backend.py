@@ -1,3 +1,6 @@
+import string
+import random
+
 from flask import Flask, request, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -925,7 +928,7 @@ def protected():
 
 
 def cust_generate_reset_token():
-    token = str(uuid.uuid4())
+    token = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
     return token
 
 

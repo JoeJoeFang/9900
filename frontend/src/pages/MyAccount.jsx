@@ -122,7 +122,7 @@ const MyAccount = () => {
                                     UserID: {custDetail.id || 'ID Unavailable'}<br />
                                     Email: {custDetail.email || 'Email Unavailable'}<br />
                                     Due Date: {custDetail.duedate || 'Due Date Unavailable'}<br />
-                                    Wallet Balance: ${custDetail.wallet ? custDetail.wallet.toFixed(2) : 'Balance Unavailable'}
+                                    Wallet Balance: ${custDetail.wallet ? custDetail.wallet.toFixed(2) : '0'}
                                 </Typography>
                                 <Box sx={{ mt: 2, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                     <TextField
