@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import {
     Card,
@@ -17,16 +17,31 @@ import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
 import Slider from 'react-slick';
 import {SentimentVeryDissatisfied} from "@mui/icons-material";
+import {
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Avatar,
+    Paper
+} from '@mui/material';
 
 
 
 const BookingList = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const listRef = useRef(null);
+
+    const handleScroll = () => {
+        const scrollTop = listRef.current?.scrollTop;
+        const itemHeight = 300;
+        setCurrentIndex(Math.floor(scrollTop / itemHeight));
+    };
     const [hoveredId, setHoveredId] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const theme = useTheme();
     console.log('fetch.....');
-    // const userId = localStorage.getItem('userId');
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -35,17 +50,6 @@ const BookingList = () => {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
-
-    // const settings = {
-    //     className: "center",
-    //     centerMode: true,
-    //     infinite: true,
-    //     centerPadding: "60px", // 可增加此值来增加间隙
-    //     slidesToShow: 2,
-    //     slidesToScroll: 1, // 每次滑动一个卡片
-    //     speed: 500,
-    //     dots: true // 启用底部小圆点指示器
-    // };
 
 
     const handleOpenConfirmDialog = (eventId, eventDate) => {
@@ -212,9 +216,8 @@ const BookingList = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        marginTop: '120px',
+                        marginTop: '100px',
                         width: '90%',
-                        height: '70vh', // 设置固定高度
                         overflowY: 'auto', // 允许垂直滚动
                         padding: theme.spacing(1),
                     }}>
@@ -236,65 +239,100 @@ const BookingList = () => {
                                 Your Booked Events
                             </Typography>
                         </Box>
-                        <Divider sx={{ width: '100%', mb: 2 }}>
-                            <Typography color="textSecondary">start</Typography>
-                        </Divider>
-                        {events.map((event, index) => (
+                        {/*<Divider sx={{ width: '100%', mb: 2 }}>*/}
+                        {/*    <Typography color="textSecondary">start</Typography>*/}
+                        {/*</Divider>*/}
 
-                            <Card
-                                key={index}
-                                sx={{
-                                    display: 'flex',
-                                    mb: 2,
-                                    width: '90%',
-                                    background: 'rgba(255, 255, 255, 0.8)',
-                                    transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
-                                    ':hover': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 改变背景颜色
-                                        transform: 'scale(1.03)', // 轻微放大
-                                        boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)', // 增强阴影效果
-                                    },
-                                }}
-                            >
-                                {event.thumbnail && (
-                                    <CardMedia
-                                        component="img"
-                                        sx={{ width: 240, objectFit: 'cover' }}
-                                        image={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
-                                        alt={event.eventId} />
-                                )}
-                                <CardContent sx={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {event.eventtitle}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Event ID: {event.eventId}<br />
-                                        Your booked Seats: {event.seat.join(", ")}<br />
-                                        Your Booked Date: {event.date}<br />
-                                        Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}<br />
-                                        {/*<Button onClick={(e) => handleNavigateToEventDetail(event.eventId, e)}>View Details</Button>*/}
-                                        {/*<Button onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>Cancel Booking</Button>*/}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
-                                        <Button variant="contained" color="primary" onClick={() => navigate(`/all-event/${event.eventId}`)}>
-                                            View Details
-                                        </Button>
-                                        {canCancelEvent(event.date) ? (
-                                            <Button variant="contained" color="error" onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>
-                                                Cancel Event
-                                            </Button>
-                                        ) : (
-                                            <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
-                                                Tickets within 7 days cannot be cancelled.
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        ))}
-                        <Divider sx={{ width: '100%', mb: 2 }}>
-                            <Typography color="textSecondary">end</Typography>
-                        </Divider>
+
+                        <Paper sx={{ maxHeight: 600, overflow: 'auto', width: '90%', boxShadow: 3, background: 'rgba(255, 255, 255, 0.4)' }} onScroll={handleScroll} ref={listRef}>
+                            <Typography variant="h6" sx={{ p: 2, textAlign: 'center', color:'rgba(0, 0, 0, 0.5)' }}>
+                                Viewing {currentIndex + 1} of {events.length} events
+                            </Typography>
+                            <List>
+                                {events.map((event, index, array) => (
+                                    <React.Fragment key={index}>
+                                        <ListItem
+                                            sx={{
+                                                background: 'rgba(255, 255, 255, 0.6)',
+                                                transition: 'background-color 0.3s',
+                                                '&:hover': {
+                                                    backgroundColor: 'rgba(255, 255, 255, 1)',
+                                                    boxShadow: '0 3px 10px rgba(0, 0, 0, 0.2)'
+                                                },
+                                                pt: 2,
+                                                pb: 2,
+                                                pl: 2,
+                                                pr: 1,
+                                            }}
+                                            alignItems="flex-start"
+                                        >
+                                            <Grid container spacing={2} alignItems="center">
+                                                <Grid item xs={12} sm={5}>
+                                                    <ListItemAvatar>
+                                                        <Avatar
+                                                            src={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                                            alt="Event thumbnail"
+                                                            sx={{ width: 240, height: 240 }}
+                                                        />
+                                                    </ListItemAvatar>
+                                                </Grid>
+                                                <Grid item xs={12} sm={7}>
+                                                    <ListItemText
+                                                        primary={event.eventtitle}
+                                                        primaryTypographyProps={{
+                                                            variant: "h6",
+                                                            sx: {
+                                                                mb: 2
+                                                            }
+                                                        }}
+                                                        secondary={
+                                                            <Typography component="span" variant="body2" color="text.primary" sx={{ mt: 2 }}>
+                                                                Event ID: {event.eventId}<br />
+                                                                Your booked Seats: {event.seat.join(", ")}<br />
+                                                                Your Booked Date: {event.date}<br />
+                                                                Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}
+                                                            </Typography>
+                                                        }
+                                                    />
+                                                    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                        <Button
+                                                            variant="contained"
+                                                            sx={{
+                                                                backgroundColor: '#9198e5', // 自定义背景颜色
+                                                                color: 'white', // 文字颜色
+                                                                '&:hover': {
+                                                                    backgroundColor: '#556cd6', // 悬停时的背景颜色
+                                                                }
+                                                            }}
+                                                            onClick={() => navigate(`/all-event/${event.eventId}`)}
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                        {canCancelEvent(event.date) ? (
+                                                            <Button variant="contained" color="primary"  onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>
+                                                                Cancel Event
+                                                            </Button>
+                                                        ) : (
+                                                            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                                                                Tickets within 7 days cannot be cancelled.
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                </Grid>
+                                            </Grid>
+                                        </ListItem>
+                                        {index !== array.length - 1 && <Divider variant="fullWidth" component="li" />}
+                                    </React.Fragment>
+                                ))}
+                            </List>
+                        </Paper>
+
+
+
+
+                        {/*<Divider sx={{ width: '100%', mb: 2 }}>*/}
+                        {/*    <Typography color="textSecondary">end</Typography>*/}
+                        {/*</Divider>*/}
                     </div>
                 ) : (
                     <Typography variant="subtitle1">No events found.</Typography>
