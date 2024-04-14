@@ -1,6 +1,6 @@
 import string
 from functools import wraps
-from random import random
+import random
 
 from flask import Blueprint, jsonify, request
 from flask_mail import Mail, Message
@@ -738,7 +738,9 @@ def send_email():
     elif role == 'Customer':
         user = Customer.query.filter_by(email=email).first()
     else:
-        return jsonify({'message': 'Invalid role.'}), 400
+        return jsonify({'message': 'Invalid role. Role must be either "Host" or "Customer".'}), 400
+    if user is None:
+        return jsonify({'message': f'No {role} found with the provided email address.'}), 404
 
     if user:
         token = cust_generate_reset_token()
