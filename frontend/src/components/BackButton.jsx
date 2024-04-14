@@ -9,13 +9,6 @@ const BackButton = () => {
 
     const handleBack = () => {
         navigate(-1);
-        if (location.pathname === '/login-customer' || location.pathname === '/login-host') {
-            // 清除localStorage
-            localStorage.removeItem('token');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('identity');
-        }
     };
 
     return (

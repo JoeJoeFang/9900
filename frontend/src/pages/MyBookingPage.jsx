@@ -16,6 +16,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import {useNavigate} from "react-router-dom";
 import Navbar from '../components/Navbar';
 import Slider from 'react-slick';
+import {SentimentVeryDissatisfied} from "@mui/icons-material";
 
 
 
@@ -35,16 +36,16 @@ const BookingList = () => {
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
 
-    const settings = {
-        className: "center",
-        centerMode: true,
-        infinite: true,
-        centerPadding: "60px", // 可增加此值来增加间隙
-        slidesToShow: 2,
-        slidesToScroll: 1, // 每次滑动一个卡片
-        speed: 500,
-        dots: true // 启用底部小圆点指示器
-    };
+    // const settings = {
+    //     className: "center",
+    //     centerMode: true,
+    //     infinite: true,
+    //     centerPadding: "60px", // 可增加此值来增加间隙
+    //     slidesToShow: 2,
+    //     slidesToScroll: 1, // 每次滑动一个卡片
+    //     speed: 500,
+    //     dots: true // 启用底部小圆点指示器
+    // };
 
 
     const handleOpenConfirmDialog = (eventId, eventDate) => {
@@ -169,6 +170,17 @@ const BookingList = () => {
         return difference > 7;
     };
 
+    const settings = {
+        className: "center",
+        centerMode: true,  // 根据需要可调整
+        infinite: recommendedEvents.length > 1,
+        centerPadding: "60px",
+        slidesToShow: recommendedEvents.length > 1 ? 2 : 1,
+        slidesToScroll: 1,
+        speed: 500,
+        dots: recommendedEvents.length > 1  // 只有一个事件时不显示点
+    };
+
     const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>
@@ -236,7 +248,7 @@ const BookingList = () => {
                                 sx={{
                                     display: 'flex',
                                     mb: 2,
-                                    width: '100%',
+                                    width: '90%',
                                     background: 'rgba(255, 255, 255, 0.8)',
                                     transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s', // 平滑过渡效果
                                     ':hover': {
@@ -292,14 +304,37 @@ const BookingList = () => {
 
                 <Divider variant="middle" sx={{ my: 4 }} />
 
+                <Divider sx={{ width: '90%', mb: 2 }}>
+                    <Typography color="textSecondary">
+                        Your Recommended Events
+                    </Typography>
+                </Divider>
+
+                {recommendedEvents.length === 0 && (
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '30vh', // Ensures the empty state has significant screen presence
+                        color: theme.palette.text.secondary
+                    }}>
+                        <SentimentVeryDissatisfied sx={{ fontSize: 60, color: 'action.active' }} />
+                        <Typography variant="h6" sx={{ mt: 2 }}>
+                            Sorry, we don't have any events to recommend right now. 😔
+                        </Typography>
+                        <Typography variant="body1">
+                            Check back later for exciting opportunities!
+                        </Typography>
+                    </Box>
+                )}
+
 
                 {recommendedEvents.length > 0 && (
                     <Box sx={{ position: 'relative', width: '80%', margin: 'auto' }}>
-                        <Typography variant="h4" color="white" sx={{ fontWeight: 'bold' }}>
-                            Your Recommended Events
-                        </Typography>
+
                         <Slider {...settings}>
-                            {recommendedEvents.map((eventsInfo, index) => (
+                            {recommendedEvents.map((eventsInfo) => (
                                 <Grid
                                     item
                                     key={eventsInfo.id}

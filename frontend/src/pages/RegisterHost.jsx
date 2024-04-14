@@ -70,7 +70,7 @@ const RegisterHost = () => {
                 setOpenDialog(true); 
 
                 setTimeout(() => {
-                    navigate('/login-host'); // Redirect to the all events page
+                    navigate('/combined-login'); // Redirect to the all events page
                 }, 500); // Adjust delay as necessary
     
                 console.log('Register successfully');
@@ -246,7 +246,7 @@ const RegisterHost = () => {
                             fullWidth
                             variant="text"
                             sx={{ mt: 2 }}
-                            onClick={() => navigate('/login-host')}
+                            onClick={() => navigate('/combined-login')}
                         >
                             Already have an account? Login
                         </Button>
