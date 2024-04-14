@@ -195,15 +195,13 @@ const BookingList = () => {
                 backgroundPosition: 'center, center',
                 p: theme.spacing(2),
             }}>
-                <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
                 <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center' }}>
                     <Navbar></Navbar>
                 </Box>
-                {/*<HeaderLogo theme={theme} />*/}
                 {isLoading ? (
                     <CircularProgress />
                 ) : error ? (
-                    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" marginTop={2}>
+                    <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" marginTop={20}>
                         <ErrorIcon color="error" style={{ fontSize: 40, marginBottom: 8 }} />
                         <Typography variant="h6" color="error" align="center">
                             {error}

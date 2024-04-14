@@ -9,13 +9,14 @@ import {
     CircularProgress,
     Box,
     Link,
-    useTheme
+    useTheme, Divider
 } from '@mui/material';
 import { Button } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import UnauthorizedAccess from "../components/UnauthorizedAccess";
+import ErrorIcon from "@mui/icons-material/Error";
 
 
 const MyHostedEventsPage = () => {
@@ -124,20 +125,18 @@ const MyHostedEventsPage = () => {
             backgroundPosition: 'center, center',
             p: theme.spacing(2),
         }}>
-            <Box sx={{ position: 'absolute', top: 10, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-around' }}></Box>
             <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex',alignItems:'center'}}>
-                {/* <CreateNewEvent /> */}
-                {/* <HostProfile /> */}
-                {/* <Logout /> */}
                 <Navbar></Navbar>
-
             </Box>
             {isLoading ? (
                 <CircularProgress />
             ) : error ? (
-                <Typography color="error">{error}</Typography>
+                <Box display="flex" alignItems="center" justifyContent="center" flexDirection="column" marginTop={20}>
+                    <ErrorIcon color="error" style={{ fontSize: 40, marginBottom: 8 }} />
+                        <Typography color="error">{error}</Typography>
+                </Box>
             ) : events.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '90%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '50px', width: '90%' }}>
                     <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -156,6 +155,9 @@ const MyHostedEventsPage = () => {
                             My Hosted Events
                         </Typography>
                     </Box>
+                    <Divider sx={{ width: '100%', mb: 2 }}>
+                        <Typography color="textSecondary">start</Typography>
+                    </Divider>
                     {events.map((event, index) => (
                         <Card
                             key={event.id}
@@ -163,7 +165,7 @@ const MyHostedEventsPage = () => {
                                 display: 'flex',
                                 flexDirection: { xs: 'column', sm: 'row' }, // Stack vertically on small screens, horizontally on larger
                                 mb: 2,
-                                width: '100%',
+                                width: '90%',
                                 background: 'rgba(255, 255, 255, 0.8)',
                                 transition: 'transform 0.3s, box-shadow 0.3s',
                                 ':hover': {
@@ -213,7 +215,9 @@ const MyHostedEventsPage = () => {
                             </CardContent>
                         </Card>
                     ))}
-
+                    <Divider sx={{ width: '100%', mb: 2 }}>
+                        <Typography color="textSecondary">end</Typography>
+                    </Divider>
                 </div>
             ) : (
                 <Typography variant="subtitle1">No events found.</Typography>

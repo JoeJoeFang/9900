@@ -44,8 +44,9 @@ const Navbar = () => {
       { label: 'Back', icon: <ArrowBackIcon />, path: () => navigate(-1) },
       { label: 'All Events', icon: <HomeIcon />, path: () => navigate('/all-event') },
       { label: 'My Account', icon: <AccountCircleIcon />, path: () => navigate('/my-account') },
-      { label: 'Logout', icon: <LogoutIcon />, action: logout },
       { label: 'My Bookings', icon: <FavoriteIcon />, path: () => navigate('/my-booking') },
+      { label: 'Logout', icon: <LogoutIcon />, action: logout },
+
     ],
     'host': [
       { label: 'Back', icon: <ArrowBackIcon />, path: () => navigate(-1) },
