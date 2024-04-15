@@ -272,7 +272,7 @@ const BookingList = () => {
                                                 <Grid item xs={12} sm={5}>
                                                     <ListItemAvatar>
                                                         <Avatar
-                                                            src={event.thumbnail.trim() ? event.thumbnail : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
+                                                            src={event.thumbnail && event.thumbnail.trim() ? event.thumbnail.trim() : `${process.env.PUBLIC_URL}/cute_cat.jpeg`}
                                                             alt="Event thumbnail"
                                                             sx={{ width: 240, height: 240 }}
                                                         />

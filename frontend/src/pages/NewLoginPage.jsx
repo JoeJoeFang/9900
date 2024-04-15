@@ -73,6 +73,7 @@ export const CombinedLogin = () => {
             const response = await axios.post(`http://localhost:5005/user/auth/login`, {
                 email: loginData.email,
                 password: loginData.password,
+                identity: identity,
             }, {
                 headers: {
                     'Content-Type': 'application/json',
