@@ -152,7 +152,9 @@ const EventsList = () => {
                         </Divider>
                     </div>
                 ) : (
-                    <Typography variant="subtitle1">No events found.</Typography>
+                    <Divider sx={{ width: '100%', mt: 2 }}>
+                     <Typography color="textSecondary">No events found.</Typography>
+                    </Divider>
                 )}
             </Box>
             </ThemeProvider>     
