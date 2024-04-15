@@ -50,12 +50,14 @@ const BookingList = () => {
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedSeat, setSelectedSeat] = useState(null);
 
 
-    const handleOpenConfirmDialog = (eventId, eventDate) => {
+    const handleOpenConfirmDialog = (eventId, eventDate, eventSeat) => {
         console.log("handleOpenConfirmDialog clicked");
         setSelectedDate(eventDate);
         setSelectedEventId(eventId);
+        setSelectedSeat(eventSeat);
         setOpenConfirmDialog(true);
     };
 
@@ -123,7 +125,7 @@ const BookingList = () => {
             const userId = localStorage.getItem('userId');
             const requestBody = {
                 userId: userId,
-                // seat: selectedSeats,
+                seat: selectedSeat,
                 Date: selectedDate,
                 eventId: selectedEventId,
                 // email : email,
@@ -246,7 +248,7 @@ const BookingList = () => {
 
                         <Paper sx={{ maxHeight: 600, overflow: 'auto', width: '90%', boxShadow: 3, background: 'rgba(255, 255, 255, 0.4)' }} onScroll={handleScroll} ref={listRef}>
                             <Typography variant="h6" sx={{ p: 2, textAlign: 'center', color:'rgba(0, 0, 0, 0.5)' }}>
-                                Viewing {currentIndex + 1} of {events.length} events
+                                Viewing {currentIndex + 1} of {events.length} tickets
                             </Typography>
                             <List>
                                 {events.map((event, index, array) => (
@@ -288,7 +290,8 @@ const BookingList = () => {
                                                         secondary={
                                                             <Typography component="span" variant="body2" color="text.primary" sx={{ mt: 2 }}>
                                                                 Event ID: {event.eventId}<br />
-                                                                Your booked Seats: {event.seat.join(", ")}<br />
+                                                                {/*Your booked Seats: {event.seat.join(", ")}<br />*/}
+                                                                Your booked Seats: {event.seat}<br />
                                                                 Your Booked Date: {event.date}<br />
                                                                 Description: {event.description.substring(0, 100)}{event.description.length > 100 ? '...' : ''}
                                                             </Typography>
@@ -309,7 +312,7 @@ const BookingList = () => {
                                                             View Details
                                                         </Button>
                                                         {canCancelEvent(event.date) ? (
-                                                            <Button variant="contained" color="primary"  onClick={() => handleOpenConfirmDialog(event.eventId, event.date)}>
+                                                            <Button variant="contained" color="primary"  onClick={() => handleOpenConfirmDialog(event.eventId, event.date, event.seat)}>
                                                                 Cancel Event
                                                             </Button>
                                                         ) : (
