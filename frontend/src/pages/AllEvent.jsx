@@ -83,14 +83,13 @@ const EventsList = () => {
                 ) : events.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '36px', width: '90%' }}>
                         <Divider sx={{ width: '100%', mb: 2 }}>
-                            <Typography color="textSecondary">Upcoming Events</Typography>
+                            <Typography color="textSecondary">Upcoming Events Within the Next Month</Typography>
                         </Divider>
                         {events.map((event, index) => (
                             <Tooltip
                                 key={index}
                                 title={identity === 'visitor' || !identity ? "Please register your account to explore more" : ''}
-                                disableHoverListener={identity !== 'visitor' && identity} // Disable the tooltip for users other than visitors
-                                // followCursor
+                                disableHoverListener={identity !== 'visitor' && identity}
                                 arrow
                             >
                                 <div

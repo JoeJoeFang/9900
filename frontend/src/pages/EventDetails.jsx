@@ -109,16 +109,17 @@ const EventDetails = () => {
         }
     }, [eventId, token]);
 
-    useEffect(() => {
-        fetchEvents().then(r => console.log("event details fetching successfully"));
-    }, [eventId, token]);
-
 
     const [selectedDate, setSelectedDate] = useState('');
 
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+
+    useEffect(() => {
+        fetchEvents().then(r => console.log("event details fetching successfully"));
+    }, [eventId, token, selectedSeats]);
+
 
 
     useEffect(() => {
@@ -178,6 +179,8 @@ const EventDetails = () => {
                 console.log('booking successfully!');
                 setSuccessMessage('Booking successfully completed!');
                 setSuccessSnackbarOpen(true);
+                // await fetchEvents;
+                setSelectedSeats([]);
 
             }
         } catch (error) {
