@@ -88,6 +88,7 @@ def get_events():
         gap = event_date - current_date
         gap2 = end_date - current_date
         print(gap.days)
+        print('aa')
         if gap.days <= 30 and gap2.days >= 0:
             event_data = {
                 'id': event.id,
@@ -400,15 +401,15 @@ def get_bookings(userId):
     if cust.order is None or len(cust.order) == 0:
         return jsonify({'message': 'No events found!'}), 404
     for k, v in cust.order.items():
+        print('qwwwwwwwwwwwwwwwwwwwwww')
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         for i in v:
             orderdetails = event_order.orderdetails[i]
             # print(orderdetails, k, v)
-
             seat_list = []
             for j in range(len(orderdetails)):
-                print(orderdetails[j], userId)
+                # print(orderdetails[j], userId)
                 if orderdetails[j][1] == str(userId):
                     seat_list.append(j)
                     print(j, '1111111111111111')
@@ -423,6 +424,8 @@ def get_bookings(userId):
                     }
                     #print(event1)
                     events_list.append(event1)
+
+    print(events_list)
     return jsonify(events_list), 200
 
 
@@ -510,7 +513,7 @@ def if_order():
     else:
         comment = Comments.query.filter_by(eventId=data['eventId']).first()
         if str(data['customerId']) in comment.comment:
-            return jsonify({'message': 'You already commented this event!'})
+            return jsonify({'message': 'You already commented this event!'}), 401
         else:
             return jsonify({'message': 'You can fill your review now!'}), 201
 
@@ -692,33 +695,39 @@ def top_up():
 @bp.route('/user/auth/login', methods=['POST'])
 def login():
     data = request.json
+    identity = data['identity']
     print(data)
     email = data.get('email')
     password = data.get('password')
-    host = Host.query.filter_by(email=email).first()
+    if identity == 'host':
+        host = Host.query.filter_by(email=email).first()
+        if not host:
+            return jsonify({'message': 'Host not found'}), 401
+    else:
+        customer = Customer.query.filter_by(email=email).first()
+        if not customer:
+            return jsonify({'message': 'Host not found'}), 402
     # a = Customer.query.filter_by(id=1).first()
     # print(a.email)
     # hosts = Host.query.all()
     # for host in hosts:
     #     print(host)
 
-    if not host:
-        customer = Customer.query.filter_by(email=email).first()
-        if not customer:
-            print('message: User not found')
-            return jsonify({'message': 'User not found'}), 401
-        if not bcrypt.check_password_hash(customer.password, password):
-            print('message: Invalid email or password')
-            return jsonify({'message': 'Invalid email or password'}), 402
-
-        token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
-                           current_app.config['SECRET_KEY'])
-        return jsonify({'token': token, 'id': customer.id})
+    # if not host:
+    #     customer = Customer.query.filter_by(email=email).first()
+    #     if not customer:
+    #         print('message: User not found')
+    #         return jsonify({'message': 'User not found'}), 401
+    #     if not bcrypt.check_password_hash(customer.password, password):
+    #         print('message: Invalid email or password')
+    #         return jsonify({'message': 'Invalid email or password'}), 402
+    #
+    #     token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
+    #                        current_app.config['SECRET_KEY'])
+    #     return jsonify({'token': token, 'id': customer.id})
     if not bcrypt.check_password_hash(host.password, password):
         print('message: Invalid email or password')
         return jsonify({'message': 'Invalid email or password'}), 402
-    # print("package token")
-    # print(app.config['SECRET_KEY'])
     token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                        current_app.config['SECRET_KEY'])
     return jsonify({'token': token, 'id': host.id})
