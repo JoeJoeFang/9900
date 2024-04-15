@@ -429,22 +429,36 @@ def get_bookings(userId):
 @bp.route('/bookings/cancel/<int:userId>', methods=['PUT'])
 def cancel_bookings(userId):
     data = request.get_json()
+    seat = data['seat']
     print(data)
     cust = Customer.query.filter_by(id=int(userId)).first()
     events = Events.query.filter_by(id=int(data['eventId'])).first()
     event_id = str(data['eventId'])
     if event_id in cust.order:
         price = events.price
-        del cust.order[event_id]
-        flag_modified(cust, "order")
+        # del cust.order[event_id]
+        # flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
-        for i in range(len(event_order.orderdetails[data['Date']])):
-            # print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
-            if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
-                event_order.orderdetails[data['Date']][i] = [0, 0]
-                cust.wallet += price
+        if int(event_order.orderdetails[data['Date']][seat][1]) == int(data['userId']):
+            event_order.orderdetails[data['Date']][seat] = [0, 0]
             flag_modified(event_order, "orderdetails")
-            flag_modified(cust, "wallet")
+        flag = 0
+        for i in range(len(event_order.orderdetails[data['Date']])):
+            if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
+                flag = 1
+        if flag == 0:
+            if len(cust.order[event_id]) == 1:
+                del cust.order[event_id]
+                flag_modified(cust, "order")
+            else:
+                cust.order[event_id].remove(data['Date'])
+                flag_modified(cust, "order")
+        # for i in range(len(event_order.orderdetails[data['Date']])):
+        #     # print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
+        #     if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
+        #         event_order.orderdetails[data['Date']][i] = [0, 0]
+        cust.wallet += price
+        flag_modified(cust, "wallet")
         print(event_order.orderdetails)
         print(cust.wallet)
         # message = Message(subject="Cancel", recipients=[cust.email], body="Cancel order successfully!!")
@@ -682,8 +696,8 @@ def login():
     email = data.get('email')
     password = data.get('password')
     host = Host.query.filter_by(email=email).first()
-    a = Customer.query.filter_by(id=1).first()
-    print(a.email)
+    # a = Customer.query.filter_by(id=1).first()
+    # print(a.email)
     # hosts = Host.query.all()
     # for host in hosts:
     #     print(host)
