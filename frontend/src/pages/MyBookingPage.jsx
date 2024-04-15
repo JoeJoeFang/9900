@@ -248,7 +248,7 @@ const BookingList = () => {
 
                         <Paper sx={{ maxHeight: 600, overflow: 'auto', width: '90%', boxShadow: 3, background: 'rgba(255, 255, 255, 0.4)' }} onScroll={handleScroll} ref={listRef}>
                             <Typography variant="h6" sx={{ p: 2, textAlign: 'center', color:'rgba(0, 0, 0, 0.5)' }}>
-                                Viewing {currentIndex + 1} of {events.length} events
+                                Viewing {currentIndex + 1} of {events.length} tickets
                             </Typography>
                             <List>
                                 {events.map((event, index, array) => (
