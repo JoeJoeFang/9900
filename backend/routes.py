@@ -230,12 +230,12 @@ def get_host_events(userId):
 def get_events_details(eventId):
     # 查询数据库以获取事件列表
     # print(1111111111)
-    print(eventId)
+    # print(eventId)
     event = Events.query.filter_by(id=eventId).first()
     event_order = Events_order.query.filter_by(id=eventId).first()
     # 将查询到的事件列表转换为 JSON 格式
     print("if not event_order or not event:")
-    print(event, event_order)
+    # print(event, event_order)
     if not event_order or not event:
         return jsonify({'message': 'Event not found!!!!!'}), 404
     print("if not event_order or not event: enddddddd")
@@ -255,7 +255,7 @@ def get_events_details(eventId):
         'youtubeUrl': event.URL,
         'orderdetails': event_order.orderdetails
     }
-    print("finish", event_data)
+    # print("finish", event_data)
     return jsonify(event_data)
 
 
@@ -290,7 +290,12 @@ def update_events_bookings():
             break
     if flag == 1:
         return jsonify({'message': f'Seats {s} are not available!'}), 402
-    cust.order[event.id] = date_
+    # cust.order[event.id] = [date_]
+    if str(event.id) in cust.order:
+        print(cust.order[str(event.id)])
+        cust.order[str(event.id)].append(date_)
+    else:
+        cust.order[event.id] = [date_]
     print(events)
     flag_modified(cust, "order")
     db.session.commit()
@@ -397,26 +402,27 @@ def get_bookings(userId):
     for k, v in cust.order.items():
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
-        orderdetails = event_order.orderdetails[v]
-        # print(orderdetails, k, v)
+        for i in v:
+            orderdetails = event_order.orderdetails[i]
+            # print(orderdetails, k, v)
 
-        seat_list = []
-        for i in range(len(orderdetails)):
-            print(orderdetails[i], userId)
-            if orderdetails[i][1] == str(userId):
-                seat_list.append(i)
-                # print(i, '1111111111111111')
-        event1 = {
-            'eventId': event_order.id,
-            'userId': cust.id,
-            'eventtitle': event_order.eventtitle,
-            'thumbnail': events.thumbnail,
-            'description': events.description,
-            'date': v,
-            'seat': seat_list
-        }
-        events_list.append(event1)
-    print(events_list)
+            seat_list = []
+            for j in range(len(orderdetails)):
+                print(orderdetails[j], userId)
+                if orderdetails[j][1] == str(userId):
+                    seat_list.append(j)
+                    print(j, '1111111111111111')
+                    event1 = {
+                        'eventId': event_order.id,
+                        'userId': cust.id,
+                        'eventtitle': event_order.eventtitle,
+                        'thumbnail': events.thumbnail,
+                        'description': events.description,
+                        'date': i,
+                        'seat': j
+                    }
+                    #print(event1)
+                    events_list.append(event1)
     return jsonify(events_list), 200
 
 
@@ -498,7 +504,7 @@ def if_order():
 @bp.route('/comments/customer', methods=['PUT'])
 def cust_comments():
     data = request.get_json()
-    print(data)
+    # print(data)
     cust = Customer.query.filter_by(id=data['userId']).first()
     c = [data['Date'], data['review'], cust.name, 'None', 'None', 'None', 'None']
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
@@ -676,6 +682,8 @@ def login():
     email = data.get('email')
     password = data.get('password')
     host = Host.query.filter_by(email=email).first()
+    a = Customer.query.filter_by(id=1).first()
+    print(a.email)
     # hosts = Host.query.all()
     # for host in hosts:
     #     print(host)
