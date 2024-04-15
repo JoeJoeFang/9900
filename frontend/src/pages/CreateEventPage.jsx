@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
     ThemeProvider,
-    createTheme,
     Container,
     Typography,
     Card,
@@ -20,6 +19,8 @@ import Box from '@mui/material/Box';
 import HeaderLogo from '../components/HeaderLogo';
 import UnauthorizedAccess from "../components/UnauthorizedAccess";
 import Autocomplete from '@mui/material/Autocomplete';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 
 
@@ -115,6 +116,31 @@ const CreateNewEvent = () => {
         }
     };
 
+    const updateStartDate = (newValue) => {
+
+        const date = new Date(newValue);
+        const formattedDate = date.toISOString().slice(0, 10);
+        setEventData({
+            ...eventData,
+            startDate: formattedDate
+        });
+        const errorMessage = validateField("startDate", formattedDate);
+        setFormErrors({ ...formErrors, startDate: errorMessage });
+    };
+
+    const updateEndDate = (newValue) => {
+
+        const date = new Date(newValue);
+        const formattedDate = date.toISOString().slice(0, 10);
+        setEventData({
+            ...eventData,
+            endDate: formattedDate
+        });
+
+        const errorMessage = validateField("endDate", formattedDate);
+        setFormErrors({ ...formErrors, endDate: errorMessage });
+    };
+
 
     const updateField = (e, newValue) => {
         let name, value;
@@ -190,6 +216,7 @@ const CreateNewEvent = () => {
 
 
     const handleSubmit = async () => {
+        console.log(eventData);
         const errors = Object.keys(eventData).reduce((acc, key) => {
             const error = validateField(key, eventData[key]);
             if (error) {
@@ -363,6 +390,7 @@ const CreateNewEvent = () => {
                                                 {...params}
                                                 label="Event Type"
                                                 variant="outlined"
+                                                required
                                             />
                                         )}
                                     />
@@ -379,40 +407,77 @@ const CreateNewEvent = () => {
                                         options={seatingOptions}
                                         getOptionLabel={(option) => option.label}
                                         renderInput={(params) => (
-                                            <TextField {...params} label="Seating Capacity" variant="outlined" />
+                                            <TextField {...params}
+                                                       label="Seating Capacity"
+                                                       variant="outlined"
+                                                       required
+                                            />
                                         )}
                                         isOptionEqualToValue={(option, value) => option.value === value.value}
                                     />
                                 </Grid>
+                                {/*<Grid item xs={12} sm={6}>*/}
+                                {/*    <TextField*/}
+                                {/*        name="startDate"*/}
+                                {/*        label="Start Date"*/}
+                                {/*        type="date"*/}
+                                {/*        fullWidth*/}
+                                {/*        InputLabelProps={{ shrink: true }}*/}
+                                {/*        value={eventData.startDate}*/}
+                                {/*        onChange={updateField}*/}
+                                {/*        required*/}
+                                {/*        error={!!formErrors.startDate}*/}
+                                {/*        helperText={formErrors.startDate}*/}
+                                {/*    />*/}
+                                {/*</Grid>*/}
+                                {/*<Grid item xs={12} sm={6}>*/}
+                                {/*    <TextField*/}
+                                {/*        name="endDate"*/}
+                                {/*        label="End Date"*/}
+                                {/*        type="date"*/}
+                                {/*        fullWidth*/}
+                                {/*        InputLabelProps={{ shrink: true }}*/}
+                                {/*        value={eventData.endDate}*/}
+                                {/*        onChange={updateField}*/}
+                                {/*        required*/}
+                                {/*        error={!!formErrors.endDate}*/}
+                                {/*        helperText={formErrors.endDate}*/}
+                                {/*    />*/}
+                                {/*</Grid>*/}
                                 <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="startDate"
-                                        label="Start Date"
-                                        type="date"
-                                        fullWidth
-                                        InputLabelProps={{ shrink: true }}
-                                        value={eventData.startDate}
-                                        onChange={updateField}
-                                        required
-                                        error={!!formErrors.startDate}
-                                        helperText={formErrors.startDate}
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            sx={{ width: "100%" }}
+                                            label="Start Date"
+                                            value={eventData.startDate}
+                                            onChange={(newValue) => {
+                                                updateStartDate(newValue);
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                    {formErrors.startDate && (
+                                        <Typography color="primary" variant="body2">
+                                            {formErrors.startDate}
+                                        </Typography>
+                                    )}
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        name="endDate"
-                                        label="End Date"
-                                        type="date"
-                                        fullWidth
-                                        InputLabelProps={{ shrink: true }}
-                                        value={eventData.endDate}
-                                        onChange={updateField}
-                                        required
-                                        error={!!formErrors.endDate}
-                                        helperText={formErrors.endDate}
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            sx={{ width: "100%" }}
+                                            label="End Date"
+                                            value={eventData.endDate}
+                                            onChange={(newValue) => {
+                                                updateEndDate(newValue);
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                    {formErrors.endDate && (
+                                        <Typography color="primary" variant="body2">
+                                            {formErrors.endDate}
+                                        </Typography>
+                                    )}
                                 </Grid>
-
 
                                 <Grid item xs={12}>
                                     <TextField
