@@ -598,13 +598,13 @@ def get_comments(eventId):
 @bp.route('/comments/host', methods=['POST'])
 def if_host():
     data = request.get_json()
-    print(data)
     event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     if event.hostId == int(data['hostId']):
-        return jsonify({'message': 'Reply your review!'}), 201
-    elif comment.comment[data['userId']][5] == data['hostId']:
-        return jsonify({'message': 'You have already replied this comment!'}), 401
+        if comment.comment[data['userId']][5] == data['hostId']:
+            return jsonify({'message': 'You have already replied this comment!'}), 401
+        else:
+            return jsonify({'message': 'Reply your review!'}), 201
     else:
         return jsonify({'message': 'You did not host this event!'}), 400
 
