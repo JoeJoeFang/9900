@@ -420,7 +420,7 @@ def get_bookings(userId):
     if cust.order is None or len(cust.order) == 0:
         return jsonify({'message': 'No events found!'}), 404
     for k, v in cust.order.items():
-        print('qwwwwwwwwwwwwwwwwwwwwww')
+        # print('qwwwwwwwwwwwwwwwwwwwwww')
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         for i in v:
@@ -437,7 +437,7 @@ def get_bookings(userId):
                         'eventId': event_order.id,
                         'userId': cust.id,
                         'eventtitle': event_order.eventtitle,
-                        #'thumbnail': events.thumbnail,
+                        'thumbnail': events.thumbnail,
                         'description': events.description,
                         'date': i,
                         'seat': seat_number
@@ -760,22 +760,30 @@ def login():
     if identity == 'host':
         host = Host.query.filter_by(email=email).first()
         if not host:
-            return jsonify({'message': 'Host not found'}), 401
+            customer = Customer.query.filter_by(email=email).first()
+            if not customer:
+                return jsonify({'message': 'User not found'}), 401
+            else:
+                return jsonify({'message': 'Please login customer!'}), 402
         else:
             if not bcrypt.check_password_hash(host.password, password):
                 print('message: Invalid email or password')
-                return jsonify({'message': 'Invalid email or password'}), 402
+                return jsonify({'message': 'Invalid email or password'}), 403
             token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                                current_app.config['SECRET_KEY'])
             return jsonify({'token': token, 'id': host.id})
     else:
         customer = Customer.query.filter_by(email=email).first()
         if not customer:
-            return jsonify({'message': 'Host not found'}), 402
+            host = Host.query.filter_by(email=email).first()
+            if not host:
+                return jsonify({'message': 'User not found'}), 404
+            else:
+                return jsonify({'message': 'Please login host!'}), 405
         else:
             if not bcrypt.check_password_hash(customer.password, password):
                 print('message: Invalid email or password')
-                return jsonify({'message': 'Invalid email or password'}), 402
+                return jsonify({'message': 'Invalid email or password'}), 406
             token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                                current_app.config['SECRET_KEY'])
             return jsonify({'token': token, 'id': customer.id})
