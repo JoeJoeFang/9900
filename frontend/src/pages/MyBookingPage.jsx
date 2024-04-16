@@ -90,13 +90,13 @@ const BookingList = () => {
     };
     const fetchRecommendedEvents = async () => {
         const userId = localStorage.getItem('userId');
-        setIsLoading(true);// 假设用户ID存储在localStorage中
+        setIsLoading(true);
         try {
             const response = await axios.get(`http://localhost:5005/bookings/${userId}/recommendation`);
             setIsLoading(false);
             if (response.status === 200) {
                 console.log("Recommended events:", response.data);
-                setRecommendedEvents(response.data); // 更新状态以显示推荐活动
+                setRecommendedEvents(response.data);
             }
         } catch (error) {
             setIsLoading(false);
@@ -115,10 +115,8 @@ const BookingList = () => {
 
     const handleCancelBooking = async () => {
         if (selectedEventId) {
-            // 使用 selectedEventId 来取消预订
             console.log("Cancel booking for event ID:", selectedEventId);
             console.log("Cancel booking for event Date:", selectedDate);
-            // 假设取消成功后的处理逻辑...
             setOpenConfirmDialog(false);
 
             const token = localStorage.getItem('token');
@@ -140,7 +138,7 @@ const BookingList = () => {
                 });
                 if (response.status === 200 || response.status === 201) {
                     console.log('cancel successfully!');
-                    setSelectedEventId(null); // 重置选中的事件ID
+                    setSelectedEventId(null);
                     setSelectedDate(null);
                     setOpenConfirmDialog(false);
                     await fetchEvents();
@@ -178,13 +176,13 @@ const BookingList = () => {
 
     const settings = {
         className: "center",
-        centerMode: true,  // 根据需要可调整
+        centerMode: true,
         infinite: recommendedEvents.length > 1,
         centerPadding: "60px",
         slidesToShow: recommendedEvents.length > 1 ? 2 : 1,
         slidesToScroll: 1,
         speed: 500,
-        dots: recommendedEvents.length > 1  // 只有一个事件时不显示点
+        dots: recommendedEvents.length > 1
     };
 
     const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { TextField, Button, Box, Grid } from '@mui/material';
-import { List, ListItem, ListItemText, Container, Paper } from '@mui/material';
+import { List, ListItem, ListItemText, Container, Paper,
+    Alert, Snackbar,} from '@mui/material';
 import { Typography } from '@mui/material';
 import axios from "axios";
 import Dialog from '@mui/material/Dialog';
@@ -15,7 +16,7 @@ import { Avatar } from '@mui/material';
 
 
 
-export function CommentForm({ cancelForm, fetchComments }) {
+export function CommentForm({ cancelForm, fetchComments, closeForm }) {
     const [comment, setComment] = useState('');
 
     const handleSubmit = async (e) => {
@@ -52,6 +53,7 @@ export function CommentForm({ cancelForm, fetchComments }) {
                 console.log('post comments successfully!');
                 setComment('');
                 fetchComments();
+                closeForm();
             }
         } catch (error) {
             if (error.response) {
@@ -106,6 +108,8 @@ export function CommentForm({ cancelForm, fetchComments }) {
 
 
 function ReviewsCustomerPage() {
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const customerId = localStorage.getItem('userId');
@@ -157,15 +161,37 @@ function ReviewsCustomerPage() {
             console.log(response);
             if (response.status === 201 || response.status === 200) {
                 setShowForm(true);
-            } else {
-                console.error('Unexpected response code:', response.status);
             }
         } catch (error) {
-            if (error.response && error.response.status === 404) {
-                setOpenDialog(true); // 显示警告对话框
-            } else {
-                console.error('An unexpected error occurred:', error);
+            if (error.response) {
+                let errorMessage = '';
+                switch (error.response.status) {
+                    case 400:
+                        errorMessage = 'Event does not exist, please fresh your page';
+                        break;
+                    case 401:
+                        errorMessage = 'You already commented this event!';
+                        break;
+                    case 404:
+                        errorMessage = 'You did not order this event!';
+                        setOpenDialog(true);
+                        break;
+                    default:
+                        errorMessage = 'An unexpected error occurred';
+                        break;
+                }
+                setSnackbarMessage(errorMessage);
+                setSnackbarOpen(true);
             }
+
+
+
+
+            // if (error.response && error.response.status === 404) {
+            //     setOpenDialog(true); // 显示警告对话框
+            // } else {
+            //     console.error('An unexpected error occurred:', error);
+            // }
         }
     };
 
@@ -180,21 +206,24 @@ function ReviewsCustomerPage() {
                 Discussion Board
             </Typography>
             {showForm ? (
-                <CommentForm cancelForm={() => setShowForm(false)}
-                             fetchComments={fetchComments}
+                <CommentForm
+                    cancelForm={() => setShowForm(false)}
+                    fetchComments={fetchComments}
+                    closeForm={() => setShowForm(false)}
                 />
+
             ) : (
                 <Button
                     fullWidth
                     variant="outlined"
                     onClick={handleJoinDiscussion}
                     sx={{
-                        color: '#9098e4', // 文字颜色
+                        color: '#9098e4',
                         '&:hover': {
-                            backgroundColor: 'white', // 悬浮时背景色
-                            borderColor: '#9098e4', // 悬浮时边框颜色
+                            backgroundColor: 'white',
+                            borderColor: '#9098e4',
                         },
-                        border: '2px solid #9098e4', // 默认边框颜色
+                        border: '2px solid #9098e4',
                     }}
                 >
                     Join Discussion
@@ -242,6 +271,11 @@ function ReviewsCustomerPage() {
                     ))}
                 </List>
             </Paper>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
             <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
@@ -260,6 +294,7 @@ function ReviewsCustomerPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
         </Container>
     );
 }

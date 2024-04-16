@@ -92,13 +92,22 @@ export const CombinedLogin = () => {
                 let errorMessage = '';
                 switch (error.response.status) {
                     case 401:
-                        errorMessage = 'User not found!';
+                        errorMessage = 'User not found, please register';
                         break;
                     case 402:
-                        errorMessage = 'Invalid email or password!';
+                        errorMessage = 'Please go to the customer login!';
                         break;
                     case 403:
-                        errorMessage = 'Invalid email or password!';
+                        errorMessage = 'Invalid password!';
+                        break;
+                    case 404:
+                        errorMessage = 'User not found, please register';
+                        break;
+                    case 405:
+                        errorMessage = 'Please go to the host login!';
+                        break;
+                    case 406:
+                        errorMessage = 'Invalid password!';
                         break;
                     default:
                         errorMessage = 'An unexpected error occurred';
