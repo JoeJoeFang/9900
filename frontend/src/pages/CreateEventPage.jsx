@@ -102,7 +102,7 @@ const CreateNewEvent = () => {
                 const now = new Date();
                 now.setHours(0, 0, 0, 0); // Remove time part
                 if (name === 'startDate' && date < now) {
-                    return 'Start date must be today or in the future.';
+                    return 'Start date must be in the future.';
                 }
                 if (name === 'endDate') {
                     const startDate = new Date(eventData.startDate.replace(new RegExp('/', 'g'), '-'));

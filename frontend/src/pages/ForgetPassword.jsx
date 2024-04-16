@@ -103,7 +103,7 @@ export const ForgotPassword = () => {
             console.log(response)
             if (response.status === 200) {
                 alert('Your password has been reset successfully!');
-                navigate('/combined-login');
+                navigate(`/combined-login?role=${role}`);
             } else {
                 alert('Update password failed. Please try again.');
             }
