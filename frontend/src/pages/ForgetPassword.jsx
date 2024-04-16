@@ -82,6 +82,12 @@ export const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const passwordPattern = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+        if (!passwordPattern.test(newPassword)) {
+            alert('Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter.');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             alert('The passwords do not match. Please try again.');
             return;
@@ -246,6 +252,10 @@ export const ForgotPassword = () => {
                             required
                             fullWidth
                             sx={{mb: 2}}
+                            error={newPassword && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(newPassword)}
+                            helperText={newPassword && !new RegExp("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}").test(newPassword)
+                            ? "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
+                            : ' '}
                             inputProps={{
                                 pattern: "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}",
                                 title: "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
