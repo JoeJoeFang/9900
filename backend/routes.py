@@ -599,8 +599,11 @@ def get_comments(eventId):
 def if_host():
     data = request.get_json()
     event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
+    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     if event.hostId == int(data['hostId']):
         return jsonify({'message': 'Reply your review!'}), 201
+    elif comment.comment[data['userId']][5] == data['hostId']:
+        return jsonify({'message': 'You have already replied this comment!'}), 401
     else:
         return jsonify({'message': 'You did not host this event!'}), 400
 
@@ -876,12 +879,12 @@ def check_token():
     email_code = verify_reset_token(email, role, token)
 
     if not email_code:
-        return jsonify({'message': 'Invalid email or verify code expired'}), 404
+        return jsonify({'message': 'Invalid email or expiration token.'}), 404
 
     current_app.logger.info("Token info: %s", email_code.token)
 
     if email_code.token != token:
-        response = {'message': 'Invalid or expired verify code'}
+        response = {'message': 'Invalid or expired token'}
         return jsonify(response), 404
 
     response = {'message': 'Verification successfully'}
@@ -899,10 +902,10 @@ def reset_password():
     email_code = verify_reset_token(email, role, token)
 
     if not email_code:
-        return jsonify({'message': 'Invalid email or verify code expired.'}), 404
+        return jsonify({'message': 'Invalid email or expiration token.'}), 404
 
     if email_code.token != token:
-        response = {'message': 'Invalid or expired verify code'}
+        response = {'message': 'Invalid or expired token'}
         return jsonify(response), 404
 
     password = request.json.get('password')
