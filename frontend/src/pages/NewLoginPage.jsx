@@ -45,12 +45,15 @@ export const CombinedLogin = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const location = useLocation();
 
-    // 读取查询参数并调整选项卡
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const role = searchParams.get('role');
-        setActiveTab(role === 'host' ? 1 : 0);
+
+        const normalizedRole = role ? role.toLowerCase() : null;
+
+        setActiveTab(normalizedRole === 'host' ? 1 : 0);
     }, [location.search]);
+
 
     const handleBack = () => {
         navigate(-1);
