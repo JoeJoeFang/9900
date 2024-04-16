@@ -15,9 +15,11 @@ export const ForgotPassword = () => {
     const [isCodeSent, setIsCodeSent] = useState(false);
     const [isCodeVerified, setIsCodeVerified] = useState(false);
     const theme = useTheme();
+
     const handleBack = () => {
         navigate(-1); // Go back to the previous page
     };
+
     useEffect(() => {
         let interval;
         if (timer > 0) {
@@ -68,6 +70,7 @@ export const ForgotPassword = () => {
             if (response.status === 200) {
                 console.log('Code verified:', code);
                 setIsCodeVerified(true);
+           
             } else {
                 alert('Verification failed. Please try again.');
             }
@@ -91,8 +94,8 @@ export const ForgotPassword = () => {
                 role: role,
                 token: code,
                 password: newPassword,
-                confirm_password: confirmPassword
-            }, {
+                confirm_password: confirmPassword,
+           },   {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -189,44 +192,7 @@ export const ForgotPassword = () => {
                             fullWidth
                             sx={{mb: 2}}
                         />
-
-                        {/* {isCodeSent ? (
-                            <Stack direction="row" spacing={2} alignItems="center" mb={2} sx={{width: '100%'}}>
-                                <TextField
-                                    label="Verification Code"
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    required
-                                    fullWidth
-                                    sx={{flex: 1}}
-                                />
-                                <Button
-                                    onClick={handleVerifyCode}
-                                    variant="contained"
-                                    color="primary"
-                                >
-                                    Verify
-                                </Button>
-                                {timer && (
-                                    <Typography variant="body2" sx={{ml: 2}}>
-                                        {timer}s
-                                    </Typography>
-                                )}
-                            </Stack>
-                        ) : (
-                            <Button
-                                onClick={handleSendCode}
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                sx={{mb: 2}}
-                                disabled={isCodeSent}
-                            >
-                                Send Code
-                            </Button>
-                        )}
-                    </>
-                )} */}
+                        
                         <Button
                                     onClick={handleSendCode}
                                     variant="contained"
@@ -280,6 +246,10 @@ export const ForgotPassword = () => {
                             required
                             fullWidth
                             sx={{mb: 2}}
+                            inputProps={{
+                                pattern: "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}",
+                                title: "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
+                            }}
                         />
                         <TextField
                             label="Confirm New Password"
@@ -289,6 +259,12 @@ export const ForgotPassword = () => {
                             required
                             fullWidth
                             sx={{mb: 2}}
+                            error={confirmPassword && newPassword !== confirmPassword}
+                            helperText={confirmPassword && newPassword !== confirmPassword ? 'Passwords do not match.' : ' '}
+                            inputProps={{
+                                pattern: "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}",
+                                title: "Password must be at least 6 characters long, include a number, a lowercase letter, and an uppercase letter."
+                            }}
                         />
                         <Button
                             type="submit"
