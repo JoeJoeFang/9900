@@ -1,11 +1,11 @@
 import string
 from functools import wraps
 import random
-
+import json
 from flask import Blueprint, jsonify, request
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
-#from backend.backend import bcrypt, verify_reset_token, cust_generate_reset_token, cust_send_reset_email, token_required
+from flask import render_template
 from models import Host, Customer, Events, Email, Events_order, Comments, db
 import jwt
 from sqlalchemy.orm.attributes import flag_modified
@@ -294,7 +294,10 @@ def update_events_bookings():
     # cust.order[event.id] = [date_]
     if str(event.id) in cust.order:
         print(cust.order[str(event.id)])
-        cust.order[str(event.id)].append(date_)
+        if date_ in cust.order[str(event.id)]:
+            pass
+        else:
+            cust.order[str(event.id)].append(date_)
     else:
         cust.order[event.id] = [date_]
     print(events)
@@ -317,9 +320,25 @@ def update_events_bookings():
             'eventtitle': event.eventtitle,
             'orderdetails': event.orderdetails
         }
-        print(cust.email)
-        # message = Message(subject="Ticket", recipients=[cust.email], body="Order successfully!!")
-        # mail.send(message)
+
+        for i in range(len(seat_number)):
+            seat_number[i] += 1
+
+        events_json = {
+            'title': events.title,
+            'type': events.type,
+            'address': events.address,
+            'price': events.price,
+            'seats': seat_number,
+            'organizerName': events.organizername,
+            'date': data['Date'],
+            'description': events.description
+        }
+        events_html = render_template('mail_booking.html', events_json=events_json)
+        message = Message(subject="Booking Successfully!", recipients=[cust.email])
+        message.html = events_html
+
+        mail.send(message)
         return jsonify({'message': 'Create order successfully!', 'event': order_data}), 201
     return jsonify({'message': 'Failed to update event details!'}), 400
 
@@ -401,7 +420,7 @@ def get_bookings(userId):
     if cust.order is None or len(cust.order) == 0:
         return jsonify({'message': 'No events found!'}), 404
     for k, v in cust.order.items():
-        print('qwwwwwwwwwwwwwwwwwwwwww')
+        # print('qwwwwwwwwwwwwwwwwwwwwww')
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         for i in v:
@@ -409,6 +428,7 @@ def get_bookings(userId):
             # print(orderdetails, k, v)
             seat_list = []
             for j in range(len(orderdetails)):
+                seat_number = j+1
                 # print(orderdetails[j], userId)
                 if orderdetails[j][1] == str(userId):
                     seat_list.append(j)
@@ -420,7 +440,7 @@ def get_bookings(userId):
                         'thumbnail': events.thumbnail,
                         'description': events.description,
                         'date': i,
-                        'seat': j
+                        'seat': seat_number
                     }
                     #print(event1)
                     events_list.append(event1)
@@ -432,8 +452,8 @@ def get_bookings(userId):
 @bp.route('/bookings/cancel/<int:userId>', methods=['PUT'])
 def cancel_bookings(userId):
     data = request.get_json()
-    seat = data['seat']
-    print(data)
+    seat = data['seat'] - 1
+    # print(data)
     cust = Customer.query.filter_by(id=int(userId)).first()
     events = Events.query.filter_by(id=int(data['eventId'])).first()
     event_id = str(data['eventId'])
@@ -442,7 +462,9 @@ def cancel_bookings(userId):
         # del cust.order[event_id]
         # flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
+        print(int(event_order.orderdetails[data['Date']][seat][1]), int(data['userId']))
         if int(event_order.orderdetails[data['Date']][seat][1]) == int(data['userId']):
+
             event_order.orderdetails[data['Date']][seat] = [0, 0]
             flag_modified(event_order, "orderdetails")
         flag = 0
@@ -462,10 +484,26 @@ def cancel_bookings(userId):
         #         event_order.orderdetails[data['Date']][i] = [0, 0]
         cust.wallet += price
         flag_modified(cust, "wallet")
-        print(event_order.orderdetails)
-        print(cust.wallet)
-        # message = Message(subject="Cancel", recipients=[cust.email], body="Cancel order successfully!!")
-        # mail.send(message)
+        # print(event_order.orderdetails)
+        # print(cust.wallet)
+        seat_number = seat + 1
+        events_json = {
+            'title': events.title,
+            'type': events.type,
+            'address': events.address,
+            'price': events.price,
+            'seats': seat_number,
+            'organizerName': events.organizername,
+            'date': data['Date'],
+            'description': events.description
+        }
+        events_html = render_template('mail_cancel_booking.html', events_json=events_json)
+        message = Message(subject="Your Booking has been canceled successfully!", recipients=[cust.email])
+        message.html = events_html
+        # events_json_str = json.dumps(events_json, ensure_ascii=True)
+        # print(events_json_str)
+        # message = Message(subject="Your Booking has been canceled successfully!", recipients=[cust.email], body=events_json_str)
+        mail.send(message)
         db.session.commit()
         return jsonify({'message': 'Refund successfully!'}), 201
     else:
@@ -481,11 +519,18 @@ def cancel_events(userId):
     user_list = defaultdict(int)
     events = Events.query.filter_by(id=int(data['eventId'])).first()
     price = events.price
+
+    seat_list = {}
     for k, v in event_order.orderdetails.items():
         for i in range(len(v)):
             if v[i][0] == 1:
                 user_list[v[i][1]] += 1
-    print(user_list)
+                if v[i][1] in seat_list:
+                    seat_list[v[i][1]].append(i)
+                else:
+                    seat_list[v[i][1]] = [i]
+    # print(seat_list)
+    # print(user_list)
     for i, j in user_list.items():
         user = Customer.query.filter_by(id=int(i)).first()
         print(data['eventId'], user.order)
@@ -494,8 +539,21 @@ def cancel_events(userId):
         flag_modified(user, "order")
         flag_modified(user, "wallet")
         db.session.commit()
-        # message = Message(subject="Order Changed!", recipients=[user.email], body="Event has been Canceled!")
-        # mail.send(message)
+        events_json = {
+            'title': event.title,
+            'type': event.type,
+            'address': event.address,
+            'price': event.price,
+            # 'seats': seat_list[str(user.id)],
+            'organizerName': event.organizername,
+            'startDate': event.from_time,
+            'endDate': event.to_time,
+            'description': event.description
+        }
+        events_html = render_template('mail_cancel_event.html', events_json=events_json)
+        message = Message(subject="Host has Canceled Your Booking!", recipients=[user.email])
+        message.html = events_html
+        mail.send(message)
     db.session.delete(event)
     db.session.delete(event_order)
     db.session.delete(comment)
@@ -541,8 +599,12 @@ def get_comments(eventId):
 def if_host():
     data = request.get_json()
     event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
+    comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     if event.hostId == int(data['hostId']):
-        return jsonify({'message': 'Reply your review!'}), 201
+        if comment.comment[data['userId']][5] == data['hostId']:
+            return jsonify({'message': 'You have already replied this comment!'}), 401
+        else:
+            return jsonify({'message': 'Reply your review!'}), 201
     else:
         return jsonify({'message': 'You did not host this event!'}), 400
 
@@ -702,11 +764,33 @@ def login():
     if identity == 'host':
         host = Host.query.filter_by(email=email).first()
         if not host:
-            return jsonify({'message': 'Host not found'}), 401
+            customer = Customer.query.filter_by(email=email).first()
+            if not customer:
+                return jsonify({'message': 'User not found'}), 401
+            else:
+                return jsonify({'message': 'Please login customer!'}), 402
+        else:
+            if not bcrypt.check_password_hash(host.password, password):
+                print('message: Invalid email or password')
+                return jsonify({'message': 'Invalid email or password'}), 403
+            token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
+                               current_app.config['SECRET_KEY'])
+            return jsonify({'token': token, 'id': host.id})
     else:
         customer = Customer.query.filter_by(email=email).first()
         if not customer:
-            return jsonify({'message': 'Host not found'}), 402
+            host = Host.query.filter_by(email=email).first()
+            if not host:
+                return jsonify({'message': 'User not found'}), 404
+            else:
+                return jsonify({'message': 'Please login host!'}), 405
+        else:
+            if not bcrypt.check_password_hash(customer.password, password):
+                print('message: Invalid email or password')
+                return jsonify({'message': 'Invalid email or password'}), 406
+            token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
+                               current_app.config['SECRET_KEY'])
+            return jsonify({'token': token, 'id': customer.id})
     # a = Customer.query.filter_by(id=1).first()
     # print(a.email)
     # hosts = Host.query.all()
@@ -725,12 +809,7 @@ def login():
     #     token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
     #                        current_app.config['SECRET_KEY'])
     #     return jsonify({'token': token, 'id': customer.id})
-    if not bcrypt.check_password_hash(host.password, password):
-        print('message: Invalid email or password')
-        return jsonify({'message': 'Invalid email or password'}), 402
-    token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
-                       current_app.config['SECRET_KEY'])
-    return jsonify({'token': token, 'id': host.id})
+
 
 @bp.route('/user/auth/logout', methods=['POST'])
 def logout():

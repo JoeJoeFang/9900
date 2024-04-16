@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import { TextField, Button, Box, Grid } from '@mui/material';
+import {TextField, Button, Box, Grid, Alert, Snackbar} from '@mui/material';
 import { List, ListItem, ListItemText, Container, Paper } from '@mui/material';
 import { Typography } from '@mui/material';
 import axios from "axios";
@@ -22,6 +22,8 @@ function ReviewsHostPage() {
     const [currentCommentIndex, setCurrentCommentIndex] = useState(null);
     const [replyText, setReplyText] = useState('');
     const [currentCommentName, setCurrentCommentName] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
 
     const handleReplyClick = (comment) => {
@@ -40,7 +42,6 @@ function ReviewsHostPage() {
     const [comments, setComments] = useState([]);
     const fetchComments = useCallback(async () => {
         try {
-            // 定义请求配置对象，包括请求头
             const config = {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -74,7 +75,6 @@ function ReviewsHostPage() {
         const currentDate = new Date().toISOString().split('T')[0];
         try {
             const response = await axios.put('http://localhost:5005/comments/host', { hostId: hostId, eventId: eventId, userId: currentCommentIndex, review: replyText, Date: currentDate});
-
             console.log(response);
             if (response.status === 201 || response.status === 200) {
                 console.log('post comments successfully!');
@@ -82,7 +82,6 @@ function ReviewsHostPage() {
                 setCurrentCommentIndex(null);
                 setCurrentCommentName(null);
                 console.log("Reply text:", replyText);
-                // Here you could add the logic to send the reply to the server or process it as needed
                 handleCloseReplyDialog();
                 await fetchComments();
 
@@ -105,7 +104,7 @@ function ReviewsHostPage() {
 
     const handleJoinDiscussion = async (comment) => {
         try {
-            const response = await axios.post('http://localhost:5005/comments/host', { hostId: hostId, eventId: eventId });
+            const response = await axios.post('http://localhost:5005/comments/host', { hostId: hostId, eventId: eventId, userId: comment.customerId});
 
             console.log(response);
             if (response.status === 201 || response.status === 200) {
@@ -114,10 +113,26 @@ function ReviewsHostPage() {
                 console.error('Unexpected response code:', response.status);
             }
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                setOpenDialog(true); // 显示警告对话框
-            } else {
-                console.error('An unexpected error occurred:', error);
+            if (error.response) {
+                let errorMessage = '';
+                switch (error.response.status) {
+                    case 400:
+                        setOpenDialog(true);
+                        errorMessage = 'You did not host this event!';
+                        break;
+                    case 401:
+                        errorMessage = 'You have already replied this comment!';
+                        break;
+                    case 404:
+                        errorMessage = 'You did not order this event!';
+                        setOpenDialog(true);
+                        break;
+                    default:
+                        errorMessage = 'An unexpected error occurred';
+                        break;
+                }
+                setSnackbarMessage(errorMessage);
+                setSnackbarOpen(true);
             }
         }
     };
@@ -188,6 +203,11 @@ function ReviewsHostPage() {
                     ))}
                 </List>
             </Paper>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
 
             <Dialog
                 open={openDialog}

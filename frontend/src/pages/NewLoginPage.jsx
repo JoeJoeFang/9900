@@ -45,12 +45,15 @@ export const CombinedLogin = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const location = useLocation();
 
-    // 读取查询参数并调整选项卡
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const role = searchParams.get('role');
-        setActiveTab(role === 'host' ? 1 : 0);
+
+        const normalizedRole = role ? role.toLowerCase() : null;
+
+        setActiveTab(normalizedRole === 'host' ? 1 : 0);
     }, [location.search]);
+
 
     const handleBack = () => {
         navigate(-1);
@@ -92,13 +95,22 @@ export const CombinedLogin = () => {
                 let errorMessage = '';
                 switch (error.response.status) {
                     case 401:
-                        errorMessage = 'User not found!';
+                        errorMessage = 'User not found, please register';
                         break;
                     case 402:
-                        errorMessage = 'Invalid email or password!';
+                        errorMessage = 'Please go to the customer login!';
                         break;
                     case 403:
-                        errorMessage = 'Invalid email or password!';
+                        errorMessage = 'Invalid password!';
+                        break;
+                    case 404:
+                        errorMessage = 'User not found, please register';
+                        break;
+                    case 405:
+                        errorMessage = 'Please go to the host login!';
+                        break;
+                    case 406:
+                        errorMessage = 'Invalid password!';
                         break;
                     default:
                         errorMessage = 'An unexpected error occurred';

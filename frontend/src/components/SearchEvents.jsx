@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Paper, TextField, FormControl, InputLabel, Select, MenuItem, IconButton, Snackbar, Alert } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -10,7 +9,6 @@ const SearchEvents = (props) => {
   const [searchDescription, setSearchDescription] = useState('');
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
   const eventTypes = [
     { id: 'None', title: '' },
     { id: 'all types', title: 'All types' },

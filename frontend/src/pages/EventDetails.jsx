@@ -236,7 +236,7 @@ const EventDetails = () => {
                                 Selected Date: {selectedDate}
                             </DialogContentText>
                             <DialogContentText>
-                                Selected Seats: {selectedSeats.join(", ")}
+                                Selected Seats: {selectedSeats.map(seat => seat + 1).join(", ")}
                             </DialogContentText>
                             <DialogContentText>
                                 Booking Email: {email}
