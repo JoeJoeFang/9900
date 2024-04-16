@@ -598,6 +598,7 @@ def get_comments(eventId):
 @bp.route('/comments/host', methods=['POST'])
 def if_host():
     data = request.get_json()
+    print(data)
     event = Events.query.filter_by(id=int(data['eventId'])).first_or_404()
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
     if event.hostId == int(data['hostId']):

@@ -105,7 +105,7 @@ function ReviewsHostPage() {
 
     const handleJoinDiscussion = async (comment) => {
         try {
-            const response = await axios.post('http://localhost:5005/comments/host', { hostId: hostId, eventId: eventId });
+            const response = await axios.post('http://localhost:5005/comments/host', { hostId: hostId, eventId: eventId, userId: comment.customerId});
 
             console.log(response);
             if (response.status === 201 || response.status === 200) {
