@@ -118,6 +118,7 @@ function ReviewsCustomerPage() {
     const token = localStorage.getItem('token');
 
     const [comments, setComments] = useState([]);
+    const identity = localStorage.getItem('identity');
     const fetchComments = useCallback(async () => {
         try {
             // 定义请求配置对象，包括请求头
@@ -195,6 +196,30 @@ function ReviewsCustomerPage() {
         }
     };
 
+    const renderFormOrButton = identity && (showForm ? (
+        <CommentForm
+            cancelForm={() => setShowForm(false)}
+            fetchComments={fetchComments}
+            closeForm={() => setShowForm(false)}
+        />
+    ) : (
+        <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleJoinDiscussion}
+            sx={{
+                color: '#9098e4',
+                '&:hover': {
+                    backgroundColor: 'white',
+                    borderColor: '#9098e4',
+                },
+                border: '2px solid #9098e4',
+            }}
+        >
+            Join Discussion
+        </Button>
+    ));
+
     const handleCloseDialog = () => {
         setOpenDialog(false);
     };
@@ -205,31 +230,7 @@ function ReviewsCustomerPage() {
             <Typography variant="h4" gutterBottom align="left">
                 Discussion Board
             </Typography>
-            {showForm ? (
-                <CommentForm
-                    cancelForm={() => setShowForm(false)}
-                    fetchComments={fetchComments}
-                    closeForm={() => setShowForm(false)}
-                />
-
-            ) : (
-                <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={handleJoinDiscussion}
-                    sx={{
-                        color: '#9098e4',
-                        '&:hover': {
-                            backgroundColor: 'white',
-                            borderColor: '#9098e4',
-                        },
-                        border: '2px solid #9098e4',
-                    }}
-                >
-                    Join Discussion
-                </Button>
-
-            )}
+            {renderFormOrButton}
             <Paper style={{ maxHeight: 400, overflow: 'auto', border: '2px solid #9098e4', marginTop: '16px', padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
                 <List>
                     {comments.map((comment, index) => (

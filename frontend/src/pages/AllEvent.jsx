@@ -86,18 +86,18 @@ const EventsList = () => {
                             <Typography color="textSecondary">Upcoming Events Within the Next Month</Typography>
                         </Divider>
                         {events.map((event, index) => (
-                            <Tooltip
-                                key={index}
-                                title={identity === 'visitor' || !identity ? "Please register your account to explore more" : ''}
-                                disableHoverListener={identity !== 'visitor' && identity}
-                                arrow
-                            >
-                                <div
-                                    style={{
-                                        width: '100%',
-                                        cursor: (identity === 'visitor' || !identity) ? 'not-allowed' : 'pointer',
-                                    }}
-                                >
+                            // <Tooltip
+                            //     key={index}
+                            //     title={identity === 'visitor' || !identity ? "Please register your account to explore more" : ''}
+                            //     disableHoverListener={identity !== 'visitor' && identity}
+                            //     arrow
+                            // >
+                            //     <div
+                            //         style={{
+                            //             width: '100%',
+                            //             cursor: (identity === 'visitor' || !identity) ? 'not-allowed' : 'pointer',
+                            //         }}
+                            //     >
                                     <Card
                                         sx={{
                                             display: 'flex',
@@ -105,14 +105,17 @@ const EventsList = () => {
                                             width: '100%',
                                             background: 'rgba(255, 255, 255, 0.8)',
                                             transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s',
-                                            ':hover': (identity !== 'visitor' && identity) ? {
+                                            ':hover': {
                                                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                                                 transform: 'scale(1.03)',
                                                 boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)',
-                                            } : {},
+                                            },
                                         }}
+                                        // onClick={() => {
+                                        //     if(identity !== 'visitor' && identity) navigate(`/all-event/${event.id}`);
+                                        // }}
                                         onClick={() => {
-                                            if(identity !== 'visitor' && identity) navigate(`/all-event/${event.id}`);
+                                            navigate(`/all-event/${event.id}`);
                                         }}
                                     >
                                         {event.thumbnail && (
@@ -142,8 +145,8 @@ const EventsList = () => {
                                             </Typography>
                                         </CardContent>
                                     </Card>
-                                </div>
-                            </Tooltip>
+                            //     </div>
+                            // </Tooltip>
                         ))}
                         {/* Divider for the end of events */}
                         <Divider sx={{ width: '100%', mt: 2 }}>

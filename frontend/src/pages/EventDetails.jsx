@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 import NativeSelect from '@mui/material/NativeSelect';
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme} from '@mui/material';
-import { useParams } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Box,
@@ -51,6 +51,9 @@ const EventDetails = () => {
     const identity = localStorage.getItem('identity');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [visitorOpen, setVisitorOpen] = useState(false);
+    const navigate = useNavigate();
+
 
 
 
@@ -266,8 +269,24 @@ const EventDetails = () => {
     const [open, setOpen] = useState(false);
 
     const handleOpen = () => {
-        setOpen(true);
+        if (identity === "customer"){
+            setOpen(true);
+        } else {
+            setVisitorOpen(true);
+        }
+
     };
+
+    const handleVisitorClose = () => {
+        setVisitorOpen(false);
+        setSelectedSeats([]);
+    };
+
+    const handleVisitorConfirm = () => {
+        navigate('/combined-login?role=customer');
+        setSelectedSeats([]);
+    };
+
 
     const handleClose = () => {
         setOpen(false);
@@ -457,6 +476,24 @@ const EventDetails = () => {
                                 <Button onClick={handleAlertClose}>Close</Button>
                             </DialogActions>
                         </Dialog>
+
+                        <Dialog open={visitorOpen} onClose={handleVisitorClose}>
+                            <DialogTitle>{"Please login or register"}</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>
+                                    Please login or register to explore more.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleVisitorConfirm}>Yes</Button>
+                                <Button onClick={handleVisitorClose} autoFocus>
+                                    No
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+
+
+
                         <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
                             <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
                                 {snackbarMessage}
