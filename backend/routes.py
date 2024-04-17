@@ -857,7 +857,7 @@ def send_email():
         cust_send_reset_email(user, token)
 
         # 保存token到db中 设置有效期1分钟
-        expire_time = datetime.now() + timedelta(minutes=1)
+        expire_time = datetime.now() + timedelta(minutes=2)
         new_email = Email(email=email, role=role, token=token, expires=expire_time)
         db.session.add(new_email)
         db.session.commit()
