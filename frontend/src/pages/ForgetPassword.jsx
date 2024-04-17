@@ -47,7 +47,7 @@ export const ForgotPassword = () => {
             console.log(response)
             if (response.status === 200) {
                 setIsCodeSent(true);
-                setTimer(60);
+                setTimer(120);
             }
         } catch (errorResponse) {
             alert(errorResponse.response.data.message);

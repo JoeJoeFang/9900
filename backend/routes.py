@@ -857,7 +857,7 @@ def send_email():
         cust_send_reset_email(user, token)
 
         # 保存token到db中 设置有效期1分钟
-        expire_time = datetime.now() + timedelta(minutes=1)
+        expire_time = datetime.now() + timedelta(minutes=2)
         new_email = Email(email=email, role=role, token=token, expires=expire_time)
         db.session.add(new_email)
         db.session.commit()
@@ -880,12 +880,12 @@ def check_token():
     email_code = verify_reset_token(email, role, token)
 
     if not email_code:
-        return jsonify({'message': 'Invalid email or expiration token.'}), 404
+        return jsonify({'message': 'Invalid email or verify code expired.'}), 404
 
     current_app.logger.info("Token info: %s", email_code.token)
 
     if email_code.token != token:
-        response = {'message': 'Invalid or expired token'}
+        response = {'message': 'Invalid or expired verify code'}
         return jsonify(response), 404
 
     response = {'message': 'Verification successfully'}
@@ -903,10 +903,10 @@ def reset_password():
     email_code = verify_reset_token(email, role, token)
 
     if not email_code:
-        return jsonify({'message': 'Invalid email or expiration token.'}), 404
+        return jsonify({'message': 'Your verify code is expired.'}), 404
 
     if email_code.token != token:
-        response = {'message': 'Invalid or expired token'}
+        response = {'message': 'Invalid or expired verify code'}
         return jsonify(response), 404
 
     password = request.json.get('password')
