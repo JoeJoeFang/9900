@@ -44,8 +44,6 @@ def cust_send_reset_email(cust, token):
 
 
 def verify_reset_token(email, role, token):
-    # 从email中查询 当前尚未过期的token信息 验证token
-    # 当前时间要小于expire_time
     res = Email.query.filter(
         Email.email == email,
         Email.role == role,
@@ -71,24 +69,21 @@ def add_user():
     user1 = Host(email="刘畅", password="924082621")
     db.session.add(user1)
     db.session.commit()
-    return "用户创建成功！"
+    return "successfull！"
 
 
 @bp.route('/events', methods=['GET'])
 def get_events():
-    # 查询数据库以获取事件列表
     events = Events.query.all()
     current_date = datetime.now().date()
 
-    # 将查询到的事件列表转换为 JSON 格式
     event_list = []
     for event in events:
         event_date = datetime.strptime(event.from_time, "%Y-%m-%d").date()
         end_date = datetime.strptime(event.to_time, "%Y-%m-%d").date()
         gap = event_date - current_date
         gap2 = end_date - current_date
-        print(gap.days)
-        print('aa')
+
         if gap.days <= 30 and gap2.days >= 0:
             event_data = {
                 'id': event.id,
@@ -105,12 +100,7 @@ def get_events():
                 'description': event.description,
                 'youtubeUrl': event.URL
             }
-            # image_path = event.thumbnail
-            # base64_str = image_to_base64(image_path)
-            # event_data['thumbnail'] = base64_str
             event_list.append(event_data)
-    # print("fanhui", event_list)
-    # 使用 jsonify 函数将 JSON 格式的事件列表返回给前端
     return jsonify(event_list), 201
 
 
@@ -119,8 +109,6 @@ def search_events():
     event_description = request.args.get('description', '')
     keyword = request.args.get('keyWord', '')
     event_type = request.args.get('eventType', '')
-
-    print('k: ',keyword, 't: ', event_type, 'd: ', event_description)
     query = Events.query
 
     events = Events.query.all()
@@ -128,9 +116,6 @@ def search_events():
 
     for event in events:
         flag_print = 0
-        # Check if the keyword is in any of the relevant fields
-        #print(keyword.lower(), event.title.lower(), event_type.lower(), event.type.lower())
-        #print(keyword.lower(), event.title.lower(), keyword.lower() in event.title.lower())
         if event_type == 'all types':
             if keyword.lower() == '':
                 if event_description.lower() in event.description.lower():
@@ -189,16 +174,13 @@ def search_events():
 
 @bp.route('/events/title', methods=['GET'])
 def get_events_title():
-    # 查询数据库以获取事件列表
     events = Events.query.all()
-    # 将查询到的事件列表转换为 JSON 格式
     event_list = []
     for event in events:
         event_data = {
             'title': event.title,
         }
         event_list.append(event_data)
-    # print("fanhui", event_list)
     return jsonify(event_list)
 
 
@@ -229,17 +211,10 @@ def get_host_events(userId):
 
 @bp.route('/events/<int:eventId>', methods=['GET'])
 def get_events_details(eventId):
-    # 查询数据库以获取事件列表
-    # print(1111111111)
-    # print(eventId)
     event = Events.query.filter_by(id=eventId).first()
     event_order = Events_order.query.filter_by(id=eventId).first()
-    # 将查询到的事件列表转换为 JSON 格式
-    print("if not event_order or not event:")
-    # print(event, event_order)
     if not event_order or not event:
         return jsonify({'message': 'Event not found!!!!!'}), 404
-    print("if not event_order or not event: enddddddd")
     event_data = {
         'id': event.id,
         'title': event.title,
@@ -256,21 +231,17 @@ def get_events_details(eventId):
         'youtubeUrl': event.URL,
         'orderdetails': event_order.orderdetails
     }
-    # print("finish", event_data)
     return jsonify(event_data)
 
 
 @bp.route('/bookings', methods=['PUT'])
 def update_events_bookings():
-    # 查询数据库以获取事件列表s
     data = request.get_json()
-    # print(data)
     cust_id = data['userId']
     date_ = data['Date']
     seat_number = data['seat']
     eventid = data['eventId']
     cust = Customer.query.filter_by(id=cust_id).first()
-    print(cust_id, cust)
     event = Events_order.query.filter_by(id=eventid).first()
     events = Events.query.filter_by(id=eventid).first()
     if not event:
@@ -291,28 +262,22 @@ def update_events_bookings():
             break
     if flag == 1:
         return jsonify({'message': f'Seats {s} are not available!'}), 402
-    # cust.order[event.id] = [date_]
     if str(event.id) in cust.order:
-        print(cust.order[str(event.id)])
         if date_ in cust.order[str(event.id)]:
             pass
         else:
             cust.order[str(event.id)].append(date_)
     else:
         cust.order[event.id] = [date_]
-    print(events)
     flag_modified(cust, "order")
     db.session.commit()
 
     event_d = event.orderdetails
     if date_ in event_d:
         for i in seat_number:
-            print(event_d[date_])
             event_d[date_][i] = [1, cust_id]
             cust.wallet -= events.price
-            print(event_d[date_])
             event.orderdetails = event_d
-            print(event.orderdetails)
         flag_modified(event, "orderdetails")
         db.session.commit()
         order_data = {
@@ -345,47 +310,33 @@ def update_events_bookings():
 
 @bp.route('/bookings/<int:userId>/recommendation', methods=['GET'])  # 推荐系统
 def get_recommendation(userId):
-    # （思路：
-    # 查询用户购买的活动，找到活动类型
-    # 查询所有活动列表
-    # 使用用户购买过的活动的类型来过滤活动列表
-    # 返回过滤后的活动列表（显示三个）
-    # 如果用户之前没有购买过任何活动，则显示三个未开始活动）
-    # 最后的获取结果应该除开已经购买的活动
-    # 如果活动列表中已购活动没有其他同类型的活动，推荐应返回空
     current_app.logger.info(f"Fetching recommendations for user: {userId}")
-    # 从customer表中取出所有已购买的订单信息
     cust = Customer.query.filter_by(id=int(userId)).first()
     user_events_ids = list(cust.order.keys())
-    # 存储每个活动类型的频次
     event_type_frequency = defaultdict(int)
 
     if user_events_ids:
-        # 统计每种类型活动的购买次数
         for event_id in user_events_ids:
             event = Events.query.get(event_id)
-            if event:  # 确保找到了对应的活动
+            if event:
                 event_type_frequency[event.type] += 1
-        # 找到用户最常参加的活动类型
         favorite_event_type = max(event_type_frequency, key=event_type_frequency.get)
 
-        # 获取推荐活动列表  从用户订单中排除已购买的活动ID
         recommended_events = Events.query.filter(
             Events.type == favorite_event_type,
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
         ).order_by(Events.from_time).limit(6).all()
 
-        if not recommended_events:  # 如果没有其他同类型的活动可推荐，则返回空列表
+        if not recommended_events:
             current_app.logger.info(f"No recommended events found for favorite type '{favorite_event_type}' for user: {userId}")
             return jsonify([])
     else:
-        # 对于没有购买记录的用户，推荐即将举行且未购买的活动
         recommended_events = Events.query.filter(
             Events.id.notin_(user_events_ids),
             Events.from_time > datetime.now()
         ).order_by(Events.from_time).limit(3).all()
-        if not recommended_events:  # 如果没有活动可以推荐，则返回空列表
+        if not recommended_events:
             current_app.logger.info(f"No upcoming events to recommend for new or inactive user: {userId}")
             return jsonify([])
 
@@ -405,34 +356,26 @@ def get_recommendation(userId):
         'endDate': event.to_time,
         'youtubeUrl': event.URL
     } for event in recommended_events]
-
     return jsonify(events_json)
 
 
 @bp.route('/bookings/<int:userId>', methods=['GET'])
 def get_bookings(userId):
-    print(userId)
     cust = Customer.query.filter_by(id=userId).first()
     events_list = []
 
     if cust.order is None or len(cust.order) == 0:
-        print(cust.order)
-    if cust.order is None or len(cust.order) == 0:
         return jsonify({'message': 'No events found!'}), 404
     for k, v in cust.order.items():
-        # print('qwwwwwwwwwwwwwwwwwwwwww')
         event_order = Events_order.query.filter_by(id=int(k)).first()
         events = Events.query.filter_by(id=int(k)).first()
         for i in v:
             orderdetails = event_order.orderdetails[i]
-            # print(orderdetails, k, v)
             seat_list = []
             for j in range(len(orderdetails)):
                 seat_number = j+1
-                # print(orderdetails[j], userId)
                 if orderdetails[j][1] == str(userId):
                     seat_list.append(j)
-                    print(j, '1111111111111111')
                     event1 = {
                         'eventId': event_order.id,
                         'userId': cust.id,
@@ -442,10 +385,7 @@ def get_bookings(userId):
                         'date': i,
                         'seat': seat_number
                     }
-                    #print(event1)
                     events_list.append(event1)
-
-    print(events_list)
     return jsonify(events_list), 200
 
 
@@ -453,16 +393,13 @@ def get_bookings(userId):
 def cancel_bookings(userId):
     data = request.get_json()
     seat = data['seat'] - 1
-    # print(data)
     cust = Customer.query.filter_by(id=int(userId)).first()
     events = Events.query.filter_by(id=int(data['eventId'])).first()
     event_id = str(data['eventId'])
     if event_id in cust.order:
         price = events.price
-        # del cust.order[event_id]
-        # flag_modified(cust, "order")
         event_order = Events_order.query.filter_by(id=int(data['eventId'])).first()
-        print(int(event_order.orderdetails[data['Date']][seat][1]), int(data['userId']))
+        # print(int(event_order.orderdetails[data['Date']][seat][1]), int(data['userId']))
         if int(event_order.orderdetails[data['Date']][seat][1]) == int(data['userId']):
 
             event_order.orderdetails[data['Date']][seat] = [0, 0]
@@ -478,14 +415,8 @@ def cancel_bookings(userId):
             else:
                 cust.order[event_id].remove(data['Date'])
                 flag_modified(cust, "order")
-        # for i in range(len(event_order.orderdetails[data['Date']])):
-        #     # print(event_order.orderdetails[data['Date']][i], type(event_order.orderdetails[data['Date']][i]))
-        #     if int(event_order.orderdetails[data['Date']][i][1]) == int(data['userId']):
-        #         event_order.orderdetails[data['Date']][i] = [0, 0]
         cust.wallet += price
         flag_modified(cust, "wallet")
-        # print(event_order.orderdetails)
-        # print(cust.wallet)
         seat_number = seat + 1
         events_json = {
             'title': events.title,
@@ -500,9 +431,6 @@ def cancel_bookings(userId):
         events_html = render_template('mail_cancel_booking.html', events_json=events_json)
         message = Message(subject="Your Booking has been canceled successfully!", recipients=[cust.email])
         message.html = events_html
-        # events_json_str = json.dumps(events_json, ensure_ascii=True)
-        # print(events_json_str)
-        # message = Message(subject="Your Booking has been canceled successfully!", recipients=[cust.email], body=events_json_str)
         mail.send(message)
         db.session.commit()
         return jsonify({'message': 'Refund successfully!'}), 201
@@ -529,11 +457,9 @@ def cancel_events(userId):
                     seat_list[v[i][1]].append(i)
                 else:
                     seat_list[v[i][1]] = [i]
-    # print(seat_list)
-    # print(user_list)
+
     for i, j in user_list.items():
         user = Customer.query.filter_by(id=int(i)).first()
-        print(data['eventId'], user.order)
         user.wallet += price * (int(j))
         del user.order[str(data['eventId'])]
         flag_modified(user, "order")
@@ -544,7 +470,6 @@ def cancel_events(userId):
             'type': event.type,
             'address': event.address,
             'price': event.price,
-            # 'seats': seat_list[str(user.id)],
             'organizerName': event.organizername,
             'startDate': event.from_time,
             'endDate': event.to_time,
@@ -565,7 +490,6 @@ def cancel_events(userId):
 def if_order():
     data = request.get_json()
     cust = Customer.query.filter_by(id=data['customerId']).first()
-    print(data['eventId'], cust.order)
     if str(data['eventId']) not in cust.order:
         return jsonify({'message': 'You did not order this event!'}), 404
     else:
@@ -579,7 +503,6 @@ def if_order():
 @bp.route('/comments/customer', methods=['PUT'])
 def cust_comments():
     data = request.get_json()
-    # print(data)
     cust = Customer.query.filter_by(id=data['userId']).first()
     c = [data['Date'], data['review'], cust.name, 'None', 'None', 'None', 'None']
     comment = Comments.query.filter_by(eventId=int(data['eventId'])).first_or_404()
@@ -626,28 +549,16 @@ def host_comments():
 @bp.route('/events/new', methods=['POST'])
 def register_event():
     data = request.get_json()
-    # print(data)
-    # thumbnail_data = base64.b64decode(data['thumbnail'])
-    # print(data)
     event_title = data['title']
     existing_event = Events.query.filter_by(title=event_title).first()
     if existing_event:
         return jsonify({'message': 'Event title already exists!'}), 400
     image_str = data['thumbnail']
-    # image_data = base64.b64decode(image_str.split(",")[1])
-
-    # if not os.path.exists(pic_folder):
-    #     os.makedirs(pic_folder)
-    # filename = str(data['title']) + '.jpg'
-    # file_path = os.path.join(pic_folder, filename)
-    # with open(file_path, "wb") as f:
-    #     f.write(image_data)
     seats = data['seatingCapacity']
     start_date_str = data['startDate']
     end_date_str = data['endDate']
     start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
     end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-    print(data['startDate'])
     date_list = []
     current_date = start_date
     while current_date <= end_date:
@@ -661,7 +572,6 @@ def register_event():
     new_order = Events_order(eventtitle=data['title'], orderdetails=seats_c)
     db.session.add(new_order)
     db.session.commit()
-    # print(type(new_order.id))
     new_comment = Comments(eventId=new_order.id, comment={})
     db.session.add(new_comment)
     db.session.commit()
@@ -687,7 +597,6 @@ def host_register():
     existing_cust = Host.query.filter_by(email=email).first()
     if existing_cust:
         return jsonify({'message': 'Customer email already exists!'}), 400
-    print(data)
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
     db.session.add(new_user)
@@ -698,7 +607,6 @@ def host_register():
 @bp.route('/user/auth/customer_register', methods=['POST'])
 def cust_register():
     data = request.get_json()
-    print(data)
     email = data['email']
     existing_cust = Host.query.filter_by(email=email).first()
     if existing_cust:
@@ -717,19 +625,14 @@ def cust_register():
 # Flask后端示例
 @bp.route('/user/auth/customer', methods=['GET'])
 def get_customer():
-    # 获取userId参数，并尝试将其转换为整数
     user_id = request.args.get('userId')
     user_id = int(user_id) if user_id is not None else None
-    print('UserID received:', user_id)
-
-    # 使用转换后的整数进行查询
     cust = Customer.query.filter_by(id=user_id).first()
 
     if cust is None:
-        print('No customer found for UserID:', user_id)  # 如果查询无结果，输出信息
+        print('No customer found for UserID:', user_id)
         return jsonify({'error': 'Customer not found'}), 404
 
-    # 如果找到了customer，构造详情字典
     cust_detail = {
         'id': cust.id,
         'email': cust.email,
@@ -753,12 +656,10 @@ def top_up():
     amount = cust.wallet
     return jsonify(amount), 201
 
-
 @bp.route('/user/auth/login', methods=['POST'])
 def login():
     data = request.json
     identity = data['identity']
-    print(data)
     email = data.get('email')
     password = data.get('password')
     if identity == 'host':
@@ -771,7 +672,6 @@ def login():
                 return jsonify({'message': 'Please login customer!'}), 402
         else:
             if not bcrypt.check_password_hash(host.password, password):
-                print('message: Invalid email or password')
                 return jsonify({'message': 'Invalid email or password'}), 403
             token = jwt.encode({'id': host.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                                current_app.config['SECRET_KEY'])
@@ -786,29 +686,10 @@ def login():
                 return jsonify({'message': 'Please login host!'}), 405
         else:
             if not bcrypt.check_password_hash(customer.password, password):
-                print('message: Invalid email or password')
                 return jsonify({'message': 'Invalid email or password'}), 406
             token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
                                current_app.config['SECRET_KEY'])
             return jsonify({'token': token, 'id': customer.id})
-    # a = Customer.query.filter_by(id=1).first()
-    # print(a.email)
-    # hosts = Host.query.all()
-    # for host in hosts:
-    #     print(host)
-
-    # if not host:
-    #     customer = Customer.query.filter_by(email=email).first()
-    #     if not customer:
-    #         print('message: User not found')
-    #         return jsonify({'message': 'User not found'}), 401
-    #     if not bcrypt.check_password_hash(customer.password, password):
-    #         print('message: Invalid email or password')
-    #         return jsonify({'message': 'Invalid email or password'}), 402
-    #
-    #     token = jwt.encode({'id': customer.id, 'exp': datetime.now(timezone.utc) + timedelta(minutes=30)},
-    #                        current_app.config['SECRET_KEY'])
-    #     return jsonify({'token': token, 'id': customer.id})
 
 
 @bp.route('/user/auth/logout', methods=['POST'])
@@ -856,7 +737,6 @@ def send_email():
         token = cust_generate_reset_token()
         cust_send_reset_email(user, token)
 
-        # 保存token到db中 设置有效期1分钟
         expire_time = datetime.now() + timedelta(minutes=2)
         new_email = Email(email=email, role=role, token=token, expires=expire_time)
         db.session.add(new_email)
@@ -897,9 +777,7 @@ def reset_password():
     email = request.json.get('email')
     role = request.json.get('role')
     token = request.json.get('token')
-
     current_app.logger.info("Validating token: %s", token)
-
     email_code = verify_reset_token(email, role, token)
 
     if not email_code:
@@ -923,7 +801,6 @@ def reset_password():
     else:
         return jsonify({'message': 'Invalid role.'}), 404
 
-    # 更新用户密码
     user.password = bcrypt.generate_password_hash(password).decode('utf-8')
     db.session.commit()
     response = {'message': 'User password set successfully'}

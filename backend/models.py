@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 db = SQLAlchemy()
 
@@ -19,7 +18,6 @@ class Host(db.Model):
     state = db.Column(db.String(100), nullable=True)
     post_code = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(1000), nullable=True)
-    # last_update = db.Column(db.DateTime, default=datetime.now)
 
 
 class Customer(db.Model):
@@ -40,7 +38,6 @@ class Customer(db.Model):
     cardNumber = db.Column(db.String(100), nullable=True)
     wallet = db.Column(db.Integer, nullable=True)
     order = db.Column(JSON, nullable=True)
-    # last_update = db.Column(db.DateTime, default=datetime.now)
 
 
 class Email(db.Model):
@@ -75,14 +72,6 @@ class Events_order(db.Model):
     eventtitle = db.Column(db.String(20), nullable=False)
     orderdetails = db.Column(JSON, nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
-    # user_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-
-# class Myevents(db.Model):
-#      __tablename__ = "myevents"
-#      id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#      event = db.Column(db.String(50), nullable=False)
-#      host = db.Column(db.String(50), nullable=False)
-
 
 class Comments(db.Model):
     __tablename__ = "comments"
