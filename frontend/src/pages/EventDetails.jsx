@@ -53,6 +53,7 @@ const EventDetails = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [visitorOpen, setVisitorOpen] = useState(false);
     const navigate = useNavigate();
+    const [backDefaultPage, setBackDefaultPage] = useState(false);
 
 
 
@@ -199,6 +200,7 @@ const EventDetails = () => {
                         break;
                     case 404:
                         errorMessage = 'Event does not exist, please refresh your page';
+                        setBackDefaultPage(true);
                         break;
                     default:
                         errorMessage = 'An unexpected error occurred';
@@ -284,6 +286,16 @@ const EventDetails = () => {
 
     const handleVisitorConfirm = () => {
         navigate('/combined-login?role=customer');
+        setSelectedSeats([]);
+    };
+
+    const handleBackDefaultClose = () => {
+        setVisitorOpen(false);
+        setSelectedSeats([]);
+    };
+
+    const handleBackDefaultConfirm = () => {
+        navigate('/all-event');
         setSelectedSeats([]);
     };
 
@@ -487,6 +499,21 @@ const EventDetails = () => {
                             <DialogActions>
                                 <Button onClick={handleVisitorConfirm}>Yes</Button>
                                 <Button onClick={handleVisitorClose} autoFocus>
+                                    No
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+
+                        <Dialog open={backDefaultPage} onClose={handleBackDefaultClose}>
+                            <DialogTitle>{"Event not found"}</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>
+                                    Event does not exist, please come back to our default page.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleBackDefaultConfirm}>Yes</Button>
+                                <Button onClick={handleBackDefaultClose} autoFocus>
                                     No
                                 </Button>
                             </DialogActions>
