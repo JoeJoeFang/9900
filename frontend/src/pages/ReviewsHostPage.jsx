@@ -90,7 +90,7 @@ function ReviewsHostPage() {
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {
-                setOpenDialog(true); // 显示警告对话框
+                setOpenDialog(true);
             } else {
                 console.error('An unexpected error occurred:', error);
             }

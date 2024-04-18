@@ -145,15 +145,12 @@ const CreateNewEvent = () => {
     const updateField = (e, newValue) => {
         let name, value;
 
-        // 检查是否是 Autocomplete 调用
         if (e && e.target && newValue === undefined) {
-            // 处理来自常规输入的调用
             name = e.target.name;
             value = e.target.value;
         } else {
-            // 处理来自 Autocomplete 的调用
-            name = 'eventType'; // Autocomplete 控制的字段名
-            value = newValue; // 这里假设newValue是一个字符串
+            name = 'eventType';
+            value = newValue;
         }
 
         const errorMessage = validateField(name, value);

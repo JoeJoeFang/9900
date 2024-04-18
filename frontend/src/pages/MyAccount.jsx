@@ -53,24 +53,20 @@ const MyAccount = () => {
 
     const handleRecharge = async () => {
         const userId = localStorage.getItem('userId');
-        // 实际操作中应当检查 rechargeAmount 是否为有效数值
         try {
             const response = await axios.put('http://localhost:5005/user/auth/customer/recharge', {
                 userId: userId,
                 amount:rechargeAmount,
             });
             if (response.status === 200 || response.status === 201) {
-                // listingId
-                // 假设API返回了更新后的用户详情，包括新的钱包余额
                 setCustDetail(response.data);
-                setRechargeAmount(''); // 清空输入框
+                setRechargeAmount('');
                 await fetchCustomerDetails();
             }
             
 
         } catch (error) {
-            console.error('充值失败:', error);
-            // 根据需要处理错误
+            console.error('recharge failed:', error);
         }
     };
     useEffect(() => {

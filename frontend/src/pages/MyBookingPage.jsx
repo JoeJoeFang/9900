@@ -218,7 +218,7 @@ const BookingList = () => {
                         alignItems: 'center',
                         marginTop: '100px',
                         width: '90%',
-                        overflowY: 'auto', // 允许垂直滚动
+                        overflowY: 'auto',
                         padding: theme.spacing(1),
                     }}>
 

@@ -1,28 +1,35 @@
-import React from 'react';
-import { Button } from '@mui/material';
+import React, { useState } from 'react';
+import { BottomNavigation, BottomNavigationAction, ThemeProvider, useTheme } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/ExitToApp';
 
 const Logout = () => {
+  const [value, setValue] = useState(0);
+  const theme = useTheme();
   const logout = () => {
     console.log('Logout clicked');
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userId');
     localStorage.removeItem('identity');
-    window.location.href = '/'; // 触发跳转到首页或登录页
+    window.location.href = '/';
   };
 
   return (
-    <Button
-      onClick={logout}
-      color="inherit" // 使用 error 颜色以突出显示该操作的性质
-      variant="contained" // 用实心填充的按钮表示
-      sx={{ 
-          mr: 1, // 为按钮添加右边距，与其他按钮保持一定间距
-          fontWeight: 'bold', // 加粗字体以增加视觉重点
-      }}
-    >
-      Logout
-    </Button>
+      <ThemeProvider theme={theme}>
+        <BottomNavigation
+            showLabels
+            value={value}
+            onChange={(event, newValue) => {
+              setValue(newValue);
+              if (newValue === 0) {  // 当选中第一个选项时执行登出
+                logout();
+              }
+            }}
+            sx={{ width: '100%', position: 'fixed', top: 0, color: "#546e7a" }}
+        >
+          <BottomNavigationAction label="Logout" icon={<LogoutIcon />} />
+        </BottomNavigation>
+      </ThemeProvider>
   );
 };
 
