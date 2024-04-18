@@ -4,6 +4,7 @@ from sqlalchemy import JSON
 db = SQLAlchemy()
 
 
+# This class represents a Host model in the database
 class Host(db.Model):
     __tablename__ = "host"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -19,7 +20,7 @@ class Host(db.Model):
     post_code = db.Column(db.String(10), nullable=True)
     description = db.Column(db.String(1000), nullable=True)
 
-
+# This class represents a Customer model in the database
 class Customer(db.Model):
     __tablename__ = "customer"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -40,6 +41,7 @@ class Customer(db.Model):
     order = db.Column(JSON, nullable=True)
 
 
+# This class represents a Email model in the database
 class Email(db.Model):
     __tablename__ = "email"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -48,7 +50,7 @@ class Email(db.Model):
     token = db.Column(db.String(50), nullable=False)
     expires = db.Column(db.DateTime, nullable=True)
 
-
+# This class represents a Events model in the database
 class Events(db.Model):
     __tablename__ = "events"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -66,6 +68,7 @@ class Events(db.Model):
     URL = db.Column(db.String(100), nullable=True)
     thumbnail = db.Column(db.Text, nullable=True)
 
+# This class represents a Order model in the database
 class Events_order(db.Model):
     __tablename__ = "events_order"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -73,6 +76,7 @@ class Events_order(db.Model):
     orderdetails = db.Column(JSON, nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
 
+# This class represents a Comment model in the database
 class Comments(db.Model):
     __tablename__ = "comments"
     eventId = db.Column(db.Integer, primary_key=True, autoincrement=True)
