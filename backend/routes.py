@@ -670,7 +670,7 @@ def host_register():
     # check if email already exists
     if existing_host:
         return jsonify({'message': 'Host email already exists!'}), 400
-    existing_cust = Host.query.filter_by(email=email).first()
+    existing_cust = Customer.query.filter_by(email=email).first()
     if existing_cust:
         return jsonify({'message': 'Customer email already exists!'}), 400
     # hash the password
@@ -685,7 +685,7 @@ def host_register():
 def cust_register():
     data = request.get_json()
     email = data['email']
-    existing_cust = Host.query.filter_by(email=email).first()
+    existing_cust = Customer.query.filter_by(email=email).first()
     # check if email already exists
     if existing_cust:
         return jsonify({'message': 'Customer email already exists!'}), 400
