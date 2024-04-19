@@ -12,6 +12,7 @@ const RegisterHost = () => {
     const theme = useTheme();
     const navigate = useNavigate();
 
+
     const [registerData, setRegisterData] = useState({
         companyName: '',
         email: '',
@@ -83,7 +84,7 @@ const RegisterHost = () => {
                 const status = errorResponse.response.status;
                 const message = errorResponse.response.data.message;
     
-                if (status === 400) {
+                if (status === 400 || status === 401) {
                     // Custom error message for duplicate email
                     errorMessage = message.includes('email already exists') ? 'This email is already in use. Please use a different email address.' : message;
                 }
