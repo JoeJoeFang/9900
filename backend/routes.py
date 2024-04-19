@@ -672,7 +672,7 @@ def host_register():
         return jsonify({'message': 'Host email already exists!'}), 400
     existing_cust = Customer.query.filter_by(email=email).first()
     if existing_cust:
-        return jsonify({'message': 'Customer email already exists!'}), 400
+        return jsonify({'message': 'Customer email already exists!'}), 401
     # hash the password
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = Host(companyName=data['companyName'], email=data['email'], password=hashed_password)
@@ -691,7 +691,7 @@ def cust_register():
         return jsonify({'message': 'Customer email already exists!'}), 400
     existing_host = Host.query.filter_by(email=email).first()
     if existing_host:
-        return jsonify({'message': 'Host email already exists!'}), 400
+        return jsonify({'message': 'Host email already exists!'}), 401
     # hash the password
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = Customer(name=data['Name'], email=data['email'], password=hashed_password, cvc=data['cardCVC'],
