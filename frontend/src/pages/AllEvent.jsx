@@ -99,6 +99,7 @@ const EventsList = () => {
                             //         }}
                             //     >
                                     <Card
+                                        key={event.id}
                                         sx={{
                                             display: 'flex',
                                             mb: 2,
